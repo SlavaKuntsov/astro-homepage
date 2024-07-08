@@ -3,6 +3,7 @@ import { IoLogoGithub } from "react-icons/io";
 
 import { SITE_TITLE } from '../consts';
 import HeaderLink from './HeaderLink.astro';
+import ThemeToggle from "./ThemeToggle";
 ---
 
 <header class="fixed z-50 w-full backdrop-blur-md py-4 shadow-sm">
@@ -16,6 +17,7 @@ import HeaderLink from './HeaderLink.astro';
 				Source
 			</HeaderLink>
 		</div>
+		<ThemeToggle client:load/>
 		<!-- <div class="social-links">
 			<a href="https://m.webtoo.ls/@astro" target="_blank">
 				<span class="sr-only">Follow Astro on Mastodon</span>
