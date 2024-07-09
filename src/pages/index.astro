@@ -1,12 +1,11 @@
 ---
-import { SITE_TITLE, SITE_DESCRIPTION } from '../consts';
+import { SITE_DESCRIPTION, SITE_TITLE } from '../consts';
 
 import BaseHead from '../components/BaseHead.astro';
-import Header from '../components/Header.astro';
-import Footer from '../components/Footer.astro';
 import Body from '../components/Body.astro';
-import VoxelDogLoader from '../components/VoxelDogLoader'
-import VoxelDog from '../components/VoxelDog'
+import Footer from '../components/Footer.astro';
+import Header from '../components/Header.astro';
+import Main from '../components/Main.astro';
 ---
 
 <!doctype html>
@@ -16,10 +15,9 @@ import VoxelDog from '../components/VoxelDog'
 	</head>
 	<Body >
 		<Header />
-		<main class="pt-16">
-			<VoxelDog />
-			<!-- <VoxelDogLoader /> -->
-		</main>
+		<Main>
+			<h1>Hello, i'm Slava</h1>
+		</Main>
 		<Footer />
 	</Body>
 </html>
