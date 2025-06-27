@@ -40,6 +40,6 @@ export default function LanguageToggle() {
       {nextLang}
     </button>
   ) : (
-    <div className="h-[40px] w-10" />
+    <div className="h-[26px] w-10" />
   );
 }
