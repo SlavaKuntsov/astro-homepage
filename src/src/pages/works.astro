@@ -1,17 +1,20 @@
 ---
-import "../styles/global.css";
+import Header from "../components/Header.astro";
+import BaseHead from "../components/BaseHead.astro";
+import { SITE_DESCRIPTION, SITE_TITLE } from "../consts";
+import Body from "../components/Body.astro";
+import Main from "../components/Main.astro";
+import Footer from "../components/Footer.astro";
 ---
 
-<p class="bg-red-500 text-3xl p-10">
-    Lorem ipsum dolor sit amet consectetur adipisicing elit. Minima, corporis
-    laudantium. Dolorum laboriosam nam dicta harum vel rem illo quas minus
-    sapiente magni nobis at earum quisquam tempore cumque voluptates, rerum
-    inventore iste sed necessitatibus deserunt laborum eum minima repudiandae?
-    Similique debitis architecto distinctio ducimus quod perspiciatis alias
-    voluptate ipsa voluptatibus magnam eaque officiis illum dolorum, corporis
-    reiciendis, dolor vitae! Consectetur, sint ea aliquam fuga quisquam non
-    dignissimos ut expedita inventore! Autem numquam ab sint totam quos, ducimus
-    velit veniam deserunt! Illum fugit fugiat cupiditate, id delectus laborum
-    aliquid esse accusamus soluta! Qui natus quaerat officia saepe dolorum illum
-    ipsa.
-</p>
+<!doctype html>
+<html lang="en">
+	<BaseHead title={SITE_TITLE} description={SITE_DESCRIPTION} />
+	<Body>
+		<Header />
+		<Main>
+			<h1>Works</h1>
+		</Main>
+		<Footer />
+	</Body>
+</html>
