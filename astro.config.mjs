@@ -1,10 +1,11 @@
+// astro.config.mjs
 import { defineConfig, fontProviders } from 'astro/config';
 import tailwindcss from '@tailwindcss/vite';
 import react from '@astrojs/react';
 import mdx from '@astrojs/mdx';
 import { fileURLToPath } from 'node:url';
 import { URL } from 'node:url';
-import { HOMEPAGE_URL } from './src/consts';
+import { HOMEPAGE_URL } from './src/consts'; 
 
 export default defineConfig({
   site: HOMEPAGE_URL,
