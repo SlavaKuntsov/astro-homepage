@@ -1,21 +1,37 @@
 ---
-import { IoLogoGithub } from "react-icons/io";
-
 import "../styles/global.css";
 import { SITE_TITLE } from "../consts";
 import HeaderLink from "./HeaderLink.astro";
 import ThemeToggle from "./buttons/ThemeToggle";
 import LanguageToggle from "./buttons/LanguageToggle";
 import type { Translation } from "../types/Translation";
+import { IoLogoGithub, IoMenu } from "react-icons/io5";
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuGroup,
+    DropdownMenuItem,
+    DropdownMenuLabel,
+    DropdownMenuPortal,
+    DropdownMenuSeparator,
+    DropdownMenuShortcut,
+    DropdownMenuSub,
+    DropdownMenuSubContent,
+    DropdownMenuSubTrigger,
+    DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { DropdownMenuDemo } from "./buttons/qwe";
 
 interface Props {
-  t: Translation;
+    t: Translation;
 }
 
 const { t }: Props = Astro.props;
 ---
 
-<header class="fixed z-50 w-full backdrop-blur-md py-4 shadow-sm min-h-[54px] max-h-[54px]">
+<header
+    class="fixed z-50 w-full backdrop-blur-md py-4 shadow-sm min-h-[54px] max-h-[54px]"
+>
     <nav
         class="flex flex-row items-center justify-between gap-7 mx-auto max-w-3xl px-3"
     >
@@ -38,9 +54,27 @@ const { t }: Props = Astro.props;
             </div>
         </div>
 
-        <div class="flex flex-row gap-4 items-center justify-center">
+        <div class="flex-row gap-4 items-center justify-center hidden md:flex">
             <ThemeToggle client:load />
             <LanguageToggle client:load />
+        </div>
+        <div
+            class="md:hidden flex w-10 h-10 bg-orange-300 hover:bg-orange-400/80 dark:bg-zinc-600 dark:hover:bg-zinc-500 cursor-pointer text-zinc-900 dark:text-zinc-100 font-semibold rounded-md items-center justify-center transition-colors duration-500"
+        >
+            <!-- <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                    <IoMenu className="text-2xl" />
+                </DropdownMenuTrigger>
+                <DropdownMenuContent className="w-56" align="end">
+                    <DropdownMenuGroup>
+                        <DropdownMenuItem>
+                            qwe
+                        </DropdownMenuItem>
+                    </DropdownMenuGroup>
+                </DropdownMenuContent>
+            </DropdownMenu> -->
+
+            <DropdownMenuDemo />
         </div>
     </nav>
 </header>
