@@ -5,11 +5,14 @@ import tailwindcss from '@tailwindcss/vite';
 
 import react from '@astrojs/react';
 
+import mdx from '@astrojs/mdx';
+import { HOMEPAGE_URL } from './src/consts';
+
 // https://astro.build/config
 export default defineConfig({
+  site: HOMEPAGE_URL,
   vite: {
     plugins: [tailwindcss()]
   },
-
-  integrations: [react()]
+  integrations: [react(), mdx()]
 });
