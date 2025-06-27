@@ -20,7 +20,7 @@ import {
     DropdownMenuSubTrigger,
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { DropdownMenuDemo } from "./buttons/qwe";
+import { DropdownMenuDemo } from "./buttons/DropdownMenuDemo";
 
 interface Props {
     t: Translation;
@@ -61,18 +61,7 @@ const { t }: Props = Astro.props;
         <div
             class="md:hidden flex w-10 h-10 bg-orange-300 hover:bg-orange-400/80 dark:bg-zinc-600 dark:hover:bg-zinc-500 cursor-pointer text-zinc-900 dark:text-zinc-100 font-semibold rounded-md items-center justify-center transition-colors duration-500"
         >
-            <!-- <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                    <IoMenu className="text-2xl" />
-                </DropdownMenuTrigger>
-                <DropdownMenuContent className="w-56" align="end">
-                    <DropdownMenuGroup>
-                        <DropdownMenuItem>
-                            qwe
-                        </DropdownMenuItem>
-                    </DropdownMenuGroup>
-                </DropdownMenuContent>
-            </DropdownMenu> -->
+                    <!-- <IoMenu className="text-2xl" /> -->
 
             <DropdownMenuDemo />
         </div>
