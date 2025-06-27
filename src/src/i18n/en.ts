@@ -7,7 +7,7 @@ const en: Translation = {
         position: "Software Developer"
     },
     header: {
-        links: ["Works", "About", "Source"]
+        links: ["Homepage", "Works", "About", "Source"]
     }
 };
 

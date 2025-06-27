@@ -7,7 +7,7 @@ const ru: Translation = {
         position: "Разработчик программного обеспечения"
     },
     header: {
-        links: ["Работы", "Обо мне", "Source"]
+        links: ["Главная", "Работы", "Обо мне", "Source"]
     }
 };
 
