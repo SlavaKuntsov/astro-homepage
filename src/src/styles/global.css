@@ -4,20 +4,12 @@
 
 @theme {
 	--color-zinc-850: #1a1a1d;
-	--color-orange-75: #fff6eb;
+	--color-orange-75: #fff5e8;
 }
-
-/* @import url("https://fonts.googleapis.com/css2?family=Comfortaa:wght@300..700&display=swap"); */
-
-/* * { */
-/* font-family: "Comfortaa", serif; */
-/* font-optical-sizing: auto; */
-/* font-style: normal; */
-/* } */
 
 body {
 	font-family: "Comfortaa", BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial,
-	sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol';
+		sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol';
 	font-optical-sizing: auto;
 	font-style: normal;
 	-webkit-font-smoothing: antialiased;

@@ -19,12 +19,22 @@ import Footer from "../components/Footer.astro";
 			<div class="logo h-80"></div>
 			<div
 				class="transition-colors duration-500 font-mplus text-lg px-6 py-3 backdrop-blur-3xl
-				bg-white/75 dark:bg-zinc-700/50 rounded-lg"
+				bg-white/75 dark:bg-zinc-700/50 rounded-lg w-full"
 			>
 				<pre
 					class="mx-auto w-min">Hello, I'm a junior backend developer from Belarus.</pre>
 			</div>
-			<h1 class="font-semibold text-4xl">Kuntsou Sviataslau</h1>
+			<div class="flex flex-row justify-between gap-4 w-full">
+				<div class="flex flex-col items-start gap-6">
+					<h1 class="font-bold text-[2.5rem] tracking-wide">Kuntsou Sviataslau</h1>
+					<p class="text-xl">Software Developer</p>
+				</div>
+				<div
+					class="rounded-full min-w-36 min-h-36 bg-red-50 bg-[url(/images/ava2.jpg)] bg-contain bg-center bg-no-repeat
+					border-[3px] border-white dark:border-orange-100"
+				>
+				</div>
+			</div>
 		</Main>
 		<Footer />
 	</Body>
