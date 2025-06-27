@@ -1,5 +1,5 @@
 // @ts-check
-import { defineConfig } from 'astro/config';
+import { defineConfig, fontProviders } from 'astro/config';
 
 import tailwindcss from '@tailwindcss/vite';
 
@@ -14,5 +14,13 @@ export default defineConfig({
   vite: {
     plugins: [tailwindcss()]
   },
-  integrations: [react(), mdx()]
+  integrations: [react(), mdx()],
+  experimental: {
+    fonts: [{
+      provider: fontProviders.google(),
+      name: "Comfortaa",
+      weights: [300, 400, 500, 600, 700],
+      cssVariable: "--font-roboto"
+    }]
+  }
 });
