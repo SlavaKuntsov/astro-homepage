@@ -1,5 +1,5 @@
-import "../styles/global.css";
-import { useEffect, useState } from 'react'
+import "../../styles/global.css";
+import { useLayoutEffect, useState } from 'react'
 import { IoSunny } from "react-icons/io5";
 import { IoMoon } from "react-icons/io5";
 
@@ -30,7 +30,7 @@ export default function ThemeToggle() {
         setTheme(t)
     }
 
-    useEffect(() => {
+    useLayoutEffect(() => {
         const root = document.documentElement
         if (theme === 'light') {
             root.classList.remove('dark')
@@ -39,13 +39,13 @@ export default function ThemeToggle() {
         }
     }, [theme])
 
-    useEffect(() => {
+    useLayoutEffect(() => {
         setIsMounted(true)
         setTimeout(() => setShowButton(true), 10)
     }, [])
 
     return isMounted ? (
-        <div className='inline-flex items-center p-[1px] rounded-3xl bg-orange-300 dark:bg-zinc-600'>
+        <div className='inline-flex items-center p-[1px] rounded-3xl bg-orange-300 dark:bg-zinc-600 hover:bg-orange-400/80 dark:hover:bg-zinc-500 transition-colors duration-500'>
             {themes.map(t => {
                 const checked = t === theme
                 return (

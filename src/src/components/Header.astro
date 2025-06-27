@@ -4,10 +4,11 @@ import { IoLogoGithub } from "react-icons/io";
 import "../styles/global.css";
 import { SITE_TITLE } from "../consts";
 import HeaderLink from "./HeaderLink.astro";
-import ThemeToggle from "./ThemeToggle";
+import ThemeToggle from "./buttons/ThemeToggle";
+import LanguageToggle from "./buttons/LanguageToggle";
 ---
 
-<header class="fixed z-50 w-full backdrop-blur-md py-4 shadow-sm">
+<header class="fixed z-50 w-full backdrop-blur-md py-4 shadow-sm min-h-[54px] max-h-[54px]">
     <nav
         class="flex flex-row items-center justify-between gap-10 mx-auto max-w-3xl px-3"
     >
@@ -30,6 +31,9 @@ import ThemeToggle from "./ThemeToggle";
             </div>
         </div>
 
-        <ThemeToggle client:load />
+        <div class="flex flex-row gap-4 items-center justify-center">
+            <ThemeToggle client:load />
+            <LanguageToggle client:load />
+        </div>
     </nav>
 </header>

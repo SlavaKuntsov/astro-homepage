@@ -22,5 +22,9 @@ export default defineConfig({
       weights: [300, 400, 500, 600, 700],
       cssVariable: "--font-roboto"
     }]
+  },
+  i18n: {
+    locales: ["ru", "en"],
+    defaultLocale: "en"
   }
 });
