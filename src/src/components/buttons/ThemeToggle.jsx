@@ -1,3 +1,4 @@
+"use client"
 import "../../styles/global.css";
 import { useLayoutEffect, useState } from 'react'
 import { IoSunny } from "react-icons/io5";
