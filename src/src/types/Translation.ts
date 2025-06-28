@@ -1,8 +1,11 @@
 export interface Translation {
     index: {
-      greeting: string;
-      name: string;
-      position: string;
+      heading: {
+        greeting: string;
+        name: string;
+        position: string;
+      },
+      about: {}
     };
     header: {
       links: string[]

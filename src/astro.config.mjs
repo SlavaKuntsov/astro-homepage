@@ -6,6 +6,7 @@ import mdx from '@astrojs/mdx';
 import { fileURLToPath } from 'node:url';
 import { URL } from 'node:url';
 import { HOMEPAGE_URL } from './src/consts'; 
+import transitions from 'astro-transitions';
 
 export default defineConfig({
   site: HOMEPAGE_URL,
@@ -17,7 +18,7 @@ export default defineConfig({
       },
     },
   },
-  integrations: [react(), mdx()],
+  integrations: [react(), mdx(), transitions()],
   experimental: {
     fonts: [
       {

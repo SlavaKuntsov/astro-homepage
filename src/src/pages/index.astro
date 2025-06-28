@@ -6,6 +6,8 @@ import Body from "../components/Body.astro";
 import Main from "../components/Main.astro";
 import Footer from "../components/Footer.astro";
 import en from "../i18n/en";
+import Heading from "@/components/Heading.astro";
+import { IoLogoGithub, IoLogoInstagram, IoLogoTwitter } from "react-icons/io5";
 
 const t = en;
 ---
@@ -16,29 +18,50 @@ const t = en;
 	<Body>
 		<Header t={t} />
 		<Main>
-			<div class="logo h-80"></div>
-			<div
-				class="transition-colors duration-500 font-mplus text-lg px-6 py-3 backdrop-blur-3xl
-				bg-white/75 dark:bg-zinc-700/50 rounded-lg w-full"
-			>
-				<pre
-					class="mx-auto w-min h-full sm:text-lg text-base text-center sm:text-start"
-					set:html={t.index.greeting}
-				/>
-			</div>
-			<div class="flex flex-row justify-between gap-4 w-full">
-				<div class="flex flex-col items-start gap-6">
-					<h1
-						class="font-bold text-[2.5rem] leading-11 tracking-wide"
-					>
-						{t.index.name}
-					</h1>
-					<p class="text-xl">{t.index.position}</p>
-				</div>
-				<div
-					class="rounded-full min-w-36 min-h-36 bg-red-50 bg-[url(/images/ava2.jpg)] bg-contain bg-center bg-no-repeat
-					border-[3px] border-white dark:border-orange-100"
+			<Heading t={t} />
+			<div>
+				<h2
+					class="font-semibold text-2xl underline decoration-zinc-800 decoration-1 underline-offset-3 mb-4"
 				>
+					About Me
+				</h2>
+				<p class="text-[1.3rem]/6.5">
+					More than a year of experience in software development on
+					the platform.NET, including creating web applications,
+					desktop applications, and interacting with databases. I have
+					skills in requirements analysis, web system design,
+					object-oriented approach and database design. He worked in a
+					team. He is motivated to study business tasks and
+					effectively transform them into software solutions,
+					developing applications that meet the criteria for time,
+					scalability and performance.
+				</p>
+			</div>
+			<div>
+				<h2
+					class="font-semibold text-2xl underline decoration-zinc-800 decoration-1 underline-offset-3 mb-4"
+				>
+					On the web
+				</h2>
+				<div class="flex flex-col gap-2 items-start justify-center">
+					<a
+						href="https://github.com/SlavaKuntsov"
+						class="flex flex-row items-center justify-start gap-2 px-3 py-2 rounded-lg hover:bg-white transition-colors duration-[400ms]"
+						><IoLogoGithub className="text-2xl " />
+						<p class="text-lg font-semibold">@SlavaKuntsov</p>
+					</a>
+					<a
+						href="https://www.instagram.com/slava_kunz_"
+						class="flex flex-row items-center justify-start gap-2 px-3 py-2 rounded-lg hover:bg-white transition-colors duration-[400ms]"
+						><IoLogoInstagram className="text-2xl " />
+						<p class="text-lg font-semibold">@slava_kunz_</p>
+					</a>
+					<a
+						href="https://t.me/slava_kunz"
+						class="flex flex-row items-center justify-start gap-2 px-3 py-2 rounded-lg hover:bg-white transition-colors duration-[400ms]"
+						><IoLogoTwitter className="text-2xl " />
+						<p class="text-lg font-semibold">@slava_kunz</p>
+					</a>
 				</div>
 			</div>
 		</Main>
