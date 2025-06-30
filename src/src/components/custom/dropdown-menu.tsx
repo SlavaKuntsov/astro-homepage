@@ -10,8 +10,8 @@ import {
   DropdownMenuSeparator
 } from "../ui/dropdown-menu";
 import { IoMenu, IoLogoGithub } from "react-icons/io5";
-import ThemeToggle from "./ThemeToggle";
-import LanguageToggle from "./LanguageToggle";
+import ThemeToggle from "./theme-toggle";
+import LanguageToggle from "./language-toggle";
 
 interface DropdownMenuDemoProps {
   t: Translation;
@@ -28,7 +28,7 @@ export function DropdownMenuDemo({ t }: DropdownMenuDemoProps) {
         </button>
       </DropdownMenuTrigger>
 
-      <DropdownMenuContent className="w-72" align="end">
+      <DropdownMenuContent className="w-72 transition-colors duration-500" align="end">
         {/* <DropdownMenuLabel>Navigation</DropdownMenuLabel> */}
         <DropdownMenuGroup>
           <DropdownMenuItem>
@@ -42,13 +42,13 @@ export function DropdownMenuDemo({ t }: DropdownMenuDemoProps) {
             </a>
           </DropdownMenuItem>
           <DropdownMenuItem>
-            <a href="/about" className="block w-full h-full text-xl py-1 px-1">
+            <a href="/arts" className="block w-full h-full text-xl py-1 px-1">
               {t.header.links[2]}
             </a>
           </DropdownMenuItem>
           <DropdownMenuItem>
             <a href="https://github.com/SlavaKuntsov/astro-homepage" className="flex flex-row items-center gap-2 w-full h-full text-xl py-1 px-1">
-              <IoLogoGithub className="min-h-7 min-w-7" /> 
+              <IoLogoGithub className="min-h-7 min-w-7" />
               {t.header.links[3]}
             </a>
           </DropdownMenuItem>
