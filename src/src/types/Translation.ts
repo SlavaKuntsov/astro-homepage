@@ -5,7 +5,11 @@ export interface Translation {
         name: string;
         position: string;
       },
-      about: {}
+      main: {
+        h_about: string
+        about: string
+        h_web: string
+      }
     };
     header: {
       links: string[]

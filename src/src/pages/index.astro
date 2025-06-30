@@ -1,69 +1,26 @@
 ---
-import Header from "../components/Header.astro";
-import BaseHead from "../components/BaseHead.astro";
-import { SITE_DESCRIPTION, SITE_TITLE } from "../consts";
-import Body from "../components/Body.astro";
-import Main from "../components/Main.astro";
-import Footer from "../components/Footer.astro";
-import en from "../i18n/en";
-import Heading from "@/components/Heading.astro";
-import { IoLogoGithub, IoLogoInstagram, IoLogoTwitter } from "react-icons/io5";
+import Heading from '@/components/Heading.astro';
+import { IoLogoGithub, IoLogoInstagram, IoLogoTwitter } from 'react-icons/io5';
+import BaseHead from '../components/BaseHead.astro';
+import Body from '../components/Body.astro';
+import Footer from '../components/Footer.astro';
+import Header from '../components/Header.astro';
+import Main from '../components/Main.astro';
+import { SITE_DESCRIPTION, SITE_TITLE } from '../consts';
+import en from '../i18n/en';
+import MainContent from '@/components/MainContent.astro';
 
 const t = en;
 ---
 
 <!doctype html>
-<html lang="en">
+<html lang='en'>
 	<BaseHead title={SITE_TITLE} description={SITE_DESCRIPTION} />
 	<Body>
 		<Header t={t} />
 		<Main>
 			<Heading t={t} />
-			<div>
-				<h2
-					class="font-semibold text-2xl underline decoration-zinc-800 decoration-1 underline-offset-3 mb-4"
-				>
-					About Me
-				</h2>
-				<p class="text-[1.3rem]/6.5">
-					More than a year of experience in software development on
-					the platform.NET, including creating web applications,
-					desktop applications, and interacting with databases. I have
-					skills in requirements analysis, web system design,
-					object-oriented approach and database design. He worked in a
-					team. He is motivated to study business tasks and
-					effectively transform them into software solutions,
-					developing applications that meet the criteria for time,
-					scalability and performance.
-				</p>
-			</div>
-			<div>
-				<h2
-					class="font-semibold text-2xl underline decoration-zinc-800 decoration-1 underline-offset-3 mb-4"
-				>
-					On the web
-				</h2>
-				<div class="flex flex-col gap-2 items-start justify-center">
-					<a
-						href="https://github.com/SlavaKuntsov"
-						class="flex flex-row items-center justify-start gap-2 px-3 py-2 rounded-lg hover:bg-white transition-colors duration-[400ms]"
-						><IoLogoGithub className="text-2xl " />
-						<p class="text-lg font-semibold">@SlavaKuntsov</p>
-					</a>
-					<a
-						href="https://www.instagram.com/slava_kunz_"
-						class="flex flex-row items-center justify-start gap-2 px-3 py-2 rounded-lg hover:bg-white transition-colors duration-[400ms]"
-						><IoLogoInstagram className="text-2xl " />
-						<p class="text-lg font-semibold">@slava_kunz_</p>
-					</a>
-					<a
-						href="https://t.me/slava_kunz"
-						class="flex flex-row items-center justify-start gap-2 px-3 py-2 rounded-lg hover:bg-white transition-colors duration-[400ms]"
-						><IoLogoTwitter className="text-2xl " />
-						<p class="text-lg font-semibold">@slava_kunz</p>
-					</a>
-				</div>
-			</div>
+			<MainContent t={t} />
 		</Main>
 		<Footer />
 	</Body>

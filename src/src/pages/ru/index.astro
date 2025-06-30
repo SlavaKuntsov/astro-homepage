@@ -7,6 +7,7 @@ import Main from "../../components/Main.astro";
 import Footer from "../../components/Footer.astro";
 import ru from "../../i18n/ru";
 import Heading from "@/components/Heading.astro";
+import MainContent from "@/components/MainContent.astro";
 
 const t = ru;
 ---
@@ -18,6 +19,7 @@ const t = ru;
 		<Header t={t} />
 		<Main>
 			<Heading t={t} />
+			<MainContent t={t} />
 		</Main>
 		<Footer />
 	</Body>
