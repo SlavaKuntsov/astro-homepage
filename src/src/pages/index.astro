@@ -1,14 +1,13 @@
 ---
+import Footer from '@/components/Footer.astro';
+import Header from '@/components/Header.astro';
 import Heading from '@/components/Heading.astro';
-import { IoLogoGithub, IoLogoInstagram, IoLogoTwitter } from 'react-icons/io5';
-import BaseHead from '../components/BaseHead.astro';
-import Body from '../components/Body.astro';
-import Footer from '../components/Footer.astro';
-import Header from '../components/Header.astro';
-import Main from '../components/Main.astro';
-import { SITE_DESCRIPTION, SITE_TITLE } from '../consts';
-import en from '../i18n/en';
 import MainContent from '@/components/MainContent.astro';
+import { SITE_TITLE, SITE_DESCRIPTION } from '@/consts';
+import en from '@/i18n/en';
+import BaseHead from '@/layouts/BaseHead.astro';
+import Body from '@/layouts/Body.astro';
+import Main from '@/layouts/Main.astro';
 
 const t = en;
 ---

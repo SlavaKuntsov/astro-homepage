@@ -11,33 +11,36 @@ const { t }: Props = Astro.props;
 
 <div class='relative w-full flex items-center justify-center min-h-[290px]'>
 	<div
-		class='absolute left-16 sm:left-24 top-0 h-full w-28 pointer-events-none z-10 bg-gradient-to-r from-orange-75 dark:from-zinc-850 via-orange-75 dark:via-zinc-850 to-100% blur-xs transition-colors duration-500'
+		class='absolute left-8 sm:left-24 top-0 h-full w-34 sm:w-28 pointer-events-none z-10 bg-gradient-to-r from-orange-75 dark:from-zinc-850 via-orange-75 dark:via-zinc-850 to-100% blur-xs transition-colors duration-500'
 	>
 	</div>
 	<div
-		class='absolute right-16 sm:right-24 top-0 h-full w-28 pointer-events-none z-10 bg-gradient-to-l from-orange-75 dark:from-zinc-850 via-orange-75 dark:via-zinc-850 to-100% blur-xs transition-colors duration-500'
+		class='absolute right-8 sm:right-24 top-0 h-full w-34 sm:w-28 pointer-events-none z-10 bg-gradient-to-l from-orange-75 dark:from-zinc-850 via-orange-75 dark:via-zinc-850 to-100% blur-xs transition-colors duration-500'
 	>
 	</div>
 	<Carousel client:load />
 </div>
 <div
-	class='transition-colors duration-500 font-mplus px-2 sm:px-6 py-4 sm:py-3 backdrop-blur-3xl
-    bg-white/75 dark:bg-zinc-700/50 rounded-lg w-full'
+	class='transition-colors duration-500 font-mplus px-2 py-3 backdrop-blur-3xl bg-white/75 dark:bg-zinc-700/50 rounded-lg w-full'
 >
 	<pre
-		class='mx-auto w-min h-full sm:text-lg text-base text-center sm:text-start'
+		class='mx-auto w-full text-lg text-center sm:text-center whitespace-pre-wrap break-words'
 		set:html={t.index.heading.greeting}
 	/>
 </div>
-<div class='flex flex-col sm:flex-row items-center sm:items-start sm:justify-between gap-4 w-full'>
-	<div class='flex flex-col w-full sm:w-fit sm:h-full items-start gap-2 sm:gap-4'>
+<div
+	class='flex flex-col sm:flex-row items-center sm:items-start sm:justify-between gap-4 w-full'
+>
+	<div
+		class='flex flex-col w-full sm:w-fit sm:h-full items-start gap-2 sm:gap-4'
+	>
 		<h1 class='font-bold text-[2.5rem] leading-11 tracking-wide'>
 			{t.index.heading.name}
 		</h1>
 		<p class='text-xl'>{t.index.heading.position}</p>
 	</div>
 	<div
-		class='rounded-full min-w-36 max-w-36 min-h-36 max-h-36 bg-red-50 bg-[url(/images/ava2.jpg)]  bg-contain bg-center bg-no-repeat border-[3px] border-white dark:border-orange-100'
+		class='rounded-full min-w-36 max-w-36 min-h-36 max-h-36 bg-red-50 bg-[url(/images/ava2.jpg)] bg-contain bg-center bg-no-repeat border-[3px] border-white dark:border-orange-100'
 	>
 	</div>
 </div>
