@@ -78,9 +78,10 @@ Fall back to grep/glob/read only when `.codegraph/` is absent.
 
 ## Layout note
 
-The Astro project currently nests one level down (you may see `src/src/`): the repo
-is mid-flatten and Ticket #2 moves the project files to the repo root. Treat the
-repo root as the intended project root.
+The repo is flat: the Astro project files (`package.json`, `astro.config.mjs`,
+`tsconfig.json`, `src/`, `public/`) live at the repo root alongside `docs/`,
+`GLOSSARY.md`, and `AGENTS.md`. There is no nested project directory. This repo
+uses **pnpm**; build approvals for native deps live in `pnpm-workspace.yaml`.
 
 ## Commands
 
