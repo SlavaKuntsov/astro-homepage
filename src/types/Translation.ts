@@ -9,6 +9,10 @@ export interface Translation {
 		switchToDarkTheme: string;
 		switchToLightTheme: string;
 	};
+	site: {
+		/** The owner's name as written in this Locale. */
+		ownerName: string;
+	};
 	nav: {
 		home: string;
 		works: string;

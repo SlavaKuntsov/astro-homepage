@@ -46,39 +46,101 @@ test('the header and footer survive a View Transition', async ({ page }) => {
 	);
 });
 
-test.describe('fonts', () => {
-	test('preload with a woff2 MIME type and apply the intended families', async ({
-		page,
-	}) => {
-		await page.goto('/');
-		await page.evaluate(() => document.fonts.ready);
+test('cross-Locale navigation replaces the persisted chrome', async ({
+	page,
+}) => {
+	await page.goto('/');
 
-		const preloads = await page
-			.locator('link[rel="preload"][as="font"]')
-			.evaluateAll(links => links.map(link => link.getAttribute('type') ?? ''));
+	await page.evaluate(() => {
+		(window as unknown as { __clientNavigation: boolean }).__clientNavigation =
+			true;
+		document.querySelector('header')?.setAttribute('data-persisted', 'old');
 
-		expect(preloads.length).toBeGreaterThan(0);
-		for (const type of preloads) {
-			expect(type).toBe('font/woff2');
-		}
-
-		expect(await page.evaluate(() => document.fonts.check('16px Inter'))).toBe(
-			true
-		);
-		expect(
-			await page.evaluate(() => document.fonts.check('600 24px Comfortaa'))
-		).toBe(true);
-
-		const bodyFamily = await page.evaluate(
-			() => getComputedStyle(document.body).fontFamily
-		);
-		const headingFamily = await page.evaluate(
-			() => getComputedStyle(document.querySelector('h1')!).fontFamily
-		);
-
-		expect(bodyFamily).toContain('Inter');
-		expect(headingFamily).toContain('Comfortaa');
+		// Simulate the server-rendered Locale switcher that #6 will add: a
+		// same-origin link the ClientRouter intercepts.
+		const link = document.createElement('a');
+		link.id = 'cross-locale-link';
+		link.href = '/ru/';
+		link.textContent = 'RU';
+		document.body.append(link);
 	});
+
+	await page.locator('#cross-locale-link').click();
+	await page.waitForURL('**/ru/');
+
+	// The window survives a client-side navigation, so this also proves the
+	// router (not a full reload) performed the swap.
+	expect(
+		await page.evaluate(
+			() =>
+				(window as unknown as { __clientNavigation?: boolean })
+					.__clientNavigation
+		)
+	).toBe(true);
+
+	// The old Header must not survive: its localized labels are now wrong.
+	await expect(page.locator('header')).not.toHaveAttribute(
+		'data-persisted',
+		'old'
+	);
+	await expect(page.getByRole('navigation').first()).toContainText('Главная');
+	await expect(page.locator('[data-theme-toggle]')).toHaveAttribute(
+		'aria-label',
+		'Включить тёмную тему'
+	);
+});
+
+test.describe('fonts', () => {
+	for (const path of ['/', '/ru/']) {
+		test(`${path} preloads only its woff2 subsets and applies the families`, async ({
+			page,
+		}) => {
+			await page.goto(path);
+			await page.evaluate(() => document.fonts.ready);
+
+			const lang = await page.locator('html').getAttribute('lang');
+			const preloads = await page
+				.locator('link[rel="preload"][as="font"]')
+				.evaluateAll(links =>
+					links.map(link => link.getAttribute('type') ?? '')
+				);
+
+			// Two families × one normal face for EN; plus the Cyrillic faces for RU.
+			expect(preloads).toHaveLength(lang === 'ru' ? 4 : 2);
+			for (const type of preloads) {
+				expect(type).toBe('font/woff2');
+			}
+
+			const faces = await page.evaluate(() =>
+				Array.from(document.fonts).map(face => ({
+					family: face.family,
+					status: face.status,
+					unicodeRange: face.unicodeRange,
+				}))
+			);
+			const loaded = faces.filter(face => face.status === 'loaded');
+
+			expect(loaded.some(face => face.family.startsWith('Comfortaa'))).toBe(
+				true
+			);
+			expect(loaded.some(face => face.family.startsWith('Inter'))).toBe(true);
+
+			// The RU page paints Cyrillic, so its Cyrillic subsets must load too.
+			expect(loaded.some(face => /U\+0?400/i.test(face.unicodeRange))).toBe(
+				lang === 'ru'
+			);
+
+			const bodyFamily = await page.evaluate(
+				() => getComputedStyle(document.body).fontFamily
+			);
+			const headingFamily = await page.evaluate(
+				() => getComputedStyle(document.querySelector('h1')!).fontFamily
+			);
+
+			expect(bodyFamily).toContain('Inter');
+			expect(headingFamily).toContain('Comfortaa');
+		});
+	}
 
 	test('do not shift the layout when they load', async ({ page }) => {
 		await page.addInitScript(() => {
@@ -144,6 +206,26 @@ test.describe('the mobile menu', () => {
 		await expect(page.getByRole('navigation')).toBeVisible();
 
 		await page.keyboard.press('Escape');
+
+		await expect(page.getByRole('navigation')).toHaveCount(0);
+	});
+});
+
+test.describe('the mobile menu without JavaScript', () => {
+	test.use({
+		viewport: { width: 390, height: 844 },
+		javaScriptEnabled: false,
+	});
+
+	test('opens and navigates through native <details>', async ({ page }) => {
+		await page.goto('/');
+		await page.locator('[data-mobile-menu-trigger]').click();
+
+		const mobileNav = page.getByRole('navigation');
+		await expect(mobileNav).toBeVisible();
+
+		await mobileNav.locator('a[href$="/arts"]').click();
+		await page.waitForURL('**/arts');
 
 		await expect(page.getByRole('navigation')).toHaveCount(0);
 	});

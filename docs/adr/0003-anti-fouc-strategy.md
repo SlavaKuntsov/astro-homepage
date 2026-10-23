@@ -22,12 +22,18 @@ the flash, making it more visible.
    resolves the locale.
 4. **View Transitions**: keep `ClientRouter` with `transition:persist` on the
    header/footer. The `<html>` element and its `data-theme` attribute survive
-   swaps, so theme is not re-resolved on navigation.
+   swaps, so theme is not re-resolved on navigation. The persist keys include
+   the Locale (`site-header-<lang>` / `site-footer-<lang>`): same-Locale
+   navigation keeps the chrome, while a Locale switch replaces it with the
+   other Locale's server-rendered labels.
 
 ## Consequences
 
 - Theme is correct on the very first frame; locale never flashes.
 - `data-theme` (not a `.dark` class) becomes the canonical theme hook in CSS.
 - The theme toggle must read its initial state from the DOM, never recompute it.
+- The persisted shell must not cache a stale DOM node: scripts re-query the
+  current header/menu after a swap, because a cross-Locale navigation may have
+  replaced it.
 - A Playwright test asserts there is no wrong-theme frame on load and navigation
   (ADR-0006 / testing decisions in the spec).

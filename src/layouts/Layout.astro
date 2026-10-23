@@ -30,8 +30,9 @@ const t: Translation = lang === 'ru' ? ru : en;
 	<body class='flex min-h-dvh flex-col bg-background text-foreground'>
 		<a class='skip-link' href='#main'>{t.a11y.skipToContent}</a>
 
-		<!-- Persisted across View Transitions: navigation must not re-render them. -->
-		<Header t={t} />
+		<!-- Persisted per Locale: same-Locale navigation keeps them, a Locale
+		     switch replaces them with the correct server-rendered labels. -->
+		<Header t={t} persistKey={`site-header-${lang}`} />
 
 		<main
 			id='main'
@@ -40,6 +41,6 @@ const t: Translation = lang === 'ru' ? ru : en;
 			<slot />
 		</main>
 
-		<Footer t={t} />
+		<Footer t={t} persistKey={`site-footer-${lang}`} />
 	</body>
 </html>

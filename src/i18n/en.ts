@@ -11,6 +11,9 @@ const en: Translation = {
 		switchToDarkTheme: 'Switch to dark theme',
 		switchToLightTheme: 'Switch to light theme',
 	},
+	site: {
+		ownerName: 'Sviataslau Kuntsou',
+	},
 	nav: {
 		home: 'Home',
 		works: 'Works',

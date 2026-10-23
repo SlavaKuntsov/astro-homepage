@@ -4,21 +4,29 @@ import type { Translation } from '@/types/Translation';
 
 interface Props {
 	t: Translation;
+	/** Persist keys are Locale-scoped so cross-Locale navigation re-renders. */
+	persistKey: string;
 }
 
-const { t }: Props = Astro.props;
+const { t, persistKey }: Props = Astro.props;
 const year = new Date().getFullYear();
 ---
 
-<!-- Persisted like the Header; its localized copy needs the same full-navigation
-     Locale switch documented in Header.astro (#6). -->
-<footer class='border-t border-border/70 bg-background' transition:persist>
+<!--
+	Persisted across View Transitions within a Locale. The key includes the
+	Locale, so crossing Locales replaces the footer copy instead of keeping
+	the previous Locale's text (ADR-0003).
+-->
+<footer
+	class='border-t border-border/70 bg-background'
+	transition:persist={persistKey}
+>
 	<div
 		class='mx-auto flex w-full max-w-content flex-col gap-6 px-gutter py-10 text-sm sm:flex-row sm:items-center sm:justify-between'
 	>
 		<div class='space-y-1'>
 			<p class='font-heading text-base font-semibold text-foreground'>
-				{t.index.heading.name}
+				{t.site.ownerName}
 			</p>
 			<p class='text-muted-foreground'>
 				&copy; {year} &middot; {t.footer.builtWithAstro}

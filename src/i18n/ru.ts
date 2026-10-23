@@ -11,6 +11,9 @@ const ru: Translation = {
 		switchToDarkTheme: 'Включить тёмную тему',
 		switchToLightTheme: 'Включить светлую тему',
 	},
+	site: {
+		ownerName: 'Кунцов Святослав',
+	},
 	nav: {
 		home: 'Главная',
 		works: 'Работы',

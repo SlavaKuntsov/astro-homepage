@@ -1,5 +1,4 @@
 ---
-import { SITE_TITLE } from '@/consts';
 import type { NavItem } from '@/lib/nav';
 import type { Translation } from '@/types/Translation';
 import NavLinks from './NavLinks.astro';
@@ -7,9 +6,11 @@ import ThemeToggle from './ThemeToggle.astro';
 
 interface Props {
 	t: Translation;
+	/** Persist keys are Locale-scoped so cross-Locale navigation re-renders. */
+	persistKey: string;
 }
 
-const { t }: Props = Astro.props;
+const { t, persistKey }: Props = Astro.props;
 
 const links: NavItem[] = [
 	{ href: '/', label: t.nav.home },
@@ -24,14 +25,14 @@ const links: NavItem[] = [
 ---
 
 <!--
-	Persisted across View Transitions (ticket #5). A persisted element keeps its
-	DOM, including these localized labels: the Locale switcher (#6) must perform
-	a full navigation (`data-astro-reload`) or the labels would go stale.
+	Persisted across View Transitions within a Locale. The key includes the
+	Locale, so crossing Locales replaces the chrome with the server-rendered
+	labels for the new Locale rather than keeping stale text (ADR-0003).
 -->
 <header
 	class='sticky top-0 z-50 border-b border-border/70 bg-background/85 backdrop-blur-md'
 	data-site-header
-	transition:persist
+	transition:persist={persistKey}
 >
 	<div
 		class='mx-auto flex h-16 w-full max-w-content items-center justify-between gap-4 px-gutter'
@@ -39,7 +40,7 @@ const links: NavItem[] = [
 		<a
 			href='/'
 			class='inline-flex items-center font-heading text-xl font-semibold tracking-tight text-foreground'
-			aria-label={SITE_TITLE}
+			aria-label={`SK — ${t.site.ownerName}`}
 		>
 			SK<span class='text-primary' aria-hidden='true'>.</span>
 		</a>
@@ -97,10 +98,11 @@ const links: NavItem[] = [
 <script>
 	import { isActivePath } from '@/lib/nav';
 
-	const menu = document.querySelector<HTMLDetailsElement>('[data-mobile-menu]');
-	const trigger = menu?.querySelector<HTMLElement>(
-		'[data-mobile-menu-trigger]'
-	);
+	const currentMenu = () =>
+		document.querySelector<HTMLDetailsElement>('[data-mobile-menu]');
+
+	const menuTrigger = (menu: HTMLDetailsElement) =>
+		menu.querySelector<HTMLElement>('[data-mobile-menu-trigger]');
 
 	/** The persisted header does not re-render, so re-derive the active link. */
 	const syncActiveLinks = () => {
@@ -121,37 +123,56 @@ const links: NavItem[] = [
 		);
 	};
 
-	const syncMenuLabel = () => {
-		const label = menu?.open
+	const syncMenuLabel = (menu: HTMLDetailsElement) => {
+		const trigger = menuTrigger(menu);
+		const label = menu.open
 			? trigger?.dataset.labelClose
 			: trigger?.dataset.labelOpen;
 		if (label) trigger?.setAttribute('aria-label', label);
 	};
 
-	if (menu) {
-		menu.addEventListener('toggle', syncMenuLabel);
+	/**
+	 * The header is replaced when the Locale changes (the persist key is
+	 * Locale-scoped), so bind per menu element rather than holding the initial
+	 * one. A persisted menu keeps its binding.
+	 */
+	const bindMenu = () => {
+		const menu = currentMenu();
+		if (!menu || menu.dataset.menuBound) return;
+
+		menu.dataset.menuBound = 'true';
+		menu.addEventListener('toggle', () => syncMenuLabel(menu));
 		// A link tap is a navigation: do not leave the panel open behind it.
 		menu.addEventListener('click', event => {
 			if ((event.target as Element | null)?.closest('a')) menu.open = false;
 		});
+		syncMenuLabel(menu);
+	};
 
-		document.addEventListener('keydown', event => {
-			if (event.key !== 'Escape' || !menu.open) return;
-			menu.open = false;
-			trigger?.focus();
-		});
+	document.addEventListener('keydown', event => {
+		const menu = currentMenu();
+		if (event.key !== 'Escape' || !menu?.open) return;
 
-		document.addEventListener('click', event => {
-			if (menu.open && !menu.contains(event.target as Node)) menu.open = false;
-		});
-	}
+		menu.open = false;
+		menuTrigger(menu)?.focus();
+	});
+
+	document.addEventListener('click', event => {
+		const menu = currentMenu();
+		if (menu?.open && !menu.contains(event.target as Node)) menu.open = false;
+	});
 
 	document.addEventListener('astro:after-swap', () => {
+		const menu = currentMenu();
 		if (menu) menu.open = false;
+		bindMenu();
 		syncActiveLinks();
 	});
-	document.addEventListener('astro:page-load', syncActiveLinks);
+	document.addEventListener('astro:page-load', () => {
+		bindMenu();
+		syncActiveLinks();
+	});
 
-	syncMenuLabel();
+	bindMenu();
 	syncActiveLinks();
 </script>
