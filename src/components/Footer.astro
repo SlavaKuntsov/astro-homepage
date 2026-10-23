@@ -18,17 +18,19 @@ const year = new Date().getFullYear();
 	the previous Locale's text (ADR-0003).
 -->
 <footer
-	class='border-t border-border/70 bg-background'
+	class='border-t border-border/70 bg-background transition-colors'
 	transition:persist={persistKey}
 >
 	<div
 		class='mx-auto flex w-full max-w-content flex-col gap-6 px-gutter py-10 text-sm sm:flex-row sm:items-center sm:justify-between'
 	>
 		<div class='space-y-1'>
-			<p class='font-heading text-base font-semibold text-foreground'>
+			<p
+				class='font-heading text-base font-semibold text-foreground transition-colors'
+			>
 				{t.site.ownerName}
 			</p>
-			<p class='text-muted-foreground'>
+			<p class='text-muted-foreground transition-colors'>
 				&copy; {year} &middot; {t.footer.builtWithAstro}
 			</p>
 		</div>

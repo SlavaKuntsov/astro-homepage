@@ -30,7 +30,7 @@ const links: NavItem[] = [
 	labels for the new Locale rather than keeping stale text (ADR-0003).
 -->
 <header
-	class='sticky top-0 z-50 border-b border-border/70 bg-background/85 backdrop-blur-md'
+	class='sticky top-0 z-50 border-b border-border/70 bg-background/85 backdrop-blur-md transition-colors'
 	data-site-header
 	transition:persist={persistKey}
 >
@@ -39,10 +39,10 @@ const links: NavItem[] = [
 	>
 		<a
 			href='/'
-			class='inline-flex items-center font-heading text-xl font-semibold tracking-tight text-foreground'
+			class='inline-flex items-center font-heading text-xl font-semibold tracking-tight text-foreground transition-colors'
 			aria-label={`SK — ${t.site.ownerName}`}
 		>
-			SK<span class='text-primary' aria-hidden='true'>.</span>
+			SK<span class='text-primary transition-colors' aria-hidden='true'>.</span>
 		</a>
 
 		<nav
@@ -81,7 +81,7 @@ const links: NavItem[] = [
 				</summary>
 
 				<div
-					class='absolute right-0 top-full mt-3 w-64 rounded-2xl border border-border bg-card p-2 shadow-xl'
+					class='absolute right-0 top-full mt-3 w-64 rounded-2xl border border-border bg-card p-2 shadow-xl transition-colors'
 				>
 					<nav aria-label={t.a11y.mobileNavigation} class='flex flex-col gap-1'>
 						<NavLinks links={links} class='px-3 py-2.5' />

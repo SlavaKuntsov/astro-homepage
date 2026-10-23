@@ -135,6 +135,71 @@ test.describe('color transitions are gated until the Theme is settled', () => {
 	});
 });
 
+test.describe('the Theme transition is synchronized', () => {
+	test('the background, shell, and controls share one duration and easing', async ({
+		page,
+	}) => {
+		await page.goto('/');
+		await page.waitForSelector('html.theme-ready');
+
+		const styles = await page.evaluate(() => {
+			const normalize = (value: string) =>
+				[...new Set(value.split(',').map(part => part.trim()))].sort();
+
+			const read = (selector: string) => {
+				const style = getComputedStyle(document.querySelector(selector)!);
+				return {
+					durations: normalize(style.transitionDuration),
+					easings: normalize(style.transitionTimingFunction),
+				};
+			};
+
+			return {
+				body: read('body'),
+				header: read('header'),
+				footer: read('footer'),
+				toggle: read('[data-theme-toggle]'),
+				heroFade: read('[data-hero-fade]'),
+			};
+		});
+
+		expect(styles.body.durations).toEqual(['0.3s']);
+		expect(styles.body.easings).toEqual(['ease']);
+
+		for (const target of Object.values(styles)) {
+			expect(target.durations).toEqual(styles.body.durations);
+			expect(target.easings).toEqual(styles.body.easings);
+		}
+	});
+
+	test('the hero edge fade tracks the background while the Theme changes', async ({
+		page,
+	}) => {
+		await page.goto('/');
+		await page.waitForSelector('html.theme-ready');
+
+		// Slow the transition down so the mid-state is observable.
+		await page.addStyleTag({
+			content: `html.theme-ready body,
+				html.theme-ready [data-hero-fade] {
+					transition-duration: 1s !important;
+					transition-timing-function: ease !important;
+				}`,
+		});
+
+		await page.getByRole('button', { name: /dark theme/i }).click();
+		await page.waitForTimeout(400);
+
+		const colors = await page.evaluate(() => ({
+			body: getComputedStyle(document.body).backgroundColor,
+			fade: getComputedStyle(document.querySelector('[data-hero-fade]')!)
+				.backgroundColor,
+		}));
+
+		expect(colors.fade).toBe(colors.body);
+	});
+});
+
 test.describe('the ThemeToggle', () => {
 	test('persists the Theme across reload and client-side navigation', async ({
 		page,

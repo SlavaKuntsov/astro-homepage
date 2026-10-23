@@ -11,17 +11,21 @@ const { t }: Props = Astro.props;
 
 <div class='relative w-full flex items-center justify-center min-h-[290px]'>
 	<div
-		class='absolute left-6 sm:left-24 top-0 h-full w-38 sm:w-28 pointer-events-none z-10 bg-gradient-to-r from-background via-background to-100% blur-xs transition-colors duration-500'
+		class='hero-fade absolute left-6 sm:left-24 top-0 h-full w-38 sm:w-28 pointer-events-none z-10'
+		data-hero-fade='left'
+		aria-hidden='true'
 	>
 	</div>
 	<div
-		class='absolute right-6 sm:right-24 top-0 h-full w-38 sm:w-28 pointer-events-none z-10 bg-gradient-to-l from-background via-background to-100% blur-xs transition-colors duration-500'
+		class='hero-fade hero-fade-right absolute right-6 sm:right-24 top-0 h-full w-38 sm:w-28 pointer-events-none z-10'
+		data-hero-fade='right'
+		aria-hidden='true'
 	>
 	</div>
 	<Carousel client:load />
 </div>
 <div
-	class='transition-colors duration-500 px-2 py-3 backdrop-blur-3xl bg-card/75 rounded-lg w-full'
+	class='transition-colors px-2 py-3 backdrop-blur-3xl bg-card/75 rounded-lg w-full'
 >
 	<p
 		class='mx-auto w-full text-lg text-center whitespace-pre-wrap break-words'
@@ -40,7 +44,7 @@ const { t }: Props = Astro.props;
 		<p class='text-xl'>{t.index.heading.position}</p>
 	</div>
 	<div
-		class='rounded-full min-w-36 max-w-36 min-h-36 max-h-36 bg-muted bg-[url(/images/ava2.jpg)] bg-contain bg-center bg-no-repeat border-[3px] border-card'
+		class='rounded-full min-w-36 max-w-36 min-h-36 max-h-36 bg-muted bg-[url(/images/ava2.jpg)] bg-contain bg-center bg-no-repeat border-[3px] border-card transition-colors'
 	>
 	</div>
 </div>
