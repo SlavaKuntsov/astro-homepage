@@ -9,8 +9,7 @@ import {
   DropdownMenuTrigger,
   DropdownMenuSeparator
 } from "../ui/dropdown-menu";
-import { IoMenu, IoLogoGithub } from "react-icons/io5";
-import ThemeToggle from "./theme-toggle";
+import { IoMenu, IoLogoGithub, IoSunny, IoMoon } from "react-icons/io5";
 import LanguageToggle from "./language-toggle";
 
 interface DropdownMenuDemoProps {
@@ -56,7 +55,18 @@ export function DropdownMenuDemo({ t }: DropdownMenuDemoProps) {
 
         <DropdownMenuSeparator />
         <div className="flex flex-row gap-4 items-center justify-between px-1 py-0">
-          <ThemeToggle />
+          {/* A plain button, not a React Theme island: the vanilla ThemeToggle
+              script binds it through `data-theme-toggle` (ADR-0002/0003). This
+              file is removed wholesale in #14. */}
+          <button
+            type="button"
+            className="theme-toggle inline-flex cursor-pointer items-center justify-center rounded-3xl bg-orange-300 p-2 transition-colors duration-500 hover:bg-orange-400/80 dark:bg-zinc-600 dark:hover:bg-zinc-500"
+            data-theme-toggle=""
+            aria-label="Switch theme"
+          >
+            <IoSunny className="theme-toggle__sun" />
+            <IoMoon className="theme-toggle__moon" />
+          </button>
           <LanguageToggle />
         </div>
 
