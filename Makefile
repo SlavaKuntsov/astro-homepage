@@ -2,7 +2,7 @@
 # Run `make` (or `make help`) to list the available targets.
 
 .DEFAULT_GOAL := help
-.PHONY: help install dev build preview astro clean
+.PHONY: help install dev build preview astro check test test-e2e clean
 
 help: ## Show this help
 	@echo "Usage: make <target>"
@@ -24,6 +24,15 @@ preview: ## Preview the production build
 
 astro: ## Run the Astro CLI, e.g. make astro ARGS="add mdx"
 	pnpm astro $(ARGS)
+
+check: ## Typecheck the project (astro check)
+	pnpm check
+
+test: ## Run the Vitest unit suite
+	pnpm test
+
+test-e2e: ## Build, then run Playwright against the preview
+	pnpm test:e2e
 
 clean: ## Remove build output and caches (dist/, .astro/, node_modules/)
 	rm -rf dist .astro node_modules

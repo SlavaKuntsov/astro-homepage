@@ -25,5 +25,11 @@ pnpm-debug.log*
 # jetbrains setting folder
 .idea/
 
+# Playwright
+test-results/
+playwright-report/
+blob-report/
+playwright/.cache/
+
 # CodeGraph local index (machine-local, not for committing)
 .codegraph/
