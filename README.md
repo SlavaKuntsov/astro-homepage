@@ -18,5 +18,8 @@ pnpm build     # production build to ./dist/
 pnpm preview   # preview the production build
 ```
 
+The same commands are wrapped in the `Makefile` — run `make` (or `make help`) to
+list them, e.g. `make dev`, `make build`.
+
 Uses **pnpm** (pinned in `package.json`). Build approvals for native dependencies
 live in `pnpm-workspace.yaml`.
