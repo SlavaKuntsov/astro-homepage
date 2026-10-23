@@ -1,0 +1,46 @@
+---
+import { THEME_INIT_SCRIPT } from '@/lib/theme';
+---
+
+<!--
+	The Anti-FOUC script (ADR-0003): inline and blocking, so the Theme is settled
+	before the first paint. Rendered inside <head>.
+-->
+<script is:inline set:html={THEME_INIT_SCRIPT}></script>
+
+<!--
+	Bookkeeping that must not run before the inline script: it enables color
+	transitions after load and carries the Theme across client-side navigations.
+	This is a bundled script, not inline, so it cannot run before the Anti-FOUC
+	script.
+-->
+<script>
+	import { THEME_ATTRIBUTE, THEME_READY_CLASS } from '@/lib/theme';
+
+	const root = document.documentElement;
+
+	// Color transitions stay disabled until the page has loaded, so the initial
+	// paint never animates (ADR-0003).
+	const markReady = () => root.classList.add(THEME_READY_CLASS);
+	if (document.readyState === 'complete') {
+		markReady();
+	} else {
+		window.addEventListener('load', markReady, { once: true });
+	}
+
+	// The ClientRouter rebuilds `<html>` from the fetched document, which carries
+	// neither `data-theme` nor `color-scheme`: carry the settled Theme into the
+	// incoming document so a navigation cannot flash the wrong Theme.
+	document.addEventListener('astro:before-swap', event => {
+		const { newDocument } = event as Event & { newDocument: Document };
+		const theme = root.getAttribute(THEME_ATTRIBUTE);
+
+		if (theme) {
+			newDocument.documentElement.setAttribute(THEME_ATTRIBUTE, theme);
+			newDocument.documentElement.style.colorScheme = theme;
+		}
+		if (root.classList.contains(THEME_READY_CLASS)) {
+			newDocument.documentElement.classList.add(THEME_READY_CLASS);
+		}
+	});
+</script>

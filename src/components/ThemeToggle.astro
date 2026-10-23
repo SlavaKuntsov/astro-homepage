@@ -1,0 +1,98 @@
+---
+// A server-rendered, vanilla Theme toggle (ADR-0002). The markup carries no
+// Theme state: the tiny script reads `data-theme` from the DOM — set before
+// first paint by the Anti-FOUC script — and only flips it. It never recomputes
+// the Theme from `localStorage` or `prefers-color-scheme` (ADR-0003).
+---
+
+<button
+	type='button'
+	class='theme-toggle inline-flex cursor-pointer items-center justify-center rounded-3xl bg-orange-300 p-2 transition-colors duration-500 hover:bg-orange-400/80 dark:bg-zinc-600 dark:hover:bg-zinc-500'
+	data-theme-toggle
+	aria-label='Switch theme'
+>
+	<svg
+		class='theme-toggle__sun'
+		viewBox='0 0 24 24'
+		width='18'
+		height='18'
+		fill='none'
+		stroke='currentColor'
+		stroke-width='2'
+		stroke-linecap='round'
+		stroke-linejoin='round'
+		aria-hidden='true'
+	>
+		<circle cx='12' cy='12' r='4'></circle>
+		<path
+			d='M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41'
+		></path>
+	</svg>
+	<svg
+		class='theme-toggle__moon'
+		viewBox='0 0 24 24'
+		width='18'
+		height='18'
+		fill='none'
+		stroke='currentColor'
+		stroke-width='2'
+		stroke-linecap='round'
+		stroke-linejoin='round'
+		aria-hidden='true'
+	>
+		<path d='M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z'></path>
+	</svg>
+</button>
+
+<script>
+	import { THEME_ATTRIBUTE, THEME_STORAGE_KEY } from '@/lib/theme';
+	import type { Theme } from '@/lib/theme';
+
+	const root = document.documentElement;
+
+	const currentTheme = (): Theme =>
+		root.getAttribute(THEME_ATTRIBUTE) === 'dark' ? 'dark' : 'light';
+
+	const syncToggles = () => {
+		const isDark = currentTheme() === 'dark';
+		document
+			.querySelectorAll<HTMLElement>('[data-theme-toggle]')
+			.forEach(toggle => {
+				toggle.setAttribute('aria-pressed', String(isDark));
+				toggle.setAttribute(
+					'aria-label',
+					isDark ? 'Switch to light theme' : 'Switch to dark theme'
+				);
+			});
+	};
+
+	// Guard against binding twice when the header persists across navigation.
+	if (root.dataset.themeToggleBound !== 'true') {
+		root.dataset.themeToggleBound = 'true';
+
+		// Delegated, so toggles that mount later (the mobile menu) still work.
+		document.addEventListener('click', event => {
+			const toggle = (event.target as Element | null)?.closest(
+				'[data-theme-toggle]'
+			);
+			if (!toggle) return;
+
+			const next: Theme = currentTheme() === 'dark' ? 'light' : 'dark';
+			root.setAttribute(THEME_ATTRIBUTE, next);
+			root.style.colorScheme = next;
+
+			try {
+				localStorage.setItem(THEME_STORAGE_KEY, next);
+			} catch {
+				// Storage can be unavailable (private mode); the Theme still applies.
+			}
+
+			syncToggles();
+		});
+	}
+
+	// Re-label the (re-rendered) toggles after a client-side navigation.
+	document.addEventListener('astro:after-swap', syncToggles);
+
+	syncToggles();
+</script>
