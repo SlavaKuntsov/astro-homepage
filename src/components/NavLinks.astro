@@ -1,0 +1,24 @@
+---
+import type { NavItem } from '@/lib/nav';
+import HeaderLink from './HeaderLink.astro';
+
+interface Props {
+	links: NavItem[];
+	class?: string;
+}
+
+const { links, class: className } = Astro.props;
+---
+
+{
+	links.map(link => (
+		<HeaderLink
+			href={link.href}
+			target={link.external ? '_blank' : undefined}
+			rel={link.external ? 'noreferrer' : undefined}
+			class={className}
+		>
+			{link.label}
+		</HeaderLink>
+	))
+}

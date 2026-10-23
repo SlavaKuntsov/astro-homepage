@@ -151,7 +151,7 @@ test.describe('the ThemeToggle', () => {
 		await page.reload();
 		expect(await themeOf(page)).toBe('dark');
 
-		await page.getByRole('link', { name: 'Arts' }).click();
+		await page.locator('header nav a[href$="/arts"]').first().click();
 		await page.waitForURL('**/arts');
 		expect(await themeOf(page)).toBe('dark');
 	});

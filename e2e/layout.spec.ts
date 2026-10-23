@@ -33,7 +33,7 @@ test('the header and footer survive a View Transition', async ({ page }) => {
 		document.querySelector('footer')?.setAttribute('data-persisted', 'footer');
 	});
 
-	await page.getByRole('link', { name: 'Arts' }).click();
+	await page.locator('header nav a[href$="/arts"]').first().click();
 	await page.waitForURL('**/arts');
 
 	await expect(page.locator('header')).toHaveAttribute(
@@ -96,9 +96,15 @@ test.describe('fonts', () => {
 			}).observe({ type: 'layout-shift', buffered: true });
 		});
 
-		await page.goto('/arts');
+		await page.goto('/');
 		await page.evaluate(() => document.fonts.ready);
-		await page.waitForTimeout(500);
+		// Two frames after the fonts settle, so any font-driven shift has fired.
+		await page.evaluate(
+			() =>
+				new Promise<void>(resolve =>
+					requestAnimationFrame(() => requestAnimationFrame(() => resolve()))
+				)
+		);
 
 		const cls = await page.evaluate(
 			() => (window as unknown as { __cls: { cls: number } }).__cls.cls
@@ -114,42 +120,32 @@ test.describe('the mobile menu', () => {
 	test('opens below md and closes after navigating', async ({ page }) => {
 		await page.goto('/');
 
-		await expect(
-			page.getByRole('navigation', { name: 'Primary' })
-		).toBeHidden();
+		// At this width the desktop nav is display:none, so the trigger is the
+		// only way into the menu.
+		await expect(page.locator('header nav').first()).toBeHidden();
+		await expect(page.locator('[data-mobile-menu-trigger]')).toBeVisible();
 
-		const trigger = page.locator('[data-mobile-menu-trigger]');
-		await expect(trigger).toBeVisible();
+		await page.locator('[data-mobile-menu-trigger]').click();
 
-		await trigger.click();
-
-		const mobileNav = page.getByRole('navigation', { name: 'Mobile' });
+		const mobileNav = page.getByRole('navigation');
 		await expect(mobileNav).toBeVisible();
 
-		await mobileNav.getByRole('link', { name: 'Arts' }).click();
+		await mobileNav.locator('a[href$="/arts"]').click();
 		await page.waitForURL('**/arts');
 
-		const isOpen = await page
-			.locator('details[data-mobile-menu]')
-			.evaluate(details => (details as HTMLDetailsElement).open);
-		expect(isOpen).toBe(false);
+		// A closed <details> removes its navigation from the accessibility tree.
+		await expect(page.getByRole('navigation')).toHaveCount(0);
 	});
 
 	test('closes on Escape', async ({ page }) => {
 		await page.goto('/');
 
-		const trigger = page.locator('[data-mobile-menu-trigger]');
-		await trigger.click();
-		await expect(
-			page.getByRole('navigation', { name: 'Mobile' })
-		).toBeVisible();
+		await page.locator('[data-mobile-menu-trigger]').click();
+		await expect(page.getByRole('navigation')).toBeVisible();
 
 		await page.keyboard.press('Escape');
 
-		const isOpen = await page
-			.locator('details[data-mobile-menu]')
-			.evaluate(details => (details as HTMLDetailsElement).open);
-		expect(isOpen).toBe(false);
+		await expect(page.getByRole('navigation')).toHaveCount(0);
 	});
 });
 
@@ -158,11 +154,11 @@ test('the active navigation link follows client-side navigation', async ({
 }) => {
 	await page.goto('/');
 
-	const primaryNav = page.getByRole('navigation', { name: 'Primary' });
-	const home = primaryNav.getByRole('link', { name: 'Homepage' });
+	const primaryNav = page.getByRole('navigation').first();
+	const home = primaryNav.locator('a[href="/"]');
 	expect(await home.getAttribute('aria-current')).toBe('page');
 
-	const arts = primaryNav.getByRole('link', { name: 'Arts' });
+	const arts = primaryNav.locator('a[href="/arts"]');
 	await arts.click();
 	await page.waitForURL('**/arts');
 

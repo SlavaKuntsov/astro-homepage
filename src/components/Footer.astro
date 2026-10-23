@@ -1,19 +1,27 @@
 ---
-import { OWNER_NAME, SOCIAL_LINKS } from '@/consts';
+import { SOCIAL_LINKS } from '@/consts';
+import type { Translation } from '@/types/Translation';
 
+interface Props {
+	t: Translation;
+}
+
+const { t }: Props = Astro.props;
 const year = new Date().getFullYear();
 ---
 
+<!-- Persisted like the Header; its localized copy needs the same full-navigation
+     Locale switch documented in Header.astro (#6). -->
 <footer class='border-t border-border/70 bg-background' transition:persist>
 	<div
 		class='mx-auto flex w-full max-w-content flex-col gap-6 px-gutter py-10 text-sm sm:flex-row sm:items-center sm:justify-between'
 	>
 		<div class='space-y-1'>
 			<p class='font-heading text-base font-semibold text-foreground'>
-				{OWNER_NAME}
+				{t.index.heading.name}
 			</p>
 			<p class='text-muted-foreground'>
-				&copy; {year} &middot; Built with Astro
+				&copy; {year} &middot; {t.footer.builtWithAstro}
 			</p>
 		</div>
 

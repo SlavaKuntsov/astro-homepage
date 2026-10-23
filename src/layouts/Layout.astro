@@ -21,9 +21,14 @@ const t: Translation = lang === 'ru' ? ru : en;
 
 <!doctype html>
 <html lang={lang}>
-	<BaseHead title={title} description={description} image={image} />
+	<BaseHead
+		title={title}
+		description={description}
+		image={image}
+		lang={lang}
+	/>
 	<body class='flex min-h-dvh flex-col bg-background text-foreground'>
-		<a class='skip-link' href='#main'>{t.skipToContent}</a>
+		<a class='skip-link' href='#main'>{t.a11y.skipToContent}</a>
 
 		<!-- Persisted across View Transitions: navigation must not re-render them. -->
 		<Header t={t} />
@@ -35,6 +40,6 @@ const t: Translation = lang === 'ru' ? ru : en;
 			<slot />
 		</main>
 
-		<Footer />
+		<Footer t={t} />
 	</body>
 </html>

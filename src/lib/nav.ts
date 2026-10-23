@@ -4,6 +4,13 @@
  * one pure rule keeps the server render and the client update in agreement.
  */
 
+/** One entry in the Site navigation; `external` links open in a new tab. */
+export interface NavItem {
+	href: string;
+	label: string;
+	external?: boolean;
+}
+
 /** Trims trailing slashes so `/arts/` and `/arts` compare equal. */
 function normalizePath(path: string): string {
 	const trimmed = path.replace(/\/+$/, '');

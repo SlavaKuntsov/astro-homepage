@@ -1,7 +1,8 @@
 ---
 import { SITE_TITLE } from '@/consts';
+import type { NavItem } from '@/lib/nav';
 import type { Translation } from '@/types/Translation';
-import HeaderLink from './HeaderLink.astro';
+import NavLinks from './NavLinks.astro';
 import ThemeToggle from './ThemeToggle.astro';
 
 interface Props {
@@ -10,18 +11,23 @@ interface Props {
 
 const { t }: Props = Astro.props;
 
-const links = [
-	{ href: '/', label: t.header.links[0] },
-	{ href: '/works', label: t.header.links[1] },
-	{ href: '/arts', label: t.header.links[2] },
+const links: NavItem[] = [
+	{ href: '/', label: t.nav.home },
+	{ href: '/works', label: t.nav.works },
+	{ href: '/arts', label: t.nav.arts },
 	{
 		href: 'https://github.com/SlavaKuntsov/astro-homepage',
-		label: t.header.links[3],
+		label: t.nav.source,
 		external: true,
 	},
 ];
 ---
 
+<!--
+	Persisted across View Transitions (ticket #5). A persisted element keeps its
+	DOM, including these localized labels: the Locale switcher (#6) must perform
+	a full navigation (`data-astro-reload`) or the labels would go stale.
+-->
 <header
 	class='sticky top-0 z-50 border-b border-border/70 bg-background/85 backdrop-blur-md'
 	data-site-header
@@ -38,30 +44,25 @@ const links = [
 			SK<span class='text-primary' aria-hidden='true'>.</span>
 		</a>
 
-		<nav aria-label='Primary' class='hidden items-center gap-1 md:flex'>
-			{
-				links.map(link => (
-					<HeaderLink
-						href={link.href}
-						target={link.external ? '_blank' : undefined}
-						rel={link.external ? 'noreferrer' : undefined}
-					>
-						{link.label}
-					</HeaderLink>
-				))
-			}
+		<nav
+			aria-label={t.a11y.primaryNavigation}
+			class='hidden items-center gap-1 md:flex'
+		>
+			<NavLinks links={links} />
 		</nav>
 
 		<div class='flex items-center gap-2'>
 			<!-- Filled by the server-rendered language switcher (#6). -->
 			<div class='hidden md:block' data-language-switcher-slot></div>
 
-			<ThemeToggle />
+			<ThemeToggle labels={t.a11y} />
 
 			<details class='relative md:hidden' data-mobile-menu>
 				<summary
 					class='inline-flex size-10 items-center justify-center rounded-full border border-border bg-card text-foreground transition-colors hover:bg-muted'
-					aria-label='Open menu'
+					aria-label={t.a11y.openMenu}
+					data-label-open={t.a11y.openMenu}
+					data-label-close={t.a11y.closeMenu}
 					data-mobile-menu-trigger
 				>
 					<svg
@@ -81,19 +82,8 @@ const links = [
 				<div
 					class='absolute right-0 top-full mt-3 w-64 rounded-2xl border border-border bg-card p-2 shadow-xl'
 				>
-					<nav aria-label='Mobile' class='flex flex-col gap-1'>
-						{
-							links.map(link => (
-								<HeaderLink
-									href={link.href}
-									target={link.external ? '_blank' : undefined}
-									rel={link.external ? 'noreferrer' : undefined}
-									class='px-3 py-2.5'
-								>
-									{link.label}
-								</HeaderLink>
-							))
-						}
+					<nav aria-label={t.a11y.mobileNavigation} class='flex flex-col gap-1'>
+						<NavLinks links={links} class='px-3 py-2.5' />
 					</nav>
 
 					<!-- Same slot as the desktop switcher; #6 renders both. -->
@@ -132,7 +122,10 @@ const links = [
 	};
 
 	const syncMenuLabel = () => {
-		trigger?.setAttribute('aria-label', menu?.open ? 'Close menu' : 'Open menu');
+		const label = menu?.open
+			? trigger?.dataset.labelClose
+			: trigger?.dataset.labelOpen;
+		if (label) trigger?.setAttribute('aria-label', label);
 	};
 
 	if (menu) {

@@ -67,10 +67,6 @@ html:not(.theme-ready) *::after {
 	--spacing-section: clamp(2.5rem, 7vw, 5rem);
 	--container-content: 72rem;
 	--container-prose: 48rem;
-
-	/* Aliases kept for components that have not migrated to the tokens yet. */
-	--color-orange-75: #fdf7ee;
-	--color-zinc-850: #16151a;
 }
 
 :root {

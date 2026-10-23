@@ -5,11 +5,8 @@ export const SITE_TITLE = 'Slava Kuntsov - Homepage';
 export const SITE_DESCRIPTION = 'Welcome to my website!';
 export const HOMEPAGE_URL = 'https://slava-homepage.vercel.app/';
 
-/** The owner's name as it appears in the Site chrome. */
-export const OWNER_NAME = 'Sviataslau Kuntsov';
-
 /**
- * Locale-independent links to the owner. The Header/Footer use them now; the
+ * Locale-independent links to the owner. The Footer uses them now; the
  * contacts section (#8) reuses the same list instead of duplicating targets.
  */
 export const SOCIAL_LINKS = [

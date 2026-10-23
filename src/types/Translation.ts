@@ -1,5 +1,23 @@
 export interface Translation {
-	skipToContent: string;
+	a11y: {
+		skipToContent: string;
+		primaryNavigation: string;
+		mobileNavigation: string;
+		openMenu: string;
+		closeMenu: string;
+		switchTheme: string;
+		switchToDarkTheme: string;
+		switchToLightTheme: string;
+	};
+	nav: {
+		home: string;
+		works: string;
+		arts: string;
+		source: string;
+	};
+	footer: {
+		builtWithAstro: string;
+	};
 	index: {
 		heading: {
 			greeting: string;
@@ -11,8 +29,5 @@ export interface Translation {
 			about: string;
 			h_web: string;
 		};
-	};
-	header: {
-		links: string[];
 	};
 }

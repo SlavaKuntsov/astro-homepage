@@ -32,23 +32,23 @@ export function DropdownMenuDemo({ t }: DropdownMenuDemoProps) {
         <DropdownMenuGroup>
           <DropdownMenuItem>
             <a href="/" className="block w-full h-full text-xl py-1 px-1">
-              {t.header.links[0]}
+              {t.nav.home}
             </a>
           </DropdownMenuItem>
           <DropdownMenuItem>
             <a href="/works" className="block w-full h-full text-xl py-1 px-1">
-              {t.header.links[1]}
+              {t.nav.works}
             </a>
           </DropdownMenuItem>
           <DropdownMenuItem>
             <a href="/arts" className="block w-full h-full text-xl py-1 px-1">
-              {t.header.links[2]}
+              {t.nav.arts}
             </a>
           </DropdownMenuItem>
           <DropdownMenuItem>
             <a href="https://github.com/SlavaKuntsov/astro-homepage" className="flex flex-row items-center gap-2 w-full h-full text-xl py-1 px-1">
               <IoLogoGithub className="min-h-7 min-w-7" />
-              {t.header.links[3]}
+              {t.nav.source}
             </a>
           </DropdownMenuItem>
         </DropdownMenuGroup>

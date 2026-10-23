@@ -6,12 +6,24 @@ import { ClientRouter } from 'astro:transitions';
 interface Props {
 	title: string;
 	description: string;
+	lang: 'ru' | 'en';
 	image?: string;
 }
 
 const canonicalURL = new URL(Astro.url.pathname, Astro.site);
 
-const { title, description, image = '/favicon.svg' } = Astro.props;
+const { title, description, lang, image = '/favicon.svg' } = Astro.props;
+
+// Preload only the subsets the page can paint in its Locale. Both families are
+// variable fonts, so one file per subset/style covers every weight; italic is
+// left on-demand because only the home greeting uses it.
+const preload: Array<{ subset: string; style: string }> =
+	lang === 'ru'
+		? [
+				{ subset: 'latin', style: 'normal' },
+				{ subset: 'cyrillic', style: 'normal' },
+			]
+		: [{ subset: 'latin', style: 'normal' }];
 ---
 
 <head>
@@ -31,8 +43,8 @@ const { title, description, image = '/favicon.svg' } = Astro.props;
 		with the correct `font/woff2` MIME type, and Astro's optimized fallbacks
 		keep the swap from shifting the layout.
 	-->
-	<Font cssVariable='--font-comfortaa' preload />
-	<Font cssVariable='--font-inter' preload />
+	<Font cssVariable='--font-comfortaa' preload={preload} />
+	<Font cssVariable='--font-inter' preload={preload} />
 
 	<!-- Canonical URL -->
 	<link rel='canonical' href={canonicalURL} />

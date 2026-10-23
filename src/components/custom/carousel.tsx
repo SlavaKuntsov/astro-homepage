@@ -39,8 +39,8 @@ export function Carousel() {
 			</CarouselContent>
 			{!isMobile && (
 				<>
-					<CarouselPrevious className='bg-white/75 hover:bg-orange-300 transition-colors duration-500' />
-					<CarouselNext className='bg-white/75 hover:bg-orange-300 transition-colors duration-500' />
+					<CarouselPrevious className='bg-card/75 hover:bg-accent transition-colors duration-500' />
+					<CarouselNext className='bg-card/75 hover:bg-accent transition-colors duration-500' />
 				</>
 			)}
 		</CarouselComponent>
