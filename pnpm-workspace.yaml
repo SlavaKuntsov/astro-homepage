@@ -1,0 +1,7 @@
+# pnpm 11 reads its settings from this file (there are no workspace packages —
+# this is a single-package repo). `allowBuilds` approves the native dependencies
+# that need a postinstall step, so `pnpm install` exits 0 instead of failing with
+# ERR_PNPM_IGNORED_BUILDS.
+allowBuilds:
+  esbuild: true
+  sharp: true
