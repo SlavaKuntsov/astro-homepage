@@ -1,6 +1,7 @@
 import type { Translation } from '../types/Translation';
 
 const en: Translation = {
+	skipToContent: 'Skip to content',
 	index: {
 		heading: {
 			greeting: `Hello, I'm a <i class="font-[550]">junior backend developer</i> from Belarus.`,

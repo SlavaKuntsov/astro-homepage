@@ -19,12 +19,25 @@ export default defineConfig({
 	},
 	integrations: [react(), mdx()],
 	experimental: {
+		// Typography tokens are consumed through `--font-heading` / `--font-body`
+		// in `global.css`. Both families must carry `cyrillic` for the RU Locale;
+		// the optimized fallbacks Astro generates keep the swap shift-free.
 		fonts: [
 			{
 				provider: fontProviders.google(),
 				name: 'Comfortaa',
-				weights: [300, 400, 500, 600, 700],
-				cssVariable: '--font-roboto',
+				cssVariable: '--font-comfortaa',
+				weights: ['300 700'],
+				subsets: ['latin', 'cyrillic'],
+				fallbacks: ['ui-rounded', 'system-ui', 'sans-serif'],
+			},
+			{
+				provider: fontProviders.google(),
+				name: 'Inter',
+				cssVariable: '--font-inter',
+				weights: ['100 900'],
+				subsets: ['latin', 'cyrillic'],
+				fallbacks: ['system-ui', 'sans-serif'],
 			},
 		],
 	},

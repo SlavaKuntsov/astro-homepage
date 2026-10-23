@@ -1,5 +1,6 @@
 ---
 import AntiFouc from '@/components/AntiFouc.astro';
+import { Font } from 'astro:assets';
 import { ClientRouter } from 'astro:transitions';
 
 interface Props {
@@ -25,42 +26,13 @@ const { title, description, image = '/favicon.svg' } = Astro.props;
 	<link rel='icon' type='image/svg+xml' href='/favicon.svg' />
 	<meta name='generator' content={Astro.generator} />
 
-	<!-- Font preloads -->
-	<link
-		rel='preload'
-		href='/fonts/Comfortaa-Bold.ttf'
-		as='font'
-		type='font/woff'
-		crossorigin
-	/>
-	<link
-		rel='preload'
-		href='/fonts/Comfortaa-Light.ttf'
-		as='font'
-		type='font/woff'
-		crossorigin
-	/>
-	<link
-		rel='preload'
-		href='/fonts/Comfortaa-Medium.ttf'
-		as='font'
-		type='font/woff'
-		crossorigin
-	/>
-	<link
-		rel='preload'
-		href='/fonts/Comfortaa-Regular.ttf'
-		as='font'
-		type='font/woff'
-		crossorigin
-	/>
-	<link
-		rel='preload'
-		href='/fonts/Comfortaa-SemiBold.ttf'
-		as='font'
-		type='font/woff'
-		crossorigin
-	/>
+	<!--
+		Self-hosted by the Astro Fonts API. `<Font preload>` emits preload links
+		with the correct `font/woff2` MIME type, and Astro's optimized fallbacks
+		keep the swap from shifting the layout.
+	-->
+	<Font cssVariable='--font-comfortaa' preload />
+	<Font cssVariable='--font-inter' preload />
 
 	<!-- Canonical URL -->
 	<link rel='canonical' href={canonicalURL} />
@@ -76,13 +48,6 @@ const { title, description, image = '/favicon.svg' } = Astro.props;
 	<meta property='og:title' content={title} />
 	<meta property='og:description' content={description} />
 	<meta property='og:image' content={new URL(image, Astro.url)} />
-
-	<!-- Twitter -->
-	<!-- <meta property="twitter:card" content="summary_large_image" />
-    <meta property="twitter:url" content={Astro.url} />
-    <meta property="twitter:title" content={title} />
-    <meta property="twitter:description" content={description} />
-    <meta property="twitter:image" content={new URL(image, Astro.url)} /> -->
 
 	<ClientRouter />
 </head>

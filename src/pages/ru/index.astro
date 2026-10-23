@@ -1,26 +1,18 @@
 ---
-import Footer from '@/components/Footer.astro';
-import Header from '@/components/Header.astro';
 import Heading from '@/components/Heading.astro';
 import MainContent from '@/components/MainContent.astro';
-import { SITE_TITLE, SITE_DESCRIPTION } from '@/consts';
+import { SITE_DESCRIPTION, SITE_TITLE } from '@/consts';
 import ru from '@/i18n/ru';
-import BaseHead from '@/layouts/BaseHead.astro';
-import Body from '@/layouts/Body.astro';
-import Main from '@/layouts/Main.astro';
+import Layout from '@/layouts/Layout.astro';
 
 const t = ru;
 ---
 
-<!doctype html>
-<html lang='ru'>
-	<BaseHead title={SITE_TITLE} description={SITE_DESCRIPTION} />
-	<Body>
-		<Header t={t} />
-		<Main>
-			<Heading t={t} />
-			<MainContent t={t} />
-		</Main>
-		<Footer />
-	</Body>
-</html>
+<Layout title={SITE_TITLE} description={SITE_DESCRIPTION} lang='ru'>
+	<div
+		class='mx-auto flex w-full max-w-prose flex-col items-start gap-7 sm:gap-8'
+	>
+		<Heading t={t} />
+		<MainContent t={t} />
+	</div>
+</Layout>
