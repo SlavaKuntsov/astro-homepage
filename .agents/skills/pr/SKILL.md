@@ -9,6 +9,14 @@ metadata:
     url: "https://github.com/humanlayer/skills/blob/main/plugins/show-me/skills/show-me/SKILL.md"
 ---
 
+Always assign the PR to the author:
+
+```
+gh pr create --assignee SlavaKuntsov --title "..." --body "..."
+```
+
+`SlavaKuntsov` is the author's GitHub login. Add `--assignee SlavaKuntsov` to every `gh pr create` invocation; if the PR already exists, assign with `gh pr edit <number> --add-assignee SlavaKuntsov`.
+
 Use this template for writing the PR body:
 
 ```markdown
