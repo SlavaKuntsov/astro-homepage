@@ -1,47 +1,178 @@
 ---
-import '../styles/global.css';
-import { SITE_TITLE } from '../consts';
-import HeaderLink from './HeaderLink.astro';
+import type { NavItem } from '@/lib/nav';
+import type { Translation } from '@/types/Translation';
+import NavLinks from './NavLinks.astro';
 import ThemeToggle from './ThemeToggle.astro';
-import LanguageToggle from './custom/language-toggle';
-import { IoLogoGithub } from 'react-icons/io5';
-import { DropdownMenuDemo } from './custom/dropdown-menu';
-import type { Translation } from '../types/Translation';
 
 interface Props {
 	t: Translation;
+	/** Persist keys are Locale-scoped so cross-Locale navigation re-renders. */
+	persistKey: string;
 }
 
-const { t }: Props = Astro.props;
+const { t, persistKey }: Props = Astro.props;
+
+const links: NavItem[] = [
+	{ href: '/', label: t.nav.home },
+	{ href: '/works', label: t.nav.works },
+	{ href: '/arts', label: t.nav.arts },
+	{
+		href: 'https://github.com/SlavaKuntsov/astro-homepage',
+		label: t.nav.source,
+		external: true,
+	},
+];
 ---
 
+<!--
+	Persisted across View Transitions within a Locale. The key includes the
+	Locale, so crossing Locales replaces the chrome with the server-rendered
+	labels for the new Locale rather than keeping stale text (ADR-0003).
+-->
 <header
-	class='fixed z-50 w-full backdrop-blur-md py-4 shadow-sm min-h-[54px] max-h-[72px]'
+	class='sticky top-0 z-50 border-b border-border/70 bg-background/85 backdrop-blur-md transition-colors'
+	data-site-header
+	transition:persist={persistKey}
 >
-	<nav
-		class='flex flex-row items-center justify-between gap-7 mx-auto max-w-3xl px-3'
+	<div
+		class='mx-auto flex h-16 w-full max-w-content items-center justify-between gap-4 px-gutter'
 	>
-		<div class='inline-flex gap-10'>
-			<h2>
-				<a
-					class='text-2xl font-semibold font-mplus tracking-tighter cursor-pointer py-1'
-					href='/'>{SITE_TITLE}</a
-				>
-			</h2>
-			<div class='flex-row gap-7 hidden md:flex text-xl'>
-				<HeaderLink href='/works'>{t.header.links[1]}</HeaderLink>
-				<HeaderLink href='/arts'>{t.header.links[2]}</HeaderLink>
-				<HeaderLink href='https://github.com/SlavaKuntsov/astro-homepage'>
-					<IoLogoGithub />
-					{t.header.links[3]}
-				</HeaderLink>
-			</div>
-		</div>
+		<a
+			href='/'
+			class='inline-flex items-center font-heading text-xl font-semibold tracking-tight text-foreground transition-colors'
+			aria-label={`SK — ${t.site.ownerName}`}
+		>
+			SK<span class='text-primary transition-colors' aria-hidden='true'>.</span>
+		</a>
 
-		<div class='flex-row gap-4 items-center justify-center hidden md:flex'>
-			<ThemeToggle />
-			<LanguageToggle client:load />
+		<nav
+			aria-label={t.a11y.primaryNavigation}
+			class='hidden items-center gap-1 md:flex'
+		>
+			<NavLinks links={links} />
+		</nav>
+
+		<div class='flex items-center gap-2'>
+			<!-- Filled by the server-rendered language switcher (#6). -->
+			<div class='hidden md:block' data-language-switcher-slot></div>
+
+			<ThemeToggle labels={t.a11y} />
+
+			<details class='relative md:hidden' data-mobile-menu>
+				<summary
+					class='inline-flex size-10 items-center justify-center rounded-full border border-border bg-card text-foreground transition-colors hover:bg-muted'
+					aria-label={t.a11y.openMenu}
+					data-label-open={t.a11y.openMenu}
+					data-label-close={t.a11y.closeMenu}
+					data-mobile-menu-trigger
+				>
+					<svg
+						viewBox='0 0 24 24'
+						width='20'
+						height='20'
+						fill='none'
+						stroke='currentColor'
+						stroke-width='2'
+						stroke-linecap='round'
+						aria-hidden='true'
+					>
+						<path d='M4 7h16M4 12h16M4 17h16'></path>
+					</svg>
+				</summary>
+
+				<div
+					class='absolute right-0 top-full mt-3 w-64 rounded-2xl border border-border bg-card p-2 shadow-xl transition-colors'
+				>
+					<nav aria-label={t.a11y.mobileNavigation} class='flex flex-col gap-1'>
+						<NavLinks links={links} class='px-3 py-2.5' />
+					</nav>
+
+					<!-- Same slot as the desktop switcher; #6 renders both. -->
+					<div data-language-switcher-slot></div>
+				</div>
+			</details>
 		</div>
-		<DropdownMenuDemo t={t} client:load />
-	</nav>
+	</div>
 </header>
+
+<script>
+	import { isActivePath } from '@/lib/nav';
+
+	const currentMenu = () =>
+		document.querySelector<HTMLDetailsElement>('[data-mobile-menu]');
+
+	const menuTrigger = (menu: HTMLDetailsElement) =>
+		menu.querySelector<HTMLElement>('[data-mobile-menu-trigger]');
+
+	/** The persisted header does not re-render, so re-derive the active link. */
+	const syncActiveLinks = () => {
+		document.querySelectorAll<HTMLAnchorElement>('[data-nav-link]').forEach(
+			link => {
+				const active = isActivePath(
+					window.location.pathname,
+					link.getAttribute('href') ?? ''
+				);
+
+				link.classList.toggle('is-active', active);
+				if (active) {
+					link.setAttribute('aria-current', 'page');
+				} else {
+					link.removeAttribute('aria-current');
+				}
+			}
+		);
+	};
+
+	const syncMenuLabel = (menu: HTMLDetailsElement) => {
+		const trigger = menuTrigger(menu);
+		const label = menu.open
+			? trigger?.dataset.labelClose
+			: trigger?.dataset.labelOpen;
+		if (label) trigger?.setAttribute('aria-label', label);
+	};
+
+	/**
+	 * The header is replaced when the Locale changes (the persist key is
+	 * Locale-scoped), so bind per menu element rather than holding the initial
+	 * one. A persisted menu keeps its binding.
+	 */
+	const bindMenu = () => {
+		const menu = currentMenu();
+		if (!menu || menu.dataset.menuBound) return;
+
+		menu.dataset.menuBound = 'true';
+		menu.addEventListener('toggle', () => syncMenuLabel(menu));
+		// A link tap is a navigation: do not leave the panel open behind it.
+		menu.addEventListener('click', event => {
+			if ((event.target as Element | null)?.closest('a')) menu.open = false;
+		});
+		syncMenuLabel(menu);
+	};
+
+	document.addEventListener('keydown', event => {
+		const menu = currentMenu();
+		if (event.key !== 'Escape' || !menu?.open) return;
+
+		menu.open = false;
+		menuTrigger(menu)?.focus();
+	});
+
+	document.addEventListener('click', event => {
+		const menu = currentMenu();
+		if (menu?.open && !menu.contains(event.target as Node)) menu.open = false;
+	});
+
+	document.addEventListener('astro:after-swap', () => {
+		const menu = currentMenu();
+		if (menu) menu.open = false;
+		bindMenu();
+		syncActiveLinks();
+	});
+	document.addEventListener('astro:page-load', () => {
+		bindMenu();
+		syncActiveLinks();
+	});
+
+	bindMenu();
+	syncActiveLinks();
+</script>

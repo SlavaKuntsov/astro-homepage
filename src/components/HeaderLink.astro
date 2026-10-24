@@ -1,20 +1,23 @@
 ---
+import { isActivePath } from '@/lib/nav';
 import type { HTMLAttributes } from 'astro/types';
-import '../styles/global.css';
 
 type Props = HTMLAttributes<'a'>;
 
 const { href, class: className, ...props } = Astro.props;
-
-const { pathname } = Astro.url;
-const subpath = pathname.match(/[^\/]+/g);
-const isActive = href === pathname || href === '/' + subpath?.[0];
+const hrefValue = typeof href === 'string' ? href : (href?.toString() ?? '');
+const active = isActivePath(Astro.url.pathname, hrefValue);
 ---
 
 <a
-	class='hover:underline underline-offset-2 flex flex-row items-center gap-1'
 	href={href}
-	class:list={[className, { active: isActive }]}
+	class:list={[
+		'nav-link inline-flex items-center rounded-full px-3 py-2 text-sm font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground',
+		className,
+		{ 'is-active': active },
+	]}
+	data-nav-link
+	aria-current={active ? 'page' : undefined}
 	{...props}
 >
 	<slot />

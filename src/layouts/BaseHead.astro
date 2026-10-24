@@ -1,16 +1,41 @@
 ---
 import AntiFouc from '@/components/AntiFouc.astro';
+import { Font } from 'astro:assets';
 import { ClientRouter } from 'astro:transitions';
 
 interface Props {
 	title: string;
 	description: string;
+	lang: 'ru' | 'en';
 	image?: string;
+	/** Set when the page paints italic body text (the home greeting does). */
+	preloadItalic?: boolean;
 }
 
 const canonicalURL = new URL(Astro.url.pathname, Astro.site);
 
-const { title, description, image = '/favicon.svg' } = Astro.props;
+const {
+	title,
+	description,
+	lang,
+	image = '/favicon.svg',
+	preloadItalic = false,
+} = Astro.props;
+
+// Preload only the subsets the page can paint in its Locale. Both families are
+// variable fonts, so one file per subset/style covers every weight. Italic is
+// opt-in: without the preload the browser discovers it late and swaps it in
+// after first paint, visibly shifting the line.
+const subsets = lang === 'ru' ? ['latin', 'cyrillic'] : ['latin'];
+const normalPreload: Array<{ subset: string; style: string }> = subsets.map(
+	subset => ({ subset, style: 'normal' })
+);
+const bodyPreload = preloadItalic
+	? [
+			...normalPreload,
+			...subsets.map(subset => ({ subset, style: 'italic' })),
+		]
+	: normalPreload;
 ---
 
 <head>
@@ -25,42 +50,13 @@ const { title, description, image = '/favicon.svg' } = Astro.props;
 	<link rel='icon' type='image/svg+xml' href='/favicon.svg' />
 	<meta name='generator' content={Astro.generator} />
 
-	<!-- Font preloads -->
-	<link
-		rel='preload'
-		href='/fonts/Comfortaa-Bold.ttf'
-		as='font'
-		type='font/woff'
-		crossorigin
-	/>
-	<link
-		rel='preload'
-		href='/fonts/Comfortaa-Light.ttf'
-		as='font'
-		type='font/woff'
-		crossorigin
-	/>
-	<link
-		rel='preload'
-		href='/fonts/Comfortaa-Medium.ttf'
-		as='font'
-		type='font/woff'
-		crossorigin
-	/>
-	<link
-		rel='preload'
-		href='/fonts/Comfortaa-Regular.ttf'
-		as='font'
-		type='font/woff'
-		crossorigin
-	/>
-	<link
-		rel='preload'
-		href='/fonts/Comfortaa-SemiBold.ttf'
-		as='font'
-		type='font/woff'
-		crossorigin
-	/>
+	<!--
+		Self-hosted by the Astro Fonts API. `<Font preload>` emits preload links
+		with the correct `font/woff2` MIME type, and Astro's optimized fallbacks
+		keep the swap from shifting the layout.
+	-->
+	<Font cssVariable='--font-comfortaa' preload={normalPreload} />
+	<Font cssVariable='--font-inter' preload={bodyPreload} />
 
 	<!-- Canonical URL -->
 	<link rel='canonical' href={canonicalURL} />
@@ -76,13 +72,6 @@ const { title, description, image = '/favicon.svg' } = Astro.props;
 	<meta property='og:title' content={title} />
 	<meta property='og:description' content={description} />
 	<meta property='og:image' content={new URL(image, Astro.url)} />
-
-	<!-- Twitter -->
-	<!-- <meta property="twitter:card" content="summary_large_image" />
-    <meta property="twitter:url" content={Astro.url} />
-    <meta property="twitter:title" content={title} />
-    <meta property="twitter:description" content={description} />
-    <meta property="twitter:image" content={new URL(image, Astro.url)} /> -->
 
 	<ClientRouter />
 </head>

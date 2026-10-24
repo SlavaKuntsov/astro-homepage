@@ -1,23 +1,8 @@
 ---
-import Footer from '@/components/Footer.astro';
-import Header from '@/components/Header.astro';
 import { SITE_DESCRIPTION, SITE_TITLE } from '@/consts';
-import ru from '@/i18n/ru';
-import BaseHead from '@/layouts/BaseHead.astro';
-import Body from '@/layouts/Body.astro';
-import Main from '@/layouts/Main.astro';
-
-const t = ru;
+import Layout from '@/layouts/Layout.astro';
 ---
 
-<!doctype html>
-<html lang='en'>
-	<BaseHead title={SITE_TITLE} description={SITE_DESCRIPTION} />
-	<Body>
-		<Header t={t} />
-		<Main>
-			<h1>Картиночки</h1>
-		</Main>
-		<Footer />
-	</Body>
-</html>
+<Layout title={SITE_TITLE} description={SITE_DESCRIPTION} lang='ru'>
+	<h1 class='text-3xl font-semibold'>Картиночки</h1>
+</Layout>

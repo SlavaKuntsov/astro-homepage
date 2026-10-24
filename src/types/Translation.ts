@@ -1,18 +1,37 @@
 export interface Translation {
-    index: {
-      heading: {
-        greeting: string;
-        name: string;
-        position: string;
-      },
-      main: {
-        h_about: string
-        about: string
-        h_web: string
-      }
-    };
-    header: {
-      links: string[]
-    };
-  }
-  
+	a11y: {
+		skipToContent: string;
+		primaryNavigation: string;
+		mobileNavigation: string;
+		openMenu: string;
+		closeMenu: string;
+		switchTheme: string;
+		switchToDarkTheme: string;
+		switchToLightTheme: string;
+	};
+	site: {
+		/** The owner's name as written in this Locale. */
+		ownerName: string;
+	};
+	nav: {
+		home: string;
+		works: string;
+		arts: string;
+		source: string;
+	};
+	footer: {
+		builtWithAstro: string;
+	};
+	index: {
+		heading: {
+			greeting: string;
+			name: string;
+			position: string;
+		};
+		main: {
+			h_about: string;
+			about: string;
+			h_web: string;
+		};
+	};
+}

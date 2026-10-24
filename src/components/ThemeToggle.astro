@@ -3,13 +3,22 @@
 // Theme state: the tiny script reads `data-theme` from the DOM — set before
 // first paint by the Anti-FOUC script — and only flips it. It never recomputes
 // the Theme from `localStorage` or `prefers-color-scheme` (ADR-0003).
+import type { Translation } from '@/types/Translation';
+
+interface Props {
+	labels: Translation['a11y'];
+}
+
+const { labels }: Props = Astro.props;
 ---
 
 <button
 	type='button'
-	class='theme-toggle inline-flex cursor-pointer items-center justify-center rounded-3xl bg-orange-300 p-2 transition-colors duration-500 hover:bg-orange-400/80 dark:bg-zinc-600 dark:hover:bg-zinc-500'
+	class='theme-toggle inline-flex size-10 cursor-pointer items-center justify-center rounded-full border border-border bg-card text-foreground transition-colors hover:bg-muted'
 	data-theme-toggle
-	aria-label='Switch theme'
+	aria-label={labels.switchTheme}
+	data-label-light={labels.switchToLightTheme}
+	data-label-dark={labels.switchToDarkTheme}
 >
 	<svg
 		class='theme-toggle__sun'
@@ -58,11 +67,12 @@
 		document
 			.querySelectorAll<HTMLElement>('[data-theme-toggle]')
 			.forEach(toggle => {
+				const label = isDark
+					? toggle.dataset.labelLight
+					: toggle.dataset.labelDark;
+
 				toggle.setAttribute('aria-pressed', String(isDark));
-				toggle.setAttribute(
-					'aria-label',
-					isDark ? 'Switch to light theme' : 'Switch to dark theme'
-				);
+				if (label) toggle.setAttribute('aria-label', label);
 			});
 	};
 
