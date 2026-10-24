@@ -83,7 +83,8 @@ html:not(.theme-ready) *::after {
 
 	--background: #fdf7ee;
 	--foreground: #241f1a;
-	--card: #fffcf7;
+	--card: white;
+	/*--card: #fffcf7;*/
 	--card-foreground: #241f1a;
 	--popover: #fffcf7;
 	--popover-foreground: #241f1a;
