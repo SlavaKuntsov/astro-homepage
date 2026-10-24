@@ -3,6 +3,7 @@ import Footer from '@/components/Footer.astro';
 import Header from '@/components/Header.astro';
 import en from '@/i18n/en';
 import ru from '@/i18n/ru';
+import type { Locale } from '@/lib/i18n';
 import '@/styles/global.css';
 import type { Translation } from '@/types/Translation';
 import BaseHead from './BaseHead.astro';
@@ -11,7 +12,7 @@ interface Props {
 	title: string;
 	description: string;
 	/** The Locale of the page; the shell renders its chrome in this Locale. */
-	lang: 'ru' | 'en';
+	lang: Locale;
 	image?: string;
 	/** Set when the page paints italic body text (the home greeting does). */
 	preloadItalic?: boolean;
@@ -35,7 +36,7 @@ const t: Translation = lang === 'ru' ? ru : en;
 
 		<!-- Persisted per Locale: same-Locale navigation keeps them, a Locale
 		     switch replaces them with the correct server-rendered labels. -->
-		<Header t={t} persistKey={`site-header-${lang}`} />
+		<Header t={t} lang={lang} persistKey={`site-header-${lang}`} />
 
 		<main
 			id='main'

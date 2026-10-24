@@ -10,6 +10,7 @@ const ru: Translation = {
 		switchTheme: 'Переключить тему',
 		switchToDarkTheme: 'Включить тёмную тему',
 		switchToLightTheme: 'Включить светлую тему',
+		switchLocale: 'Переключить на английский',
 	},
 	site: {
 		ownerName: 'Кунцов Святослав',

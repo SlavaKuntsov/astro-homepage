@@ -1,12 +1,13 @@
 ---
 import AntiFouc from '@/components/AntiFouc.astro';
+import type { Locale } from '@/lib/i18n';
 import { Font } from 'astro:assets';
 import { ClientRouter } from 'astro:transitions';
 
 interface Props {
 	title: string;
 	description: string;
-	lang: 'ru' | 'en';
+	lang: Locale;
 	image?: string;
 	/** Set when the page paints italic body text (the home greeting does). */
 	preloadItalic?: boolean;

@@ -7,7 +7,7 @@ import { expect, test } from './fixtures';
  * layout, and the mobile menu works below the `md` breakpoint.
  */
 
-const ROUTES = ['/', '/works', '/arts', '/ru/', '/ru/works', '/ru/arts'];
+const ROUTES = ['/', '/works', '/arts', '/en/', '/en/works', '/en/arts'];
 
 test.describe('the shared layout renders on every page', () => {
 	for (const path of ROUTES) {
@@ -55,18 +55,12 @@ test('cross-Locale navigation replaces the persisted chrome', async ({
 		(window as unknown as { __clientNavigation: boolean }).__clientNavigation =
 			true;
 		document.querySelector('header')?.setAttribute('data-persisted', 'old');
-
-		// Simulate the server-rendered Locale switcher that #6 will add: a
-		// same-origin link the ClientRouter intercepts.
-		const link = document.createElement('a');
-		link.id = 'cross-locale-link';
-		link.href = '/ru/';
-		link.textContent = 'RU';
-		document.body.append(link);
 	});
 
-	await page.locator('#cross-locale-link').click();
-	await page.waitForURL('**/ru/');
+	// The server-rendered switcher is a same-origin link the ClientRouter
+	// intercepts, so the swap happens client-side.
+	await page.locator('[data-locale-switcher]').first().click();
+	await page.waitForURL(url => url.pathname.replace(/\/+$/, '') === '/en');
 
 	// The window survives a client-side navigation, so this also proves the
 	// router (not a full reload) performed the swap.
@@ -78,20 +72,21 @@ test('cross-Locale navigation replaces the persisted chrome', async ({
 		)
 	).toBe(true);
 
-	// The old Header must not survive: its localized labels are now wrong.
+	// The persist key is Locale-scoped, so the old Header must not survive: its
+	// labels are now the wrong Locale.
 	await expect(page.locator('header')).not.toHaveAttribute(
 		'data-persisted',
 		'old'
 	);
-	await expect(page.getByRole('navigation').first()).toContainText('Главная');
+	await expect(page.getByRole('navigation').first()).toContainText('Home');
 	await expect(page.locator('[data-theme-toggle]')).toHaveAttribute(
 		'aria-label',
-		'Включить тёмную тему'
+		'Switch to dark theme'
 	);
 });
 
 test.describe('fonts', () => {
-	for (const path of ['/', '/ru/']) {
+	for (const path of ['/', '/en/']) {
 		test(`${path} preloads only its woff2 subsets and applies the families`, async ({
 			page,
 		}) => {
@@ -247,5 +242,17 @@ test('the active navigation link follows client-side navigation', async ({
 	await page.waitForURL('**/arts');
 
 	await expect(arts).toHaveAttribute('aria-current', 'page');
+	await expect(home).not.toHaveAttribute('aria-current', 'page');
+});
+
+test('the EN root link is active only on the EN root', async ({ page }) => {
+	await page.goto('/en/works');
+
+	const primaryNav = page.getByRole('navigation').first();
+	const home = primaryNav.locator('a[href="/en"]');
+	const works = primaryNav.locator('a[href="/en/works"]');
+
+	await expect(works).toHaveAttribute('aria-current', 'page');
+	// The localized root is not a section: it must not light up on `/en/works`.
 	await expect(home).not.toHaveAttribute('aria-current', 'page');
 });

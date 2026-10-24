@@ -187,7 +187,7 @@ test.describe('the Theme transition is synchronized', () => {
 				}`,
 		});
 
-		await page.getByRole('button', { name: /dark theme/i }).click();
+		await page.getByRole('button', { name: /dark theme|тёмную тему/i }).click();
 		await page.waitForTimeout(400);
 
 		const colors = await page.evaluate(() => ({
@@ -207,7 +207,7 @@ test.describe('the ThemeToggle', () => {
 		await page.goto('/');
 		expect(await themeOf(page)).toBe('light');
 
-		await page.getByRole('button', { name: /dark theme/i }).click();
+		await page.getByRole('button', { name: /dark theme|тёмную тему/i }).click();
 		expect(await themeOf(page)).toBe('dark');
 		expect(
 			await page.evaluate(key => localStorage.getItem(key), THEME_STORAGE_KEY)

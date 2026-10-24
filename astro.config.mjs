@@ -41,8 +41,20 @@ export default defineConfig({
 			},
 		],
 	},
+	// RU is the default Locale at the unprefixed root, EN under `/en/…`
+	// (ADR-0005). The prefix rule itself lives in `src/lib/i18n.ts`.
 	i18n: {
 		locales: ['ru', 'en'],
-		defaultLocale: 'en',
+		defaultLocale: 'ru',
+		routing: { prefixDefaultLocale: false },
+	},
+	// Old Site URLs keep working (spec user story 30): the previous Site served
+	// the default Locale under `/ru/*`, so each of its three routes redirects to
+	// the unprefixed equivalent. That legacy URL set is frozen, and a static
+	// build cannot emit a `/ru/*` wildcard, so this map is complete.
+	redirects: {
+		'/ru': '/',
+		'/ru/works': '/works',
+		'/ru/arts': '/arts',
 	},
 });

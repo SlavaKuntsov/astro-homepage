@@ -8,6 +8,8 @@ export interface Translation {
 		switchTheme: string;
 		switchToDarkTheme: string;
 		switchToLightTheme: string;
+		/** Names the Locale this page's switcher leads to (ADR-0005). */
+		switchLocale: string;
 	};
 	site: {
 		/** The owner's name as written in this Locale. */

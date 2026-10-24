@@ -10,6 +10,7 @@ const en: Translation = {
 		switchTheme: 'Switch theme',
 		switchToDarkTheme: 'Switch to dark theme',
 		switchToLightTheme: 'Switch to light theme',
+		switchLocale: 'Switch to Russian',
 	},
 	site: {
 		ownerName: 'Sviataslau Kuntsou',

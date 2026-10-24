@@ -2,16 +2,16 @@
 import Heading from '@/components/Heading.astro';
 import MainContent from '@/components/MainContent.astro';
 import { SITE_DESCRIPTION, SITE_TITLE } from '@/consts';
-import en from '@/i18n/en';
+import ru from '@/i18n/ru';
 import Layout from '@/layouts/Layout.astro';
 
-const t = en;
+const t = ru;
 ---
 
 <Layout
 	title={SITE_TITLE}
 	description={SITE_DESCRIPTION}
-	lang='en'
+	lang='ru'
 	preloadItalic
 >
 	<div
