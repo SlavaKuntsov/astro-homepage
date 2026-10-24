@@ -8,22 +8,34 @@ interface Props {
 	description: string;
 	lang: 'ru' | 'en';
 	image?: string;
+	/** Set when the page paints italic body text (the home greeting does). */
+	preloadItalic?: boolean;
 }
 
 const canonicalURL = new URL(Astro.url.pathname, Astro.site);
 
-const { title, description, lang, image = '/favicon.svg' } = Astro.props;
+const {
+	title,
+	description,
+	lang,
+	image = '/favicon.svg',
+	preloadItalic = false,
+} = Astro.props;
 
 // Preload only the subsets the page can paint in its Locale. Both families are
-// variable fonts, so one file per subset/style covers every weight; italic is
-// left on-demand because only the home greeting uses it.
-const preload: Array<{ subset: string; style: string }> =
-	lang === 'ru'
-		? [
-				{ subset: 'latin', style: 'normal' },
-				{ subset: 'cyrillic', style: 'normal' },
-			]
-		: [{ subset: 'latin', style: 'normal' }];
+// variable fonts, so one file per subset/style covers every weight. Italic is
+// opt-in: without the preload the browser discovers it late and swaps it in
+// after first paint, visibly shifting the line.
+const subsets = lang === 'ru' ? ['latin', 'cyrillic'] : ['latin'];
+const normalPreload: Array<{ subset: string; style: string }> = subsets.map(
+	subset => ({ subset, style: 'normal' })
+);
+const bodyPreload = preloadItalic
+	? [
+			...normalPreload,
+			...subsets.map(subset => ({ subset, style: 'italic' })),
+		]
+	: normalPreload;
 ---
 
 <head>
@@ -43,8 +55,8 @@ const preload: Array<{ subset: string; style: string }> =
 		with the correct `font/woff2` MIME type, and Astro's optimized fallbacks
 		keep the swap from shifting the layout.
 	-->
-	<Font cssVariable='--font-comfortaa' preload={preload} />
-	<Font cssVariable='--font-inter' preload={preload} />
+	<Font cssVariable='--font-comfortaa' preload={normalPreload} />
+	<Font cssVariable='--font-inter' preload={bodyPreload} />
 
 	<!-- Canonical URL -->
 	<link rel='canonical' href={canonicalURL} />

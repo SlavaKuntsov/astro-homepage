@@ -105,8 +105,10 @@ test.describe('fonts', () => {
 					links.map(link => link.getAttribute('type') ?? '')
 				);
 
-			// Two families × one normal face for EN; plus the Cyrillic faces for RU.
-			expect(preloads).toHaveLength(lang === 'ru' ? 4 : 2);
+			// Two families × one normal face for EN; plus the Cyrillic faces for
+			// RU. The home greeting's <i> run adds one Inter italic face per
+			// subset, so it paints in the right face from the first frame.
+			expect(preloads).toHaveLength(lang === 'ru' ? 6 : 3);
 			for (const type of preloads) {
 				expect(type).toBe('font/woff2');
 			}

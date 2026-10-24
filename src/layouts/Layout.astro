@@ -13,9 +13,11 @@ interface Props {
 	/** The Locale of the page; the shell renders its chrome in this Locale. */
 	lang: 'ru' | 'en';
 	image?: string;
+	/** Set when the page paints italic body text (the home greeting does). */
+	preloadItalic?: boolean;
 }
 
-const { title, description, lang, image } = Astro.props;
+const { title, description, lang, image, preloadItalic } = Astro.props;
 const t: Translation = lang === 'ru' ? ru : en;
 ---
 
@@ -26,6 +28,7 @@ const t: Translation = lang === 'ru' ? ru : en;
 		description={description}
 		image={image}
 		lang={lang}
+		preloadItalic={preloadItalic}
 	/>
 	<body class='flex min-h-dvh flex-col bg-background text-foreground'>
 		<a class='skip-link' href='#main'>{t.a11y.skipToContent}</a>
