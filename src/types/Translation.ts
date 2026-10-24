@@ -36,4 +36,12 @@ export interface Translation {
 			h_web: string;
 		};
 	};
+	works: {
+		/** The page's `<h1>`. */
+		heading: string;
+	};
+	arts: {
+		/** The page's `<h1>`. */
+		heading: string;
+	};
 }

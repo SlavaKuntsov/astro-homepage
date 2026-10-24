@@ -1,0 +1,30 @@
+---
+import Heading from '@/components/Heading.astro';
+import MainContent from '@/components/MainContent.astro';
+import { SITE_DESCRIPTION, SITE_TITLE } from '@/consts';
+import { translations } from '@/i18n';
+import Layout from '@/layouts/Layout.astro';
+import type { Locale } from '@/lib/i18n';
+
+interface Props {
+	/** The Locale this page renders in. */
+	lang: Locale;
+}
+
+const { lang } = Astro.props;
+const t = translations[lang];
+---
+
+<Layout
+	title={SITE_TITLE}
+	description={SITE_DESCRIPTION}
+	lang={lang}
+	preloadItalic
+>
+	<div
+		class='mx-auto flex w-full max-w-prose flex-col items-start gap-7 sm:gap-8'
+	>
+		<Heading t={t} />
+		<MainContent t={t} />
+	</div>
+</Layout>

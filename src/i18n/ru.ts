@@ -37,6 +37,12 @@ const ru: Translation = {
 			h_web: 'Соц Сети',
 		},
 	},
+	works: {
+		heading: 'Мои работы',
+	},
+	arts: {
+		heading: 'Картиночки',
+	},
 };
 
 export default ru;

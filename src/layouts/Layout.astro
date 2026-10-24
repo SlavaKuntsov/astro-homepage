@@ -1,11 +1,9 @@
 ---
 import Footer from '@/components/Footer.astro';
 import Header from '@/components/Header.astro';
-import en from '@/i18n/en';
-import ru from '@/i18n/ru';
+import { translations } from '@/i18n';
 import type { Locale } from '@/lib/i18n';
 import '@/styles/global.css';
-import type { Translation } from '@/types/Translation';
 import BaseHead from './BaseHead.astro';
 
 interface Props {
@@ -19,7 +17,7 @@ interface Props {
 }
 
 const { title, description, lang, image, preloadItalic } = Astro.props;
-const t: Translation = lang === 'ru' ? ru : en;
+const t = translations[lang];
 ---
 
 <!doctype html>

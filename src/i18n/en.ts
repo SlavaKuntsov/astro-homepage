@@ -37,6 +37,12 @@ const en: Translation = {
 			h_web: 'On the web',
 		},
 	},
+	works: {
+		heading: 'Works',
+	},
+	arts: {
+		heading: 'Arts',
+	},
 };
 
 export default en;
