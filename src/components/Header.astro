@@ -1,21 +1,26 @@
 ---
 import type { NavItem } from '@/lib/nav';
+import { localizePath } from '@/lib/i18n';
+import type { Locale } from '@/lib/i18n';
 import type { Translation } from '@/types/Translation';
+import LocaleSwitcher from './LocaleSwitcher.astro';
 import NavLinks from './NavLinks.astro';
 import ThemeToggle from './ThemeToggle.astro';
 
 interface Props {
 	t: Translation;
+	/** The Locale of the page; navigation and the switcher follow it. */
+	lang: Locale;
 	/** Persist keys are Locale-scoped so cross-Locale navigation re-renders. */
 	persistKey: string;
 }
 
-const { t, persistKey }: Props = Astro.props;
+const { t, lang, persistKey }: Props = Astro.props;
 
 const links: NavItem[] = [
-	{ href: '/', label: t.nav.home },
-	{ href: '/works', label: t.nav.works },
-	{ href: '/arts', label: t.nav.arts },
+	{ href: localizePath('/', lang), label: t.nav.home },
+	{ href: localizePath('/works', lang), label: t.nav.works },
+	{ href: localizePath('/arts', lang), label: t.nav.arts },
 	{
 		href: 'https://github.com/SlavaKuntsov/astro-homepage',
 		label: t.nav.source,
@@ -38,7 +43,7 @@ const links: NavItem[] = [
 		class='mx-auto flex h-16 w-full max-w-content items-center justify-between gap-4 px-gutter'
 	>
 		<a
-			href='/'
+			href={localizePath('/', lang)}
 			class='inline-flex items-center font-heading text-xl font-semibold tracking-tight text-foreground transition-colors'
 			aria-label={`SK — ${t.site.ownerName}`}
 		>
@@ -53,8 +58,13 @@ const links: NavItem[] = [
 		</nav>
 
 		<div class='flex items-center gap-2'>
-			<!-- Filled by the server-rendered language switcher (#6). -->
-			<div class='hidden md:block' data-language-switcher-slot></div>
+			<div class='hidden md:block'>
+				<LocaleSwitcher
+					lang={lang}
+					pathname={Astro.url.pathname}
+					label={t.a11y.switchLocale}
+				/>
+			</div>
 
 			<ThemeToggle labels={t.a11y} />
 
@@ -87,8 +97,14 @@ const links: NavItem[] = [
 						<NavLinks links={links} class='px-3 py-2.5' />
 					</nav>
 
-					<!-- Same slot as the desktop switcher; #6 renders both. -->
-					<div data-language-switcher-slot></div>
+					<!-- Same switcher as the desktop slot, inside the menu panel. -->
+					<div class='px-2 pb-1'>
+						<LocaleSwitcher
+							lang={lang}
+							pathname={Astro.url.pathname}
+							label={t.a11y.switchLocale}
+						/>
+					</div>
 				</div>
 			</details>
 		</div>
@@ -96,6 +112,8 @@ const links: NavItem[] = [
 </header>
 
 <script>
+	import { localizePath } from '@/lib/i18n';
+	import type { Locale } from '@/lib/i18n';
 	import { isActivePath } from '@/lib/nav';
 
 	const currentMenu = () =>
@@ -121,6 +139,21 @@ const links: NavItem[] = [
 				}
 			}
 		);
+	};
+
+	/** Same reason: the persisted switcher would keep a stale target path. */
+	const syncLocaleSwitcher = () => {
+		document
+			.querySelectorAll<HTMLAnchorElement>('[data-locale-switcher]')
+			.forEach(switcher => {
+				const target = switcher.dataset.localeSwitcher as Locale | undefined;
+				if (target) {
+					switcher.setAttribute(
+						'href',
+						localizePath(window.location.pathname, target)
+					);
+				}
+			});
 	};
 
 	const syncMenuLabel = (menu: HTMLDetailsElement) => {
@@ -167,12 +200,15 @@ const links: NavItem[] = [
 		if (menu) menu.open = false;
 		bindMenu();
 		syncActiveLinks();
+		syncLocaleSwitcher();
 	});
 	document.addEventListener('astro:page-load', () => {
 		bindMenu();
 		syncActiveLinks();
+		syncLocaleSwitcher();
 	});
 
 	bindMenu();
 	syncActiveLinks();
+	syncLocaleSwitcher();
 </script>

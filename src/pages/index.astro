@@ -1,23 +1,5 @@
 ---
-import Heading from '@/components/Heading.astro';
-import MainContent from '@/components/MainContent.astro';
-import { SITE_DESCRIPTION, SITE_TITLE } from '@/consts';
-import en from '@/i18n/en';
-import Layout from '@/layouts/Layout.astro';
-
-const t = en;
+import HomePage from '@/components/pages/HomePage.astro';
 ---
 
-<Layout
-	title={SITE_TITLE}
-	description={SITE_DESCRIPTION}
-	lang='en'
-	preloadItalic
->
-	<div
-		class='mx-auto flex w-full max-w-prose flex-col items-start gap-7 sm:gap-8'
-	>
-		<Heading t={t} />
-		<MainContent t={t} />
-	</div>
-</Layout>
+<HomePage lang='ru' />

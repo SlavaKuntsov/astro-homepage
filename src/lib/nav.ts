@@ -4,6 +4,8 @@
  * one pure rule keeps the server render and the client update in agreement.
  */
 
+import { localeOf, localizePath, normalizePath } from './i18n';
+
 /** One entry in the Site navigation; `external` links open in a new tab. */
 export interface NavItem {
 	href: string;
@@ -11,22 +13,19 @@ export interface NavItem {
 	external?: boolean;
 }
 
-/** Trims trailing slashes so `/arts/` and `/arts` compare equal. */
-function normalizePath(path: string): string {
-	const trimmed = path.replace(/\/+$/, '');
-	return trimmed === '' ? '/' : trimmed;
-}
-
 /**
- * Whether `href` is the current page or a section containing it. The root link
- * is active only at `/`, never on every route. External links are never active.
+ * Whether `href` is the current page or a section containing it. A Locale's root
+ * link (`/` or `/en`) is active only at exactly that root, never on every route
+ * beneath it. External links are never active.
  */
 export function isActivePath(pathname: string, href: string): boolean {
 	if (!href.startsWith('/')) return false;
 
 	const path = normalizePath(pathname);
 	const target = normalizePath(href);
+	// The root of `href`'s Locale: `/` for ru, `/en` for en.
+	const root = localizePath('/', localeOf(target));
 
-	if (target === '/') return path === '/';
+	if (target === root) return path === root;
 	return path === target || path.startsWith(`${target}/`);
 }
