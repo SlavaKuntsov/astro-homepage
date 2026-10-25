@@ -24,8 +24,9 @@ print-optimized, plus a downloadable static `resume.pdf`. _Avoid_: resume.
 `arts`. All are per-**locale**. _Avoid_: data folder, content dir.
 
 **Experience entry** — one role at one company, authored as a single markdown
-file with typed frontmatter (company, position, start, end, summary, highlights,
-environment). _Avoid_: job, position.
+file with typed frontmatter (company, company URL, position, dates, location,
+employment type, industries, summary, highlights, environment, order).
+_Avoid_: job, position.
 
 **Project** — a showcased piece of work: manual fields (title, description,
 images, links, stack) plus optional build-time enrichment from a public GitHub

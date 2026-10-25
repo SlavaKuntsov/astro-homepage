@@ -7,7 +7,16 @@ import { expect, test } from './fixtures';
  * layout, and the mobile menu works below the `md` breakpoint.
  */
 
-const ROUTES = ['/', '/works', '/arts', '/en/', '/en/works', '/en/arts'];
+const ROUTES = [
+	'/',
+	'/works',
+	'/arts',
+	'/experience',
+	'/en/',
+	'/en/works',
+	'/en/arts',
+	'/en/experience',
+];
 
 test.describe('the shared layout renders on every page', () => {
 	for (const path of ROUTES) {

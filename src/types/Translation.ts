@@ -17,6 +17,7 @@ export interface Translation {
 	};
 	nav: {
 		home: string;
+		experience: string;
 		works: string;
 		arts: string;
 		source: string;
@@ -43,5 +44,19 @@ export interface Translation {
 	arts: {
 		/** The page's `<h1>`. */
 		heading: string;
+	};
+	experience: {
+		/** The `/experience` page's `<h1>`. */
+		heading: string;
+		/** Labels an ongoing role in the timeline, e.g. "Present". */
+		present: string;
+		/** Heading of the home highlights block. */
+		highlightsHeading: string;
+		/** Link from the highlights block to the full `/experience` page. */
+		viewAll: string;
+		/** Accessible label for an entry's technology chips. */
+		environment: string;
+		/** Label for an entry's industries line. */
+		industries: string;
 	};
 }

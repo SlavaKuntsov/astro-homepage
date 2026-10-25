@@ -1,0 +1,114 @@
+---
+import type { CollectionEntry } from 'astro:content';
+import { render } from 'astro:content';
+import { formatMonthYear, slugOfEntryId } from '@/lib/experience';
+import type { Locale } from '@/lib/i18n';
+import type { Translation } from '@/types/Translation';
+
+interface Props {
+	/** Entries already filtered to this Locale and sorted newest-first. */
+	entries: CollectionEntry<'experience'>[];
+	lang: Locale;
+	t: Translation;
+}
+
+const { entries, lang, t } = Astro.props;
+
+// `render` gives each entry's long-form markdown body (ADR-0004) as a component
+// to drop into its timeline item.
+const bodies = await Promise.all(entries.map(entry => render(entry)));
+---
+
+<ol class='flex flex-col gap-10' data-experience-timeline>
+	{
+		entries.map((entry, index) => {
+			const { data } = entry;
+			const Content = bodies[index].Content;
+			const meta = [data.employmentType, data.location]
+				.filter(Boolean)
+				.join(' · ');
+
+			return (
+				<li
+					class='relative border-l-2 border-border pl-6 sm:pl-8'
+					data-experience-entry
+					data-slug={slugOfEntryId(entry.id)}
+					data-company-url={data.companyUrl}
+				>
+					<span
+						class='absolute -left-[7px] top-2 size-3 rounded-full border-2 border-background bg-primary transition-colors'
+						aria-hidden='true'
+					/>
+					<article class='flex flex-col gap-3'>
+						<header class='flex flex-col gap-1'>
+							<h3 class='font-heading text-lg font-semibold text-foreground'>
+								{data.position}
+							</h3>
+							<p class='text-muted-foreground'>
+								{data.companyUrl ? (
+									<a
+										href={data.companyUrl}
+										target='_blank'
+										rel='noopener noreferrer'
+										class='font-medium text-foreground underline decoration-border underline-offset-4 transition-colors hover:decoration-primary'
+									>
+										{data.company}
+									</a>
+								) : (
+									<span class='font-medium text-foreground'>{data.company}</span>
+								)}
+							</p>
+							<p class='text-sm text-muted-foreground'>
+								<time datetime={data.start}>
+									{formatMonthYear(data.start, lang)}
+								</time>
+								<span aria-hidden='true'> — </span>
+								{data.end === undefined ? (
+									<span>{t.experience.present}</span>
+								) : (
+									<time datetime={data.end}>
+										{formatMonthYear(data.end, lang)}
+									</time>
+								)}
+								{meta && <span> · {meta}</span>}
+							</p>
+							{data.industries && data.industries.length > 0 && (
+								<p class='text-sm text-muted-foreground'>
+									<span class='font-medium text-foreground'>
+										{t.experience.industries}:{' '}
+									</span>
+									{data.industries.join(', ')}
+								</p>
+							)}
+						</header>
+
+						<p class='text-base'>{data.summary}</p>
+
+						<div class='flex flex-col gap-2 text-muted-foreground'>
+							<Content />
+						</div>
+
+						{data.highlights.length > 0 && (
+							<ul class='flex list-disc flex-col gap-1 pl-5 text-muted-foreground'>
+								{data.highlights.map(highlight => <li>{highlight}</li>)}
+							</ul>
+						)}
+
+						{data.environment.length > 0 && (
+							<ul
+								class='flex flex-wrap gap-2'
+								aria-label={t.experience.environment}
+							>
+								{data.environment.map(tech => (
+									<li class='rounded-full border border-border bg-muted px-3 py-1 text-sm text-muted-foreground transition-colors'>
+										{tech}
+									</li>
+								))}
+							</ul>
+						)}
+					</article>
+				</li>
+			);
+		})
+	}
+</ol>

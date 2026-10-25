@@ -1,0 +1,27 @@
+---
+import ExperienceTimeline from '@/components/ExperienceTimeline.astro';
+import { SITE_DESCRIPTION, SITE_TITLE } from '@/consts';
+import { translations } from '@/i18n';
+import Layout from '@/layouts/Layout.astro';
+import { entriesForLocale, sortByRecency } from '@/lib/experience';
+import type { Locale } from '@/lib/i18n';
+import { getCollection } from 'astro:content';
+
+interface Props {
+	/** The Locale this page renders in. */
+	lang: Locale;
+}
+
+const { lang } = Astro.props;
+const t = translations[lang];
+const entries = sortByRecency(
+	entriesForLocale(await getCollection('experience'), lang)
+);
+---
+
+<Layout title={SITE_TITLE} description={SITE_DESCRIPTION} lang={lang}>
+	<h1 class='text-3xl font-semibold'>{t.experience.heading}</h1>
+	<div class='mt-8'>
+		<ExperienceTimeline entries={entries} lang={lang} t={t} />
+	</div>
+</Layout>
