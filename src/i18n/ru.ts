@@ -17,6 +17,7 @@ const ru: Translation = {
 	},
 	nav: {
 		home: 'Главная',
+		experience: 'Опыт',
 		works: 'Работы',
 		arts: 'Арты',
 		source: 'Исходники',
@@ -42,6 +43,14 @@ const ru: Translation = {
 	},
 	arts: {
 		heading: 'Картиночки',
+	},
+	experience: {
+		heading: 'Опыт работы',
+		present: 'настоящее время',
+		highlightsHeading: 'Ключевые достижения',
+		viewAll: 'Весь опыт',
+		environment: 'Окружение',
+		industries: 'Отрасли',
 	},
 };
 

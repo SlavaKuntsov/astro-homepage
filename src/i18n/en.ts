@@ -17,6 +17,7 @@ const en: Translation = {
 	},
 	nav: {
 		home: 'Home',
+		experience: 'Experience',
 		works: 'Works',
 		arts: 'Arts',
 		source: 'Source',
@@ -42,6 +43,14 @@ const en: Translation = {
 	},
 	arts: {
 		heading: 'Arts',
+	},
+	experience: {
+		heading: 'Experience',
+		present: 'Present',
+		highlightsHeading: 'Career highlights',
+		viewAll: 'View full experience',
+		environment: 'Environment',
+		industries: 'Industries',
 	},
 };
 
