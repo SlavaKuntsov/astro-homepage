@@ -9,6 +9,7 @@ import {
 	contactLinkAttrs,
 } from '@/lib/contacts';
 import type { Translation } from '@/types/Translation';
+import ContactIcon from './ContactIcon.astro';
 
 interface Props {
 	t: Translation;
@@ -29,13 +30,12 @@ const { t }: Props = Astro.props;
 					<a
 						href={contact.href}
 						{...contactLinkAttrs(contact)}
-						class='flex w-fit flex-row items-baseline gap-2 rounded-lg px-2 py-1 transition-colors hover:bg-card'
+						aria-label={`${t.contacts.labels[contact.kind]}: ${contact.detail}`}
+						class='flex w-fit flex-row items-center gap-2 rounded-lg px-2 py-1 text-muted-foreground transition-colors hover:bg-card hover:text-foreground'
 						data-contact-kind={contact.kind}
 					>
-						<span class='font-medium text-foreground'>
-							{t.contacts.labels[contact.kind]}
-						</span>
-						<span class='text-muted-foreground'>{contact.detail}</span>
+						<ContactIcon kind={contact.kind} />
+						<span>{contact.detail}</span>
 					</a>
 				</li>
 			))

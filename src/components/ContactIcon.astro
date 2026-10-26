@@ -1,0 +1,45 @@
+---
+// Inline SVG glyphs for the contact links (ADR-0002: no icon library, no React).
+// Each icon is decorative — the link carries the localized accessible name — so
+// the <svg> is aria-hidden and the paths inherit `currentColor`.
+import type { ContactKind } from '@/lib/contacts';
+
+interface Props {
+	kind: ContactKind;
+}
+
+const { kind }: Props = Astro.props;
+
+/** One `<path d>` per glyph, drawn on a 24×24 grid with a 2px stroke. */
+const ICON_PATHS: Record<ContactKind, string[]> = {
+	email: [
+		'M4 5h16a1 1 0 0 1 1 1v12a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1z',
+		'm4 7 8 5 8-5',
+	],
+	github: [
+		'M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22',
+	],
+	telegram: ['M22 2 11 13', 'M22 2 15 22 11 13 2 9 22 2z'],
+	instagram: [
+		'M7 2h10a5 5 0 0 1 5 5v10a5 5 0 0 1-5 5H7a5 5 0 0 1-5-5V7a5 5 0 0 1 5-5z',
+		'M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z',
+		'M17.5 6.5h.01',
+	],
+};
+
+const paths = ICON_PATHS[kind];
+---
+
+<svg
+	viewBox='0 0 24 24'
+	width='20'
+	height='20'
+	fill='none'
+	stroke='currentColor'
+	stroke-width='2'
+	stroke-linecap='round'
+	stroke-linejoin='round'
+	aria-hidden='true'
+>
+	{paths.map(d => <path d={d} />)}
+</svg>

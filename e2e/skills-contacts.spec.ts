@@ -43,7 +43,7 @@ test.describe('the RU home renders skills and contacts', () => {
 		).toHaveText('Языки');
 	});
 
-	test('renders every contact link with its correct target and label', async ({
+	test('renders every contact link with its correct target and icon', async ({
 		page,
 	}) => {
 		await page.goto('/');
@@ -64,7 +64,14 @@ test.describe('the RU home renders skills and contacts', () => {
 		for (const [kind, href, label] of expected) {
 			const link = contact(page, kind);
 			await expect(link).toHaveAttribute('href', href);
-			await expect(link).toContainText(label);
+			// The word is the link's accessible name, not visible text: the link
+			// shows an icon beside the handle instead.
+			await expect(link).toHaveAttribute(
+				'aria-label',
+				new RegExp(`^${label}:`)
+			);
+			await expect(link.locator('svg')).toBeVisible();
+			await expect(link).not.toContainText(label);
 		}
 	});
 
@@ -112,7 +119,10 @@ test.describe('the EN home renders skills and contacts in English', () => {
 	test('localizes the contact labels and the CV action', async ({ page }) => {
 		await page.goto('/en/');
 
-		await expect(contact(page, 'email')).toContainText('Email');
+		await expect(contact(page, 'email')).toHaveAttribute(
+			'aria-label',
+			/^Email:/
+		);
 		await expect(contact(page, 'email')).toHaveAttribute(
 			'href',
 			'mailto:kuncovs19@gmail.com'
