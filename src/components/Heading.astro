@@ -9,7 +9,7 @@ interface Props {
 const { t }: Props = Astro.props;
 ---
 
-<div class='relative w-full flex items-center justify-center min-h-[290px]'>
+<div class='relative w-full flex items-center justify-center min-h-72.5'>
 	<div
 		class='hero-fade absolute left-6 sm:left-24 top-0 h-full w-38 sm:w-28 pointer-events-none z-10'
 		data-hero-fade='left'
@@ -28,7 +28,7 @@ const { t }: Props = Astro.props;
 	class='transition-colors px-2 py-3 backdrop-blur-3xl bg-card/75 rounded-lg w-full'
 >
 	<p
-		class='mx-auto w-full text-lg text-center whitespace-pre-wrap break-words'
+		class='mx-auto w-full text-lg text-center whitespace-pre-wrap wrap-break-word'
 		set:html={t.index.heading.greeting}
 	/>
 </div>
