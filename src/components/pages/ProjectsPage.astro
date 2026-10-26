@@ -1,8 +1,9 @@
 ---
 // The Projects index (ticket #9): the showcased work as collection-driven
 // cards, featured projects first and the rest in `projects/order.json` order
-// (ADR-0009). Each card links to `/projects/<slug>`; a public Project whose
-// repo was reached at build shows its stars and primary language.
+// (ADR-0009). Each card links to `/projects/<slug>`; its tags are the repo's
+// topics (the manual `stack` is the fallback) and a public Project whose repo
+// was reached at build also shows its stars and primary language.
 import { SITE_DESCRIPTION, SITE_TITLE } from '@/consts';
 import { translations } from '@/i18n';
 import Layout from '@/layouts/Layout.astro';
@@ -71,7 +72,7 @@ const projectHref = (slug: string) => localizePath(`/projects/${slug}`, lang);
 								{meta.description}
 							</p>
 
-							<StackChips items={data.stack} label={t.projects.stack} />
+							<StackChips items={meta.tags} label={t.projects.tags} />
 
 							{(meta.stars !== null || meta.language !== null) && (
 								<p class='flex flex-wrap items-center gap-3 text-sm text-muted-foreground'>

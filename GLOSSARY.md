@@ -40,9 +40,11 @@ repo. _Avoid_: repo, work.
 **Artwork** — a gallery image item in the `arts` collection, opened in a
 lightbox. _Avoid_: art, picture.
 
-**Enrichment** — build-time fetching of public metadata (stars, language,
-description) for a **Project** whose source repo is public. Never required;
-manual fields always win. _Avoid_: scraping, sync.
+**Enrichment** — build-time fetching of public metadata (stars, tags from the
+repo's topics, primary language, description, and language breakdown) for a
+**Project** whose source repo is public. Never required; the manual
+`summary` always wins, and the manual `stack` backs up the tags when the repo
+has no topics. _Avoid_: scraping, sync.
 
 **Order manifest** — the `order.json` next to a collection's files, listing the
 slugs (or group ids) in display order; the single source of a collection's

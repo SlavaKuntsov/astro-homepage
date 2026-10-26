@@ -78,8 +78,8 @@ A refactored, Astro-native version of the Site that:
 19. As the owner, I want a missing or mistyped frontmatter field to fail the build,
     so that I never ship a broken entry.
 20. As the owner, I want a project that links a public GitHub repo to optionally
-    show stars/language/description pulled at build time, so that the page stays
-    fresh with little effort.
+    show the repo's tags (its topics) and language breakdown pulled at build time,
+    so that the page stays fresh with little effort.
 21. As the owner, I want to redeploy to Vercel with default settings, so that I do
     not maintain custom build config.
 22. As the owner, I want the Site to be fast (minimal client JS, optimized fonts,
@@ -154,9 +154,11 @@ type Theme = 'light' | 'dark';           // persisted at localStorage["theme"]
 **Projects enrichment**
 
 - At build time, for projects with `visibility: 'public'` **and** a `githubRepo`,
-  fetch stars / primary language / description from the GitHub API and cache the
-  result; manual frontmatter always wins on conflict. Enrichment failure must not
-  fail the build.
+  fetch the repo's stars, topics, primary language, description, and language
+  breakdown from the GitHub API and cache the result. The repo's topics become the
+  project's tags (the manual `stack` is the fallback) and the manual `summary`
+  always wins on conflict; the breakdown renders as the language list. Enrichment
+  failure must not fail the build.
 
 **Pages**
 

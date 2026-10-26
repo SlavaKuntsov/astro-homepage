@@ -1,8 +1,10 @@
 ---
 // A Project's detail page (ticket #9): the manual description and markdown body
-// (ADR-0004), the image gallery, links, stack, and — for a public Project whose
-// GitHub repo was reached at build — the Enrichment block. Manual fields always
-// win; when the fetch failed the block is simply absent and the page renders.
+// (ADR-0004), the image gallery, links, header tags, and — for a public Project
+// whose GitHub repo was reached at build — the Enrichment language breakdown.
+// The tags are the repo's topics (the manual `stack` is the fallback) and the
+// manual `summary` is always the description; when the fetch failed the
+// breakdown is simply absent and the page renders.
 import type { CollectionEntry } from 'astro:content';
 import { render } from 'astro:content';
 import { SITE_TITLE } from '@/consts';
@@ -37,8 +39,6 @@ if (data.links?.github)
 if (data.links?.other)
 	links.push({ href: data.links.other, label: t.projects.other });
 
-const hasEnrichment =
-	meta.stars !== null || meta.language !== null || meta.repoDescription !== null;
 ---
 
 <Layout
@@ -66,7 +66,7 @@ const hasEnrichment =
 				<p class='text-lg text-muted-foreground'>{meta.description}</p>
 			</div>
 
-			<StackChips items={data.stack} label={t.projects.stack} />
+			<StackChips items={meta.tags} label={t.projects.tags} />
 
 			{links.length > 0 && (
 				<ul class='flex flex-wrap gap-4 text-sm font-medium' data-project-links>
@@ -116,40 +116,42 @@ const hasEnrichment =
 		</div>
 
 		{
-			hasEnrichment && (
+			meta.languages.length > 0 && (
 				<section
-					class='flex flex-col gap-3 rounded-2xl border border-border bg-card p-5'
-					aria-label={t.projects.repository}
-					data-project-enrichment
+					class='flex flex-col gap-4 rounded-2xl border border-border bg-card p-5'
+					aria-label={t.projects.languages}
+					data-project-languages
 				>
-					<h2 class='font-heading text-lg font-semibold text-foreground'>
-						{t.projects.repository}
-					</h2>
-
-					<dl class='flex flex-wrap gap-x-8 gap-y-2 text-sm'>
-						{meta.stars !== null && (
-							<div class='flex items-baseline gap-2'>
-								<dt class='text-muted-foreground'>{t.projects.stars}</dt>
-								<dd class='font-medium text-foreground' data-project-stars>
-									{meta.stars}
-								</dd>
-							</div>
+					<div class='flex flex-col gap-1'>
+						<h2 class='font-heading text-lg font-semibold text-foreground'>
+							{t.projects.languages}
+						</h2>
+						{meta.repoDescription !== null && (
+							<p class='text-sm text-muted-foreground' data-project-repo-description>
+								{meta.repoDescription}
+							</p>
 						)}
-						{meta.language !== null && (
-							<div class='flex items-baseline gap-2'>
-								<dt class='text-muted-foreground'>{t.projects.language}</dt>
-								<dd class='font-medium text-foreground' data-project-language>
-									{meta.language}
-								</dd>
-							</div>
-						)}
-					</dl>
+					</div>
 
-					{meta.repoDescription !== null && (
-						<p class='text-sm text-muted-foreground' data-project-repo-description>
-							{meta.repoDescription}
-						</p>
-					)}
+					<ul class='flex flex-col gap-3'>
+						{meta.languages.map(({ name, percent }) => (
+							<li class='flex flex-col gap-1' data-project-language>
+								<div class='flex items-baseline justify-between gap-3 text-sm'>
+									<span class='font-medium text-foreground'>{name}</span>
+									<span class='tabular-nums text-muted-foreground'>{percent}%</span>
+								</div>
+								<span
+									class='h-1.5 w-full overflow-hidden rounded-full bg-muted'
+									aria-hidden='true'
+								>
+									<span
+										class='block h-full rounded-full bg-primary'
+										style={`width: ${percent}%`}
+									/>
+								</span>
+							</li>
+						))}
+					</ul>
 				</section>
 			)
 		}

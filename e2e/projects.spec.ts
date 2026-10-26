@@ -71,11 +71,11 @@ test.describe('the RU projects index at /projects', () => {
 		}
 	});
 
-	test('shows the stack of every project', async ({ page }) => {
+	test('shows the tags of every project', async ({ page }) => {
 		await page.goto('/projects');
 
 		for (const card of await cards(page).all()) {
-			await expect(card.getByRole('list', { name: 'Стек' })).toBeVisible();
+			await expect(card.getByRole('list', { name: 'Теги' })).toBeVisible();
 		}
 	});
 });
@@ -127,6 +127,9 @@ test.describe('a project detail page', () => {
 			'Портфолио и резюме на Astro, где тема и язык верны с первого кадра.'
 		);
 
+		// The header tags: the repo's topics when reached, else the manual stack.
+		await expect(detail.getByRole('list', { name: 'Теги' })).toBeVisible();
+
 		// The long-form markdown body (ADR-0004), not just the frontmatter.
 		await expect(detail.locator('[data-project-body] p').first()).not.toBeEmpty();
 
@@ -154,7 +157,7 @@ test.describe('a project detail page', () => {
 		).toHaveAttribute('href', '/projects');
 	});
 
-	test('renders a private project without repository enrichment', async ({
+	test('renders a private project without a language breakdown', async ({
 		page,
 	}) => {
 		const response = await page.goto('/projects/private-crm');
@@ -163,22 +166,24 @@ test.describe('a project detail page', () => {
 		const detail = page.locator('[data-project-detail]');
 		await expect(detail).toHaveAttribute('data-visibility', 'private');
 		await expect(detail.locator('[data-project-body] p').first()).not.toBeEmpty();
-		await expect(detail.locator('[data-project-enrichment]')).toHaveCount(0);
+		await expect(detail.locator('[data-project-languages]')).toHaveCount(0);
 	});
 
 	// Enrichment is optional and hits the real GitHub API at build. When it was
-	// reached the block must be well formed; when it failed the page must still
-	// render — the acceptance criterion is "degrade gracefully, never fail".
-	test('shows GitHub metadata when reached, and renders when it was not', async ({
+	// reached the language breakdown must be well formed; when it failed the page
+	// must still render — the acceptance criterion is "degrade gracefully, never
+	// fail".
+	test('shows the GitHub language breakdown when reached, and renders when it was not', async ({
 		page,
 	}) => {
 		const response = await page.goto('/projects/astro-homepage');
 		expect(response?.status()).toBe(200);
 
-		const enrichment = page.locator('[data-project-enrichment]');
-		if ((await enrichment.count()) > 0) {
-			await expect(page.locator('[data-project-stars]')).toContainText(/\d/);
-			await expect(page.locator('[data-project-language]')).not.toBeEmpty();
+		const breakdown = page.locator('[data-project-languages]');
+		if ((await breakdown.count()) > 0) {
+			const rows = breakdown.locator('[data-project-language]');
+			expect(await rows.count()).toBeGreaterThanOrEqual(1);
+			await expect(rows.first()).toContainText(/\d+(\.\d+)?%/);
 		}
 	});
 });

@@ -46,8 +46,8 @@ export interface Translation {
 		viewProject: string;
 		/** Link from a detail page back to the index. */
 		back: string;
-		/** Label for a Project's technology chips. */
-		stack: string;
+		/** Accessible label for a Project's tag chips (the repo's topics). */
+		tags: string;
 		/** Accessible label for a Project's image gallery. */
 		gallery: string;
 		/** Link label for the live site. */
@@ -56,12 +56,10 @@ export interface Translation {
 		source: string;
 		/** Link label for any other Project link. */
 		other: string;
-		/** Label for the Enrichment star count. */
+		/** Label for the Enrichment star count on an index card. */
 		stars: string;
-		/** Label for the Enrichment primary language. */
-		language: string;
-		/** Label for the Enrichment repository description. */
-		repository: string;
+		/** Label for the Enrichment language breakdown. */
+		languages: string;
 	};
 	arts: {
 		/** The page's `<h1>`. */
