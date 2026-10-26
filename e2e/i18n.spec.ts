@@ -77,12 +77,12 @@ test.describe('the Locale switcher is a server-rendered link', () => {
 
 		// A same-Locale navigation persists the header, so its server-rendered
 		// href would otherwise still point at the previous page.
-		await page.locator('header nav a[href="/works"]').first().click();
-		await page.waitForURL(pathnameIs('/works'));
+		await page.locator('header nav a[href="/projects"]').first().click();
+		await page.waitForURL(pathnameIs('/projects'));
 
 		await expect(
 			page.locator('[data-locale-switcher]').first()
-		).toHaveAttribute('href', '/en/works');
+		).toHaveAttribute('href', '/en/projects');
 	});
 });
 
@@ -105,7 +105,7 @@ test.describe('the Locale switcher works without JavaScript', () => {
 test.describe('legacy /ru/* routes redirect to the unprefixed routes', () => {
 	for (const [legacy, target] of [
 		['/ru', '/'],
-		['/ru/works', '/works'],
+		['/ru/works', '/projects'],
 		['/ru/arts', '/arts'],
 	]) {
 		test(`${legacy} redirects to ${target}`, async ({ page }) => {

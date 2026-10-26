@@ -9,11 +9,11 @@ import { expect, test } from './fixtures';
 
 const ROUTES = [
 	'/',
-	'/works',
+	'/projects',
 	'/arts',
 	'/experience',
 	'/en/',
-	'/en/works',
+	'/en/projects',
 	'/en/arts',
 	'/en/experience',
 ];
@@ -255,13 +255,13 @@ test('the active navigation link follows client-side navigation', async ({
 });
 
 test('the EN root link is active only on the EN root', async ({ page }) => {
-	await page.goto('/en/works');
+	await page.goto('/en/projects');
 
 	const primaryNav = page.getByRole('navigation').first();
 	const home = primaryNav.locator('a[href="/en"]');
-	const works = primaryNav.locator('a[href="/en/works"]');
+	const projects = primaryNav.locator('a[href="/en/projects"]');
 
-	await expect(works).toHaveAttribute('aria-current', 'page');
-	// The localized root is not a section: it must not light up on `/en/works`.
+	await expect(projects).toHaveAttribute('aria-current', 'page');
+	// The localized root is not a section: it must not light up on `/en/projects`.
 	await expect(home).not.toHaveAttribute('aria-current', 'page');
 });

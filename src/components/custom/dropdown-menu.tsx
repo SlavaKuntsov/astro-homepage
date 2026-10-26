@@ -36,8 +36,8 @@ export function DropdownMenuDemo({ t }: DropdownMenuDemoProps) {
             </a>
           </DropdownMenuItem>
           <DropdownMenuItem>
-            <a href="/works" className="block w-full h-full text-xl py-1 px-1">
-              {t.nav.works}
+            <a href="/projects" className="block w-full h-full text-xl py-1 px-1">
+              {t.nav.projects}
             </a>
           </DropdownMenuItem>
           <DropdownMenuItem>

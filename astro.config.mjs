@@ -50,11 +50,14 @@ export default defineConfig({
 	},
 	// Old Site URLs keep working (spec user story 30): the previous Site served
 	// the default Locale under `/ru/*`, so each of its three routes redirects to
-	// the unprefixed equivalent. That legacy URL set is frozen, and a static
-	// build cannot emit a `/ru/*` wildcard, so this map is complete.
+	// the unprefixed equivalent. `/works` became `/projects` in ticket #9, so
+	// both the legacy `/ru/works` and the retired `/works` land there. That
+	// legacy URL set is frozen, and a static build cannot emit a `/ru/*`
+	// wildcard, so this map is complete.
 	redirects: {
 		'/ru': '/',
-		'/ru/works': '/works',
+		'/ru/works': '/projects',
 		'/ru/arts': '/arts',
+		'/works': '/projects',
 	},
 });

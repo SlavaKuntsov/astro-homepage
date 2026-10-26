@@ -21,7 +21,7 @@ export interface Translation {
 	nav: {
 		home: string;
 		experience: string;
-		works: string;
+		projects: string;
 		arts: string;
 		source: string;
 	};
@@ -39,9 +39,29 @@ export interface Translation {
 			about: string;
 		};
 	};
-	works: {
-		/** The page's `<h1>`. */
+	projects: {
+		/** The `/projects` index page's `<h1>`. */
 		heading: string;
+		/** Link from an index card to the Project's detail page. */
+		viewProject: string;
+		/** Link from a detail page back to the index. */
+		back: string;
+		/** Label for a Project's technology chips. */
+		stack: string;
+		/** Accessible label for a Project's image gallery. */
+		gallery: string;
+		/** Link label for the live site. */
+		live: string;
+		/** Link label for the source repository. */
+		source: string;
+		/** Link label for any other Project link. */
+		other: string;
+		/** Label for the Enrichment star count. */
+		stars: string;
+		/** Label for the Enrichment primary language. */
+		language: string;
+		/** Label for the Enrichment repository description. */
+		repository: string;
 	};
 	arts: {
 		/** The page's `<h1>`. */

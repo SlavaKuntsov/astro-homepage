@@ -46,7 +46,8 @@ manual fields always win. _Avoid_: scraping, sync.
 
 **Order manifest** — the `order.json` next to a collection's files, listing the
 slugs (or group ids) in display order; the single source of a collection's
-display order (ADR-0009). _Avoid_: sort field, priority.
+display order (ADR-0009). Featured **Projects** lead the index, and the manifest
+orders the rest. _Avoid_: sort field, priority.
 
 ## Presentation
 
