@@ -136,16 +136,20 @@ type Theme = 'light' | 'dark';           // persisted at localStorage["theme"]
 - `experience/{ru,en}/<slug>.md` — frontmatter: `company`, `companyUrl?`,
   `position`, `start`, `end?` or `current: boolean`, `location?`,
   `employmentType?`, `industries?: string[]`, `summary`, `highlights: string[]`,
-  `environment: string[]`, `order: number`. Body: long-form markdown.
+  `environment: string[]`. Body: long-form markdown.
 - `projects/{ru,en}/<slug>.md` — frontmatter: `title`, `summary`, `cover?`,
   `images?: string[]`, `stack: string[]`, `links?: { live?, github?, other? }`,
-  `visibility: 'public' | 'private'`, `featured?: boolean`, `order: number`,
-  optional `githubRepo?: string` (owner/repo) to trigger enrichment.
+  `visibility: 'public' | 'private'`, `featured?: boolean`, optional
+  `githubRepo?: string` (owner/repo) to trigger enrichment.
 - `arts/{ru,en}/<slug>.md` — frontmatter: `title`, `image`, `tags?: string[]`,
-  `link?`, `order: number`.
+  `link?`.
+- `skills/<group-id>.md` — the one locale-independent collection (ADR-0008):
+  frontmatter `skills: string[]`; only the group's label is localized.
+- Display order comes from a per-collection `order.json` manifest (a list of the
+  slugs, or group ids), not an `order` field (ADR-0009).
 - Locale pairing is by matching `slug` across `ru/` and `en/` folders.
 - A shared, non-localized module holds locale-independent data (owner links,
-  navigation, skills) — used by header/footer/CV.
+  navigation) — used by header/footer/CV.
 
 **Projects enrichment**
 

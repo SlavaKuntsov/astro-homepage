@@ -1,13 +1,16 @@
+import { readdirSync } from 'node:fs';
+import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
+import experienceOrder from '@/content/experience/order.json';
 import {
 	entriesForLocale,
 	experienceSchema,
 	formatPeriod,
 	localeOfEntryId,
+	orderedEntries,
 	pairBySlug,
 	recentEntries,
 	slugOfEntryId,
-	sortByRecency,
 	type ExperienceEntry,
 	type ExperienceFrontmatter,
 } from '@/lib/experience';
@@ -23,7 +26,6 @@ const validEntry = {
 	summary: 'Backend work on the .NET platform.',
 	highlights: ['Shipped a trading API'],
 	environment: ['.NET', 'PostgreSQL'],
-	order: 0,
 };
 
 const withEntry = (
@@ -123,27 +125,26 @@ describe('entry id parsing', () => {
 	});
 });
 
-// "Newest-first" (ticket #7): the timeline orders by the role's start date,
-// descending, with the explicit `order` field breaking ties.
-describe('timeline ordering', () => {
+// "Newest-first": the order is authored explicitly in `experience/order.json`
+// (ADR-0009) — one list of slugs instead of an `order` field in every file. The
+// list is expected to run newest first; the rendered-page test guards that too.
+describe('entry ordering', () => {
 	const entries = [
 		withEntry('ru/old', {
 			start: '2020-01',
-			order: 3,
 			current: undefined,
 			end: '2021-01',
 		}),
-		withEntry('ru/newest', { start: '2024-06', order: 2 }),
+		withEntry('ru/newest', { start: '2024-06' }),
 		withEntry('ru/middle', {
 			start: '2022-05',
-			order: 1,
 			current: undefined,
 			end: '2023-01',
 		}),
 	];
 
-	it('sorts by start date, newest first, without mutating the input', () => {
-		const ordered = sortByRecency(entries);
+	it('follows the authored order, without mutating the input', () => {
+		const ordered = orderedEntries(entries, ['newest', 'middle', 'old']);
 
 		expect(ordered.map(e => e.id)).toEqual([
 			'ru/newest',
@@ -157,23 +158,31 @@ describe('timeline ordering', () => {
 		]);
 	});
 
-	it('breaks a tie on the explicit order field', () => {
-		const tied = [
-			withEntry('ru/second', { start: '2024-01', order: 1 }),
-			withEntry('ru/first', { start: '2024-01', order: 0 }),
-		];
-
-		expect(sortByRecency(tied).map(e => e.id)).toEqual([
-			'ru/first',
-			'ru/second',
+	it('sorts a slug absent from the list after the listed ones', () => {
+		expect(orderedEntries(entries, ['newest']).map(e => e.id)).toEqual([
+			'ru/newest',
+			'ru/middle',
+			'ru/old',
 		]);
 	});
 
-	it('keeps the most recent entries for the highlights block', () => {
-		expect(recentEntries(entries, 2).map(e => e.id)).toEqual([
-			'ru/newest',
-			'ru/middle',
-		]);
+	it('keeps the first entries for the highlights block', () => {
+		expect(
+			recentEntries(entries, 2, ['newest', 'middle', 'old']).map(e => e.id)
+		).toEqual(['ru/newest', 'ru/middle']);
+	});
+});
+
+// Every entry must be listed: a slug with no manifest entry would silently drop
+// to the end of the timeline, so the list and the content files are kept in step.
+describe('order manifest', () => {
+	it('lists every experience slug exactly once', () => {
+		const dir = fileURLToPath(new URL('../content/experience/ru', import.meta.url));
+		const slugs = readdirSync(dir)
+			.filter(name => name.endsWith('.md'))
+			.map(name => name.replace(/\.md$/, ''));
+
+		expect(new Set(experienceOrder)).toEqual(new Set(slugs));
 	});
 });
 

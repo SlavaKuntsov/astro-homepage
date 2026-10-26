@@ -1,5 +1,5 @@
 ---
-import { SOCIAL_LINKS } from '@/consts';
+import { CONTACT_LINKS, contactLinkAttrs } from '@/lib/contacts';
 import type { Translation } from '@/types/Translation';
 
 interface Props {
@@ -37,15 +37,14 @@ const year = new Date().getFullYear();
 
 		<ul class='flex flex-wrap items-center gap-x-5 gap-y-2'>
 			{
-				SOCIAL_LINKS.map(link => (
+				CONTACT_LINKS.map(contact => (
 					<li>
 						<a
-							href={link.href}
-							target='_blank'
-							rel='me noopener noreferrer'
+							href={contact.href}
+							{...contactLinkAttrs(contact)}
 							class='text-muted-foreground transition-colors hover:text-foreground'
 						>
-							{link.label}
+							{t.contacts.labels[contact.kind]}
 						</a>
 					</li>
 				))

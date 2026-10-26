@@ -1,0 +1,6 @@
+---
+skills:
+  - C#
+  - TypeScript
+  - JavaScript
+---

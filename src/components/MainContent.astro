@@ -1,6 +1,5 @@
 ---
 import type { Translation } from '@/types/Translation';
-import { IoLogoGithub, IoLogoInstagram, IoLogoTwitter } from 'react-icons/io5';
 
 interface Props {
 	t: Translation;
@@ -13,36 +12,9 @@ const { t }: Props = Astro.props;
 	<h2
 		class='font-semibold text-2xl underline decoration-foreground decoration-1 underline-offset-3 mb-4 transition-colors'
 	>
-  {t.index.main.h_about}
+		{t.index.main.h_about}
 	</h2>
 	<p class='text-[1.3rem]/6.5 text-wrap'>
 		{t.index.main.about}
 	</p>
-</div>
-<div>
-	<h2
-		class='font-semibold text-2xl underline decoration-foreground decoration-1 underline-offset-3 mb-4 transition-colors'
-	>
-  {t.index.main.h_web}
-	</h2>
-	<div class='flex flex-col gap-2 items-start justify-center'>
-		<a
-			href='https://github.com/SlavaKuntsov'
-			class='flex flex-row items-center justify-start gap-2 px-3 py-2 rounded-lg hover:bg-card transition-colors'
-			><IoLogoGithub className='text-2xl ' />
-			<p class='text-lg font-semibold'>@SlavaKuntsov</p>
-		</a>
-		<a
-			href='https://www.instagram.com/slava_kunz_'
-			class='flex flex-row items-center justify-start gap-2 px-3 py-2 rounded-lg hover:bg-card transition-colors'
-			><IoLogoInstagram className='text-2xl ' />
-			<p class='text-lg font-semibold'>@slava_kunz_</p>
-		</a>
-		<a
-			href='https://t.me/slava_kunz'
-			class='flex flex-row items-center justify-start gap-2 px-3 py-2 rounded-lg hover:bg-card transition-colors'
-			><IoLogoTwitter className='text-2xl ' />
-			<p class='text-lg font-semibold'>@slava_kunz</p>
-		</a>
-	</div>
 </div>

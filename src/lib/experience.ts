@@ -10,7 +10,9 @@
  */
 
 import { z } from 'astro/zod';
+import experienceOrder from '@/content/experience/order.json';
 import type { Locale } from './i18n';
+import { rankOf } from './order';
 
 /** A `YYYY-MM` date, as authored in frontmatter. */
 const month = z
@@ -32,7 +34,6 @@ export const experienceSchema = z
 		summary: z.string().min(1),
 		highlights: z.array(z.string().min(1)),
 		environment: z.array(z.string().min(1)),
-		order: z.number().int(),
 	})
 	.superRefine((entry, ctx) => {
 		// A role is either ongoing (`current`) or closed with an `end`; both at
@@ -99,25 +100,30 @@ export function entriesForLocale<T extends ExperienceEntry>(
 }
 
 /**
- * Newest-first: by start date descending, then the explicit `order` field
- * ascending, so an author can position entries that share a start month.
- * Returns a copy; the input is never reordered in place.
+ * The entries in authored order, newest first. The order comes from
+ * `experience/order.json` (ADR-0009) — one list of slugs instead of an `order`
+ * field in every file — so a slug not yet listed sorts last; the id breaks any
+ * remaining tie. Returns a copy; the input is never reordered in place.
  */
-export function sortByRecency<T extends ExperienceEntry>(
-	entries: readonly T[]
+export function orderedEntries<T extends ExperienceEntry>(
+	entries: readonly T[],
+	order: readonly string[] = experienceOrder
 ): T[] {
 	return [...entries].sort((a, b) => {
-		const byStart = b.data.start.localeCompare(a.data.start);
-		return byStart !== 0 ? byStart : a.data.order - b.data.order;
+		const byRank =
+			rankOf(slugOfEntryId(a.id), order) - rankOf(slugOfEntryId(b.id), order);
+
+		return byRank !== 0 ? byRank : a.id.localeCompare(b.id);
 	});
 }
 
 /** The most recent entries, for the home highlights block. */
 export function recentEntries<T extends ExperienceEntry>(
 	entries: readonly T[],
-	limit: number
+	limit: number,
+	order: readonly string[] = experienceOrder
 ): T[] {
-	return sortByRecency(entries).slice(0, limit);
+	return orderedEntries(entries, order).slice(0, limit);
 }
 
 /** An entry's RU/EN counterparts, keyed by the slug they share. */

@@ -1,0 +1,53 @@
+---
+// The owner's contact links plus the "Download CV" action (ticket #8). The
+// targets are locale-independent (`CONTACT_LINKS`); the labels are translated,
+// so the same component drops into the home page and the CV page (ticket #10)
+// without duplicating an address or a URL.
+import {
+	CONTACT_LINKS,
+	CV_DOWNLOAD_HREF,
+	contactLinkAttrs,
+} from '@/lib/contacts';
+import type { Translation } from '@/types/Translation';
+import ContactIcon from './ContactIcon.astro';
+
+interface Props {
+	t: Translation;
+}
+
+const { t }: Props = Astro.props;
+---
+
+<section class='flex flex-col gap-5' data-contacts-section>
+	<h2 class='font-heading text-2xl font-semibold text-foreground'>
+		{t.contacts.heading}
+	</h2>
+
+	<ul class='flex flex-col gap-1'>
+		{
+			CONTACT_LINKS.map(contact => (
+				<li>
+					<a
+						href={contact.href}
+						{...contactLinkAttrs(contact)}
+						aria-label={`${t.contacts.labels[contact.kind]}: ${contact.detail}`}
+						class='flex w-fit flex-row items-center gap-2 rounded-lg px-2 py-1 text-muted-foreground transition-colors hover:bg-card hover:text-foreground'
+						data-contact-kind={contact.kind}
+					>
+						<ContactIcon kind={contact.kind} />
+						<span>{contact.detail}</span>
+					</a>
+				</li>
+			))
+		}
+	</ul>
+
+	<a
+		href={CV_DOWNLOAD_HREF}
+		download
+		class='w-fit rounded-full bg-primary px-5 py-2.5 font-medium text-primary-foreground transition-colors hover:opacity-90'
+		data-cv-download
+	>
+		{t.contacts.downloadCv}
+	</a>
+</section>

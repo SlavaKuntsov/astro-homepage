@@ -35,7 +35,6 @@ const en: Translation = {
 			h_about: 'About Me',
 			about:
 				'More than a year of experience in software development on the platform .NET, including creating web applications, desktop applications, and interacting with databases. I have skills in requirements analysis, web system design, object-oriented approach and database design. He worked in a team. He is motivated to study business tasks and effectively transform them into software solutions, developing applications that meet the criteria for time, scalability and performance.',
-			h_web: 'On the web',
 		},
 	},
 	works: {
@@ -51,6 +50,28 @@ const en: Translation = {
 		viewAll: 'View full experience',
 		environment: 'Environment',
 		industries: 'Industries',
+	},
+	skills: {
+		heading: 'Skills',
+		groups: {
+			languages: 'Languages',
+			backend: 'Backend',
+			databases: 'Databases',
+			architecture: 'Architecture',
+			frontend: 'Frontend',
+			devops: 'DevOps',
+			testing: 'Testing',
+		},
+	},
+	contacts: {
+		heading: 'Contacts',
+		downloadCv: 'Download CV',
+		labels: {
+			email: 'Email',
+			github: 'GitHub',
+			telegram: 'Telegram',
+			instagram: 'Instagram',
+		},
 	},
 };
 

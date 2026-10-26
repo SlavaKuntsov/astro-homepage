@@ -31,4 +31,6 @@ can pair them.
 - Content is easy to author and diff; markdown body is real markdown.
 - A shared non-localized data file holds locale-independent fields where useful
   (e.g. project `links`, `stack`, `order`, company URL).
+- Display order is not a frontmatter field: a per-collection `order.json` manifest
+  holds it, keyed by slug (ADR-0009).
 - Pages are generated per locale; pairing is by slug.

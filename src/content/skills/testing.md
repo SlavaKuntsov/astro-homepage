@@ -1,0 +1,6 @@
+---
+skills:
+  - xUnit
+  - NUnit
+  - Moq
+---
