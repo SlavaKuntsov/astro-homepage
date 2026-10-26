@@ -1,3 +1,6 @@
+import type { ContactKind } from '@/lib/contacts';
+import type { SkillGroupId } from '@/lib/skills';
+
 export interface Translation {
 	a11y: {
 		skipToContent: string;
@@ -34,7 +37,6 @@ export interface Translation {
 		main: {
 			h_about: string;
 			about: string;
-			h_web: string;
 		};
 	};
 	works: {
@@ -58,5 +60,19 @@ export interface Translation {
 		environment: string;
 		/** Label for an entry's industries line. */
 		industries: string;
+	};
+	skills: {
+		/** The Skills section's `<h2>`. */
+		heading: string;
+		/** Localized label per skill group; keys mirror `SKILL_GROUPS`. */
+		groups: Record<SkillGroupId, string>;
+	};
+	contacts: {
+		/** The Contacts section's `<h2>`. */
+		heading: string;
+		/** The "Download CV" action label. */
+		downloadCv: string;
+		/** Localized label per contact kind; keys mirror `CONTACT_LINKS`. */
+		labels: Record<ContactKind, string>;
 	};
 }
