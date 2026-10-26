@@ -4,13 +4,15 @@ import { describe, expect, it } from 'vitest';
 import experienceOrder from '@/content/experience/order.json';
 import {
 	entriesForLocale,
+	localeOfEntryId,
+	pairBySlug,
+	slugOfEntryId,
+} from '@/lib/collection';
+import {
 	experienceSchema,
 	formatPeriod,
-	localeOfEntryId,
 	orderedEntries,
-	pairBySlug,
 	recentEntries,
-	slugOfEntryId,
 	type ExperienceEntry,
 	type ExperienceFrontmatter,
 } from '@/lib/experience';
