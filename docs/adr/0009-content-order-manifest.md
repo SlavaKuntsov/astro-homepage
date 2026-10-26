@@ -28,3 +28,6 @@ still guards that the timeline runs newest → oldest.
   manifest and the content files in step.
 - The `order` frontmatter field is gone from `experience` and `skills`;
   `projects` and `arts` follow the same pattern when they are built.
+- `projects` is the exception to "the manifest is the whole order": featured
+  **Projects** lead the index and the manifest orders the rest, so the
+  `featured` flag and the list each carry one rule instead of disagreeing.

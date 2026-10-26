@@ -1,6 +1,7 @@
 import { defineCollection } from 'astro:content';
 import { glob } from 'astro/loaders';
 import { experienceSchema } from './lib/experience';
+import { projectSchema } from './lib/projects';
 import { skillGroupSchema } from './lib/skills';
 
 // ADR-0004: one markdown file per Locale under `experience/{ru,en}/<slug>.md`.
@@ -20,4 +21,13 @@ const skills = defineCollection({
 	schema: skillGroupSchema,
 });
 
-export const collections = { experience, skills };
+// ADR-0004: one markdown file per Locale under `projects/{ru,en}/<slug>.md`.
+// The schema (`src/lib/projects.ts`) fails the build on bad frontmatter and on
+// a `githubRepo` that contradicts `visibility`; a public Project may then be
+// enriched from GitHub at build time (`src/lib/enrichment.ts`).
+const projects = defineCollection({
+	loader: glob({ pattern: '**/*.md', base: './src/content/projects' }),
+	schema: projectSchema,
+});
+
+export const collections = { experience, skills, projects };

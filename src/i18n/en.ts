@@ -18,7 +18,7 @@ const en: Translation = {
 	nav: {
 		home: 'Home',
 		experience: 'Experience',
-		works: 'Works',
+		projects: 'Projects',
 		arts: 'Arts',
 		source: 'Source',
 	},
@@ -37,8 +37,17 @@ const en: Translation = {
 				'More than a year of experience in software development on the platform .NET, including creating web applications, desktop applications, and interacting with databases. I have skills in requirements analysis, web system design, object-oriented approach and database design. He worked in a team. He is motivated to study business tasks and effectively transform them into software solutions, developing applications that meet the criteria for time, scalability and performance.',
 		},
 	},
-	works: {
-		heading: 'Works',
+	projects: {
+		heading: 'Projects',
+		viewProject: 'View project',
+		back: 'All projects',
+		tags: 'Tags',
+		gallery: 'Gallery',
+		live: 'Live',
+		source: 'Source',
+		other: 'Link',
+		stars: 'Stars',
+		languages: 'Languages',
 	},
 	arts: {
 		heading: 'Arts',

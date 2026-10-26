@@ -1,0 +1,154 @@
+---
+// A Project's detail page (ticket #9): the description and markdown body
+// (ADR-0004), the image gallery, links, header tags, and — for a public Project
+// whose GitHub repo was reached at build — the Enrichment language breakdown.
+// The tags are the repo's topics (the manual `stack` is the fallback), the
+// description is the manual `summary` or else the repo's, and when the fetch
+// failed the repo bits are simply absent and the page renders.
+import type { CollectionEntry } from 'astro:content';
+import { render } from 'astro:content';
+import { SITE_TITLE } from '@/consts';
+import { translations } from '@/i18n';
+import Layout from '@/layouts/Layout.astro';
+import { slugOfEntryId } from '@/lib/collection';
+import { enrichProject } from '@/lib/enrichment';
+import { localizePath } from '@/lib/i18n';
+import type { Locale } from '@/lib/i18n';
+import { galleryImages } from '@/lib/projects';
+import StackChips from '@/components/StackChips.astro';
+
+interface Props {
+	entry: CollectionEntry<'projects'>;
+	/** The Locale this page renders in. */
+	lang: Locale;
+}
+
+const { entry, lang }: Props = Astro.props;
+const t = translations[lang];
+const { data } = entry;
+const { meta } = await enrichProject(entry);
+const { Content } = await render(entry);
+const images = galleryImages(data);
+const slug = slugOfEntryId(entry.id);
+
+/** The Project's authored links, in a stable order, labelled per Locale. */
+const links: Array<{ href: string; label: string }> = [];
+if (data.links?.live) links.push({ href: data.links.live, label: t.projects.live });
+if (data.links?.github)
+	links.push({ href: data.links.github, label: t.projects.source });
+if (data.links?.other)
+	links.push({ href: data.links.other, label: t.projects.other });
+
+---
+
+<Layout
+	title={`${data.title} — ${SITE_TITLE}`}
+	description={meta.description}
+	lang={lang}
+>
+	<article
+		class='mx-auto flex w-full max-w-prose flex-col gap-8'
+		data-project-detail
+		data-slug={slug}
+		data-visibility={data.visibility}
+		data-github-repo={data.githubRepo}
+	>
+		<a
+			href={localizePath('/projects', lang)}
+			class='w-fit text-sm font-medium text-muted-foreground transition-colors hover:text-foreground'
+		>
+			← {t.projects.back}
+		</a>
+
+		<header class='flex flex-col gap-4'>
+			<div class='flex flex-col gap-3'>
+				<h1 class='text-3xl font-semibold'>{data.title}</h1>
+				{meta.description !== '' && (
+					<p class='text-lg text-muted-foreground'>{meta.description}</p>
+				)}
+			</div>
+
+			<StackChips items={meta.tags} label={t.projects.tags} />
+
+			{links.length > 0 && (
+				<ul class='flex flex-wrap gap-4 text-sm font-medium' data-project-links>
+					{links.map(link => (
+						<li>
+							<a
+								href={link.href}
+								target='_blank'
+								rel='noopener noreferrer'
+								class='text-primary underline decoration-primary/40 underline-offset-4 transition-colors hover:decoration-primary'
+							>
+								{link.label}
+							</a>
+						</li>
+					))}
+				</ul>
+			)}
+		</header>
+
+		{
+			images.length > 0 && (
+				<section
+					class='flex flex-col gap-3'
+					aria-label={t.projects.gallery}
+					data-project-gallery
+				>
+					{images.map(image => (
+						<img
+							src={image}
+							alt=''
+							width='960'
+							height='540'
+							loading='lazy'
+							class='w-full rounded-xl border border-border bg-muted object-cover'
+							data-project-image
+						/>
+					))}
+				</section>
+			)
+		}
+
+		<div
+			class='flex flex-col gap-4 text-base text-muted-foreground'
+			data-project-body
+		>
+			<Content />
+		</div>
+
+		{
+			meta.languages.length > 0 && (
+				<section
+					class='flex flex-col gap-4 rounded-2xl border border-border bg-card p-5'
+					aria-label={t.projects.languages}
+					data-project-languages
+				>
+					<h2 class='font-heading text-lg font-semibold text-foreground'>
+						{t.projects.languages}
+					</h2>
+
+					<ul class='flex flex-col gap-3'>
+						{meta.languages.map(({ name, percent }) => (
+							<li class='flex flex-col gap-1' data-project-language>
+								<div class='flex items-baseline justify-between gap-3 text-sm'>
+									<span class='font-medium text-foreground'>{name}</span>
+									<span class='tabular-nums text-muted-foreground'>{percent}%</span>
+								</div>
+								<span
+									class='h-1.5 w-full overflow-hidden rounded-full bg-muted'
+									aria-hidden='true'
+								>
+									<span
+										class='block h-full rounded-full bg-primary'
+										style={`width: ${percent}%`}
+									/>
+								</span>
+							</li>
+						))}
+					</ul>
+				</section>
+			)
+		}
+	</article>
+</Layout>

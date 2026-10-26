@@ -12,10 +12,10 @@ describe('isActivePath', () => {
 
 	it('marks each Locale root link active only on its own root', () => {
 		expect(isActivePath('/en', '/en')).toBe(true);
-		expect(isActivePath('/en/works', '/en')).toBe(false);
+		expect(isActivePath('/en/projects', '/en')).toBe(false);
 		expect(isActivePath('/en/arts', '/en')).toBe(false);
 		expect(isActivePath('/en', '/')).toBe(false);
-		expect(isActivePath('/works', '/en')).toBe(false);
+		expect(isActivePath('/projects', '/en')).toBe(false);
 	});
 
 	it('ignores trailing slashes on both sides', () => {

@@ -11,6 +11,7 @@
 
 import { z } from 'astro/zod';
 import experienceOrder from '@/content/experience/order.json';
+import { slugOfEntryId } from './collection';
 import type { Locale } from './i18n';
 import { rankOf } from './order';
 
@@ -72,34 +73,6 @@ export interface ExperienceEntry {
 }
 
 /**
- * The Locale an entry belongs to, read from its leading folder. Throws on any
- * other folder so a misplaced content file fails the build instead of silently
- * rendering under the default Locale.
- */
-export function localeOfEntryId(id: string): Locale {
-	const [folder] = id.split('/');
-	if (folder === 'ru' || folder === 'en') return folder;
-
-	throw new Error(
-		`experience entry id "${id}" must start with a \`ru/\` or \`en/\` folder`
-	);
-}
-
-/** The slug an entry is paired by, read from its trailing segment. */
-export function slugOfEntryId(id: string): string {
-	const segments = id.split('/');
-	return segments[segments.length - 1];
-}
-
-/** The entries authored for one Locale. */
-export function entriesForLocale<T extends ExperienceEntry>(
-	entries: readonly T[],
-	locale: Locale
-): T[] {
-	return entries.filter(entry => localeOfEntryId(entry.id) === locale);
-}
-
-/**
  * The entries in authored order, newest first. The order comes from
  * `experience/order.json` (ADR-0009) — one list of slugs instead of an `order`
  * field in every file — so a slug not yet listed sorts last; the id breaks any
@@ -124,29 +97,6 @@ export function recentEntries<T extends ExperienceEntry>(
 	order: readonly string[] = experienceOrder
 ): T[] {
 	return orderedEntries(entries, order).slice(0, limit);
-}
-
-/** An entry's RU/EN counterparts, keyed by the slug they share. */
-export interface ExperiencePair<T extends ExperienceEntry> {
-	slug: string;
-	ru?: T;
-	en?: T;
-}
-
-/** Groups entries into locale pairs by their shared slug. */
-export function pairBySlug<T extends ExperienceEntry>(
-	entries: readonly T[]
-): Map<string, ExperiencePair<T>> {
-	const pairs = new Map<string, ExperiencePair<T>>();
-
-	for (const entry of entries) {
-		const slug = slugOfEntryId(entry.id);
-		const pair = pairs.get(slug) ?? { slug };
-		pair[localeOfEntryId(entry.id)] = entry;
-		pairs.set(slug, pair);
-	}
-
-	return pairs;
 }
 
 /** Month names, spelled out per Locale so dates never depend on ICU data. */

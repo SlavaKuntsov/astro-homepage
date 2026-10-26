@@ -3,7 +3,8 @@ import ExperienceTimeline from '@/components/ExperienceTimeline.astro';
 import { SITE_DESCRIPTION, SITE_TITLE } from '@/consts';
 import { translations } from '@/i18n';
 import Layout from '@/layouts/Layout.astro';
-import { entriesForLocale, orderedEntries } from '@/lib/experience';
+import { entriesForLocale } from '@/lib/collection';
+import { orderedEntries } from '@/lib/experience';
 import type { Locale } from '@/lib/i18n';
 import { getCollection } from 'astro:content';
 

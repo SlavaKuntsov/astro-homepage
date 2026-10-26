@@ -8,14 +8,14 @@ import { localeOf, localizePath } from '@/lib/i18n';
 describe('localeOf', () => {
 	it('serves the root and unprefixed paths in the default Locale', () => {
 		expect(localeOf('/')).toBe('ru');
-		expect(localeOf('/works')).toBe('ru');
+		expect(localeOf('/projects')).toBe('ru');
 		expect(localeOf('/projects/x')).toBe('ru');
 	});
 
 	it('serves /en and everything below it in en', () => {
 		expect(localeOf('/en')).toBe('en');
 		expect(localeOf('/en/')).toBe('en');
-		expect(localeOf('/en/works')).toBe('en');
+		expect(localeOf('/en/projects')).toBe('en');
 		expect(localeOf('/en/projects/x')).toBe('en');
 	});
 
@@ -47,12 +47,12 @@ describe('localizePath at the root', () => {
 describe('localizePath on nested paths', () => {
 	it('adds the prefix when a ru path moves to en', () => {
 		expect(localizePath('/projects/x', 'en')).toBe('/en/projects/x');
-		expect(localizePath('/works', 'en')).toBe('/en/works');
+		expect(localizePath('/projects', 'en')).toBe('/en/projects');
 	});
 
 	it('strips the prefix when an en path moves back to ru', () => {
 		expect(localizePath('/en/projects/x', 'ru')).toBe('/projects/x');
-		expect(localizePath('/en/works', 'ru')).toBe('/works');
+		expect(localizePath('/en/projects', 'ru')).toBe('/projects');
 	});
 
 	it('leaves a path alone when it is already in the target Locale', () => {
@@ -70,13 +70,13 @@ describe('localizePath on nested paths', () => {
 describe('localizePath round-trips', () => {
 	const PATHS = [
 		'/',
-		'/works',
+		'/projects',
 		'/arts',
 		'/projects/x',
 		'/projects/x/deep',
 		'/enterprise',
 		'/en',
-		'/en/works',
+		'/en/projects',
 		'/en/projects/x',
 	];
 
@@ -90,8 +90,8 @@ describe('localizePath round-trips', () => {
 	}
 
 	it('round-trips a trailing-slash path to its normalized form', () => {
-		expect(localizePath(localizePath('/en/works/', 'ru'), 'en')).toBe(
-			'/en/works'
+		expect(localizePath(localizePath('/en/projects/', 'ru'), 'en')).toBe(
+			'/en/projects'
 		);
 	});
 });

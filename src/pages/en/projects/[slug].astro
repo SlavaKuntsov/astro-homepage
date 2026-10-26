@@ -1,0 +1,25 @@
+---
+import type { CollectionEntry } from 'astro:content';
+import { getCollection } from 'astro:content';
+import ProjectPage from '@/components/pages/ProjectPage.astro';
+import { entriesForLocale, slugOfEntryId } from '@/lib/collection';
+
+interface Props {
+	entry: CollectionEntry<'projects'>;
+}
+
+// EN lives under `/en/…` (ADR-0005): one page per Project slug authored under
+// `projects/en/`, paired with its RU counterpart by slug.
+export async function getStaticPaths() {
+	const entries = entriesForLocale(await getCollection('projects'), 'en');
+
+	return entries.map(entry => ({
+		params: { slug: slugOfEntryId(entry.id) },
+		props: { entry },
+	}));
+}
+
+const { entry } = Astro.props as Props;
+---
+
+<ProjectPage entry={entry} lang='en' />

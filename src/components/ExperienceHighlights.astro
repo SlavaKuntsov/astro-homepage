@@ -5,10 +5,10 @@
 // and `/experience` can never drift apart.
 import { localizePath } from '@/lib/i18n';
 import type { Locale } from '@/lib/i18n';
+import { slugOfEntryId } from '@/lib/collection';
 import {
 	formatPeriod,
 	recentEntries,
-	slugOfEntryId,
 	type ExperienceEntry,
 } from '@/lib/experience';
 import type { Translation } from '@/types/Translation';
