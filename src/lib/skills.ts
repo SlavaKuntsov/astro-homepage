@@ -1,61 +1,66 @@
 /**
- * The owner's skills, grouped for display. Locale-independent: the technology
- * names read the same in both Locales, while each group's label is localized
- * through `t.skills.groups`, keyed by `SkillGroupId`. The Skills section
- * (ticket #8) and the CV page render this one list, so the two can never drift.
+ * The `skills` content collection (GLOSSARY: *Skill group*): the owner's skills,
+ * grouped, authored as one locale-independent markdown file per group
+ * (`skills/<group-id>.md`). It is the one collection that is not per-Locale
+ * (ADR-0008): the technology names read the same in both Locales, so duplicating
+ * them under `ru/` and `en/` would only invite drift. Only each group's *label*
+ * is localized, through `t.skills.groups`, keyed by the group id.
+ *
+ * The id is the filename, read from the entry id rather than from frontmatter so
+ * the two cannot disagree; `skillGroupIdOf` throws on an unknown name, failing
+ * the build instead of rendering an unlabelled group.
  */
 
-/** The stable id of a skill group; keys its localized label. */
-export type SkillGroupId =
-	| 'languages'
-	| 'backend'
-	| 'databases'
-	| 'architecture'
-	| 'frontend'
-	| 'devops'
-	| 'testing';
+import { z } from 'astro/zod';
 
-export interface SkillGroup {
-	id: SkillGroupId;
-	skills: readonly string[];
+/** The known group ids; each is both a filename and a localized label key. */
+export const SKILL_GROUP_IDS = [
+	'languages',
+	'backend',
+	'databases',
+	'architecture',
+	'frontend',
+	'devops',
+	'testing',
+] as const;
+
+/** The stable id of a skill group; keys its localized label. */
+export type SkillGroupId = (typeof SKILL_GROUP_IDS)[number];
+
+/** One skill group's typed frontmatter. */
+export const skillGroupSchema = z.object({
+	order: z.number().int(),
+	skills: z.array(z.string().min(1)).min(1),
+});
+
+export type SkillGroupFrontmatter = z.infer<typeof skillGroupSchema>;
+
+/** The minimal shape the helpers need; content-layer entries satisfy it. */
+export interface SkillGroupEntry {
+	id: string;
+	data: SkillGroupFrontmatter;
 }
 
-export const SKILL_GROUPS: readonly SkillGroup[] = [
-	{
-		id: 'languages',
-		skills: ['C#', 'TypeScript', 'JavaScript'],
-	},
-	{
-		id: 'backend',
-		skills: [
-			'ASP.NET Core',
-			'.NET Framework',
-			'Entity Framework',
-			'NHibernate',
-			'Dapper',
-			'LINQ',
-			'Hangfire',
-			'SignalR',
-		],
-	},
-	{
-		id: 'databases',
-		skills: ['PostgreSQL', 'MS SQL Server', 'MariaDB', 'MongoDB', 'Redis'],
-	},
-	{
-		id: 'architecture',
-		skills: ['Microservices', 'Clean Architecture', 'CQRS', 'RabbitMQ'],
-	},
-	{
-		id: 'frontend',
-		skills: ['React.js', 'Angular', 'Node.js', 'WPF', 'Flutter'],
-	},
-	{
-		id: 'devops',
-		skills: ['Docker', 'Git', 'Nginx', 'ELK Stack'],
-	},
-	{
-		id: 'testing',
-		skills: ['xUnit', 'NUnit', 'Moq'],
-	},
-];
+/** The id a `skills/<id>.md` entry carries; throws on an unknown name. */
+export function skillGroupIdOf(id: string): SkillGroupId {
+	if ((SKILL_GROUP_IDS as readonly string[]).includes(id)) {
+		return id as SkillGroupId;
+	}
+
+	throw new Error(
+		`skills entry id "${id}" must be one of: ${SKILL_GROUP_IDS.join(', ')}`
+	);
+}
+
+/**
+ * The groups in authored order: by ascending `order`, the id breaking ties.
+ * Returns a copy; the input is never reordered in place.
+ */
+export function orderedGroups<T extends SkillGroupEntry>(
+	entries: readonly T[]
+): T[] {
+	return [...entries].sort((a, b) => {
+		const byOrder = a.data.order - b.data.order;
+		return byOrder !== 0 ? byOrder : a.id.localeCompare(b.id);
+	});
+}

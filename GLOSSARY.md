@@ -20,8 +20,13 @@ print-optimized, plus a downloadable static `resume.pdf`. _Avoid_: resume.
 
 ## Content
 
-**Content collection** — one of the Astro collections: `experience`, `projects`,
-`arts`. All are per-**locale**. _Avoid_: data folder, content dir.
+**Content collection** — one of the Astro collections: `experience`,
+`projects`, `arts` (each per-**locale**) and `skills` (locale-independent, see
+ADR-0008). _Avoid_: data folder, content dir.
+
+**Skill group** — one group of the owner's skills (`languages`, `backend`, …),
+authored as `skills/<id>.md`; the skills themselves are locale-independent while
+the group's label is localized. _Avoid_: skill tag, category.
 
 **Experience entry** — one role at one company, authored as a single markdown
 file with typed frontmatter (company, company URL, position, dates, location,

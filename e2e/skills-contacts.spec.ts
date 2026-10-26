@@ -7,10 +7,12 @@ import { expect, test } from './fixtures';
  * owner's contact links with correct targets, and localized labels — not the
  * internal component structure.
  *
- * The shared, locale-independent data lives in `src/lib/{skills,contacts}.ts`
- * and is pinned by unit tests there; here we prove the labels are translated and
- * the targets land where the data says. Both sections are built to be reused by
- * the home page and the CV page (ticket #10) from that one source.
+ * The skills live in the locale-independent `skills` collection (ADR-0008) and
+ * the contacts in `src/lib/contacts.ts`; the collection/helpers are pinned by
+ * unit tests (`src/lib/skills.test.ts`, `src/lib/contacts.test.ts`). Here we
+ * prove the labels are translated, the order is honored, and the targets land
+ * where the data says. Both sections are built to be reused by the home page and
+ * the CV page (ticket #10) from that one source.
  */
 
 const contact = (page: Page, kind: string) =>
@@ -35,6 +37,21 @@ test.describe('the RU home renders skills and contacts', () => {
 			await expect(group.getByRole('heading', { level: 3 })).not.toBeEmpty();
 			expect(await group.locator('li').count()).toBeGreaterThanOrEqual(1);
 		}
+
+		// The groups render in the authored `order`, not filesystem order.
+		expect(
+			await all.evaluateAll(nodes =>
+				nodes.map(node => node.getAttribute('data-skill-group-id'))
+			)
+		).toEqual([
+			'languages',
+			'backend',
+			'databases',
+			'architecture',
+			'frontend',
+			'devops',
+			'testing',
+		]);
 
 		await expect(
 			page
