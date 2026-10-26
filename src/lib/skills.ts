@@ -12,6 +12,8 @@
  */
 
 import { z } from 'astro/zod';
+import skillOrder from '@/content/skills/order.json';
+import { rankOf } from './order';
 
 /** The known group ids; each is both a filename and a localized label key. */
 export const SKILL_GROUP_IDS = [
@@ -29,7 +31,6 @@ export type SkillGroupId = (typeof SKILL_GROUP_IDS)[number];
 
 /** One skill group's typed frontmatter. */
 export const skillGroupSchema = z.object({
-	order: z.number().int(),
 	skills: z.array(z.string().min(1)).min(1),
 });
 
@@ -53,14 +54,16 @@ export function skillGroupIdOf(id: string): SkillGroupId {
 }
 
 /**
- * The groups in authored order: by ascending `order`, the id breaking ties.
- * Returns a copy; the input is never reordered in place.
+ * The groups in authored order. The order comes from `skills/order.json` — one
+ * list of group ids instead of an `order` field in every file — so a group not
+ * yet listed sorts last, and the id breaks any remaining tie. Returns a copy.
  */
 export function orderedGroups<T extends SkillGroupEntry>(
-	entries: readonly T[]
+	entries: readonly T[],
+	order: readonly string[] = skillOrder
 ): T[] {
 	return [...entries].sort((a, b) => {
-		const byOrder = a.data.order - b.data.order;
-		return byOrder !== 0 ? byOrder : a.id.localeCompare(b.id);
+		const byRank = rankOf(a.id, order) - rankOf(b.id, order);
+		return byRank !== 0 ? byRank : a.id.localeCompare(b.id);
 	});
 }

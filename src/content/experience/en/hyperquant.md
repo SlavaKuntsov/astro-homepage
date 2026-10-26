@@ -20,7 +20,6 @@ environment:
   - PostgreSQL
   - Docker
   - Git
-order: 0
 ---
 
 <!-- Placeholder entry: the content-migration ticket (#14) replaces it with the Resume's real data. -->

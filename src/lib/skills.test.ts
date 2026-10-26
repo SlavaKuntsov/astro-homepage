@@ -1,6 +1,7 @@
 import { readdirSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
+import skillOrder from '@/content/skills/order.json';
 import {
 	orderedGroups,
 	skillGroupIdOf,
@@ -13,7 +14,7 @@ import {
 // (ADR-0008): its Zod schema is enforced at build, and its pure helpers turn
 // raw entries into ordered, display-ready groups. These tests pin the schema
 // rules the markdown files rely on and the id/order rules the section relies on.
-const validGroup = { order: 0, skills: ['C#', 'PostgreSQL'] };
+const validGroup = { skills: ['C#', 'PostgreSQL'] };
 
 const withGroup = (
 	id: string,
@@ -37,16 +38,8 @@ describe('skills schema', () => {
 		).toBe(false);
 	});
 
-	it('rejects a non-integer order', () => {
-		expect(
-			skillGroupSchema.safeParse({ ...validGroup, order: 1.5 }).success
-		).toBe(false);
-	});
-
 	it('rejects a missing field', () => {
-		const { order, ...rest } = validGroup;
-
-		expect(skillGroupSchema.safeParse(rest).success).toBe(false);
+		expect(skillGroupSchema.safeParse({}).success).toBe(false);
 	});
 });
 
@@ -63,48 +56,47 @@ describe('group id parsing', () => {
 	});
 });
 
+// The order comes from `skills/order.json` (ADR-0009) — one list of group ids
+// instead of an `order` field in every file.
 describe('group ordering', () => {
 	const groups = [
-		withGroup('testing', { order: 6 }),
-		withGroup('languages', { order: 0 }),
-		withGroup('devops', { order: 5 }),
+		withGroup('testing'),
+		withGroup('languages'),
+		withGroup('devops'),
 	];
 
-	it('sorts by order, ascending, without mutating the input', () => {
-		expect(orderedGroups(groups).map(group => group.id)).toEqual([
-			'languages',
-			'devops',
-			'testing',
-		]);
-		expect(groups.map(group => group.id)).toEqual([
-			'testing',
-			'languages',
-			'devops',
-		]);
+	it('follows the authored order, without mutating the input', () => {
+		expect(
+			orderedGroups(groups, ['languages', 'devops', 'testing']).map(g => g.id)
+		).toEqual(['languages', 'devops', 'testing']);
+		expect(groups.map(g => g.id)).toEqual(['testing', 'languages', 'devops']);
 	});
 
-	it('breaks a tie on the id', () => {
-		const tied = [
-			withGroup('frontend', { order: 1 }),
-			withGroup('backend', { order: 1 }),
-		];
-
-		expect(orderedGroups(tied).map(group => group.id)).toEqual([
-			'backend',
-			'frontend',
+	it('sorts a group absent from the list after the listed ones', () => {
+		expect(orderedGroups(groups, ['languages']).map(g => g.id)).toEqual([
+			'languages',
+			'devops',
+			'testing',
 		]);
 	});
 });
 
-// Every declared group must be authored: a group id with no markdown file would
-// silently vanish from the page, so it is pinned here.
+// Every declared group must be authored and listed: a group id with no file
+// would vanish, and one missing from the manifest would drop to the end.
 describe('content coverage', () => {
-	it('has one markdown file per declared group id', () => {
+	const filesOnDisk = () => {
 		const dir = fileURLToPath(new URL('../content/skills', import.meta.url));
-		const files = readdirSync(dir)
+
+		return readdirSync(dir)
 			.filter(name => name.endsWith('.md'))
 			.map(name => name.replace(/\.md$/, ''));
+	};
 
-		expect(new Set(files)).toEqual(new Set(SKILL_GROUP_IDS));
+	it('has one markdown file per declared group id', () => {
+		expect(new Set(filesOnDisk())).toEqual(new Set(SKILL_GROUP_IDS));
+	});
+
+	it('lists every declared group in the order manifest exactly once', () => {
+		expect(new Set(skillOrder)).toEqual(new Set(SKILL_GROUP_IDS));
 	});
 });

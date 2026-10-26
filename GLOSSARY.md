@@ -30,7 +30,7 @@ the group's label is localized. _Avoid_: skill tag, category.
 
 **Experience entry** — one role at one company, authored as a single markdown
 file with typed frontmatter (company, company URL, position, dates, location,
-employment type, industries, summary, highlights, environment, order).
+employment type, industries, summary, highlights, environment).
 _Avoid_: job, position.
 
 **Project** — a showcased piece of work: manual fields (title, description,
@@ -43,6 +43,10 @@ lightbox. _Avoid_: art, picture.
 **Enrichment** — build-time fetching of public metadata (stars, language,
 description) for a **Project** whose source repo is public. Never required;
 manual fields always win. _Avoid_: scraping, sync.
+
+**Order manifest** — the `order.json` next to a collection's files, listing the
+slugs (or group ids) in display order; the single source of a collection's
+display order (ADR-0009). _Avoid_: sort field, priority.
 
 ## Presentation
 

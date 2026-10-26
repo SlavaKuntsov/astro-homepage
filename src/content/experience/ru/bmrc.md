@@ -15,7 +15,6 @@ environment:
   - MS SQL
   - ASP.NET
   - Git
-order: 1
 ---
 
 <!-- Placeholder entry: the content-migration ticket (#14) replaces it with the Resume's real data. -->

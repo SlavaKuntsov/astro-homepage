@@ -17,7 +17,7 @@ already call for "a shared, non-localized module" to hold skills.
 
 Add `skills` as the one **locale-independent** collection: one markdown file per
 group under `src/content/skills/<group-id>.md`, with a Zod-validated frontmatter
-(`order`, `skills`). The group id is the filename, read from the entry id rather
+(`skills`). The group id is the filename, read from the entry id rather
 than frontmatter; `skillGroupIdOf` throws on a name outside the known ids, so a
 mistyped file fails the build. The group *labels* stay localized in the
 translation tables (`t.skills.groups`), keyed by the id.
