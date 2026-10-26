@@ -126,7 +126,7 @@ test('both Locales pair the same project slugs', async ({ page }) => {
 });
 
 test.describe('a project detail page', () => {
-	test('shows the title, summary, markdown body, gallery, and links', async ({
+	test('shows the title, description, markdown body, gallery, and links', async ({
 		page,
 	}) => {
 		const response = await page.goto('/projects/astro-homepage');
@@ -139,11 +139,11 @@ test.describe('a project detail page', () => {
 		const detail = page.locator('[data-project-detail]');
 		await expect(detail).toHaveAttribute('data-slug', 'astro-homepage');
 
-		// The rendered description is the manual `summary` (the merge keeps it
-		// over anything GitHub reports), so it is deterministic offline.
-		await expect(detail.locator('header p').first()).toHaveText(
-			'Портфолио и резюме на Astro, где тема и язык верны с первого кадра.'
-		);
+		// The header description is the manual `summary`, else the repo's own
+		// description — the latter comes from the live GitHub API at build, so
+		// only its presence is asserted here. Which source wins is pinned by
+		// the merge unit tests (`src/lib/enrichment.test.ts`).
+		await expect(detail.locator('header p').first()).not.toBeEmpty();
 
 		// The header tags: the repo's topics when reached, else the manual stack.
 		await expect(detail.getByRole('list', { name: 'Теги' })).toBeVisible();
