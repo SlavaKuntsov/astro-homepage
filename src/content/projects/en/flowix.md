@@ -1,7 +1,7 @@
 ---
 title: Flowix
 summary: null
-cover: /images/projects/flowix/cover.png
+cover: /images/projects/flowix/3.png
 images:
   - /images/projects/flowix/cover.png
   - /images/projects/flowix/2.png
