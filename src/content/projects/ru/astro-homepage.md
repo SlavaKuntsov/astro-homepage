@@ -1,14 +1,11 @@
 ---
 title: Сайт-портфолио
-summary: Портфолио и резюме на Astro, где тема и язык верны с первого кадра.
+# summary: Портфолио и резюме на Astro, где тема и язык верны с первого кадра.
+summary: null
 cover: /images/arts2/art1.png
 images:
   - /images/arts2/art1.png
   - /images/arts2/art2.png
-stack:
-  - Astro
-  - TypeScript
-  - Tailwind CSS
 links:
   live: https://slava-homepage.vercel.app
   github: https://github.com/SlavaKuntsov/astro-homepage

@@ -1,14 +1,11 @@
 ---
 title: Portfolio Site
-summary: A fast Astro portfolio where the theme and Locale are right on the first frame.
-cover: /images/arts2/art1.png
-images:
-  - /images/arts2/art1.png
-  - /images/arts2/art2.png
-stack:
-  - Astro
-  - TypeScript
-  - Tailwind CSS
+# summary: A fast Astro portfolio where the theme and Locale are right on the first frame.
+summary: null
+cover: /images/projects/astro-homepage/cover copy.png
+# images:
+#   - /images/arts2/art1.png
+#   - /images/arts2/art2.png
 links:
   live: https://slava-homepage.vercel.app
   github: https://github.com/SlavaKuntsov/astro-homepage
