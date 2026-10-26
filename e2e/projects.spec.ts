@@ -63,12 +63,32 @@ test.describe('the RU projects index at /projects', () => {
 		await page.goto('/projects');
 
 		for (const slug of await slugsOf(page)) {
-			await expect(
-				page
-					.locator(`[data-project][data-slug="${slug}"]`)
-					.getByRole('link', { name: 'Смотреть проект' })
-			).toHaveAttribute('href', `/projects/${slug}`);
+			// The whole card is one link; its accessible name is the title.
+			const link = page
+				.locator(`[data-project][data-slug="${slug}"]`)
+				.getByRole('link');
+			await expect(link).toHaveAttribute('href', `/projects/${slug}`);
+			await expect(link).not.toBeEmpty();
 		}
+	});
+
+	test('opens the project when the card itself is clicked', async ({ page }) => {
+		await page.goto('/projects');
+
+		const card = cards(page).first();
+		const slug = await card.getAttribute('data-slug');
+
+		// Click the description — not the title or the "View project" affordance:
+		// the whole card is one link, so anywhere opens the Project.
+		await card.locator('p').first().click();
+
+		await page.waitForURL(
+			url => url.pathname.replace(/\/+$/, '') === `/projects/${slug}`
+		);
+		await expect(page.locator('[data-project-detail]')).toHaveAttribute(
+			'data-slug',
+			slug ?? ''
+		);
 	});
 
 	test('shows the tags of every project', async ({ page }) => {
@@ -89,9 +109,7 @@ test.describe('the EN projects index at /en/projects', () => {
 			page.getByRole('heading', { level: 1, name: 'Projects' })
 		).toBeVisible();
 		await expect(
-			page.locator('[data-project]').first().getByRole('link', {
-				name: 'View project',
-			})
+			page.locator('[data-project]').first().getByText('View project')
 		).toBeVisible();
 	});
 });

@@ -75,11 +75,11 @@ A refactored, Astro-native version of the Site that:
     clearly listed, so that I can make contact.
 18. As the owner, I want to add or edit an experience entry by editing one
     markdown file per locale, so that maintaining the resume takes minutes.
-19. As the owner, I want a missing or mistyped frontmatter field to fail the build,
-    so that I never ship a broken entry.
+19. As the owner, I want a mistyped field, or a missing required one, to fail the
+    build, so that I never ship a broken entry.
 20. As the owner, I want a project that links a public GitHub repo to optionally
-    show the repo's tags (its topics) and language breakdown pulled at build time,
-    so that the page stays fresh with little effort.
+    show the repo's description, tags (its topics), and language breakdown pulled
+    at build time, so that the page stays fresh with little effort.
 21. As the owner, I want to redeploy to Vercel with default settings, so that I do
     not maintain custom build config.
 22. As the owner, I want the Site to be fast (minimal client JS, optimized fonts,
@@ -137,10 +137,12 @@ type Theme = 'light' | 'dark';           // persisted at localStorage["theme"]
   `position`, `start`, `end?` or `current: boolean`, `location?`,
   `employmentType?`, `industries?: string[]`, `summary`, `highlights: string[]`,
   `environment: string[]`. Body: long-form markdown.
-- `projects/{ru,en}/<slug>.md` — frontmatter: `title`, `summary`, `cover?`,
-  `images?: string[]`, `stack: string[]`, `links?: { live?, github?, other? }`,
+- `projects/{ru,en}/<slug>.md` — frontmatter: `title`, `summary?`, `cover?`,
+  `images?: string[]`, `stack?`, `links?: { live?, github?, other? }`,
   `visibility: 'public' | 'private'`, `featured?: boolean`, optional
-  `githubRepo?: string` (owner/repo) to trigger enrichment.
+  `githubRepo?: string` (owner/repo) to trigger enrichment. `summary` and
+  `stack` may be omitted (or `summary: null`) so enrichment supplies the
+  description and the tags.
 - `arts/{ru,en}/<slug>.md` — frontmatter: `title`, `image`, `tags?: string[]`,
   `link?`.
 - `skills/<group-id>.md` — the one locale-independent collection (ADR-0008):
@@ -156,9 +158,10 @@ type Theme = 'light' | 'dark';           // persisted at localStorage["theme"]
 - At build time, for projects with `visibility: 'public'` **and** a `githubRepo`,
   fetch the repo's stars, topics, primary language, description, and language
   breakdown from the GitHub API and cache the result. The repo's topics become the
-  project's tags (the manual `stack` is the fallback) and the manual `summary`
-  always wins on conflict; the breakdown renders as the language list. Enrichment
-  failure must not fail the build.
+  project's tags (the manual `stack` is the fallback), and the project's one
+  description is the manual `summary` when authored, else the repo's description;
+  the breakdown renders as the language list. Enrichment failure must not fail the
+  build.
 
 **Pages**
 

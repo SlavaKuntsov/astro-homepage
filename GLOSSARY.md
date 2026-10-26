@@ -42,9 +42,9 @@ lightbox. _Avoid_: art, picture.
 
 **Enrichment** — build-time fetching of public metadata (stars, tags from the
 repo's topics, primary language, description, and language breakdown) for a
-**Project** whose source repo is public. Never required; the manual
-`summary` always wins, and the manual `stack` backs up the tags when the repo
-has no topics. _Avoid_: scraping, sync.
+**Project** whose source repo is public. Never required; an authored
+`summary` wins over the repo's description, and the manual `stack` backs up the
+tags when the repo has no topics. _Avoid_: scraping, sync.
 
 **Order manifest** — the `order.json` next to a collection's files, listing the
 slugs (or group ids) in display order; the single source of a collection's

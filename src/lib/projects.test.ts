@@ -12,9 +12,10 @@ import {
 } from '@/lib/projects';
 
 // The `projects` collection's frontmatter is enforced at build (ADR-0004): a
-// mistyped or missing field must fail, so a Project can never render untyped.
-// These tests pin the rules the markdown files rely on, plus the two behaviours
-// the pages depend on — featured-first ordering (ADR-0009) and image selection.
+// mistyped field, or a missing required one, must fail. `summary` and `stack`
+// are deliberately optional — Enrichment supplies them. These tests pin the
+// rules the markdown files rely on, plus the two behaviours the pages depend on
+// — featured-first ordering (ADR-0009) and image selection.
 const validProject: ProjectFrontmatter = {
 	title: 'Portfolio Site',
 	summary: 'A fast, no-flash portfolio built with Astro.',
@@ -57,7 +58,7 @@ describe('projects schema', () => {
 	});
 
 	it('rejects a project missing a required field', () => {
-		const { summary, ...rest } = validProject;
+		const { visibility, ...rest } = validProject;
 
 		expect(projectSchema.safeParse(rest).success).toBe(false);
 	});
@@ -68,10 +69,21 @@ describe('projects schema', () => {
 		).toBe(false);
 	});
 
-	it('rejects an empty stack', () => {
-		expect(projectSchema.safeParse({ ...validProject, stack: [] }).success).toBe(
-			false
-		);
+	// Enrichment fills these in, so authoring neither is valid: the summary
+	// becomes the repo's description and the stack falls back to its topics.
+	it('accepts an omitted or null summary', () => {
+		const { summary, ...rest } = validProject;
+
+		expect(projectSchema.safeParse(rest).success).toBe(true);
+		expect(
+			projectSchema.safeParse({ ...validProject, summary: null }).success
+		).toBe(true);
+	});
+
+	it('accepts an omitted stack', () => {
+		const { stack, ...rest } = validProject;
+
+		expect(projectSchema.safeParse(rest).success).toBe(true);
 	});
 
 	it('rejects a malformed githubRepo', () => {

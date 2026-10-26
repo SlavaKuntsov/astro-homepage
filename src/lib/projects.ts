@@ -24,10 +24,12 @@ const repoSlug = z
 export const projectSchema = z
 	.object({
 		title: z.string().min(1),
-		summary: z.string().min(1),
+		// Optional on purpose: an unauthored (or `null`) summary lets *Enrichment*
+		// supply the repo's description instead (see `mergeProjectMetadata`).
+		summary: z.string().min(1).nullish(),
 		cover: z.string().min(1).optional(),
 		images: z.array(z.string().min(1)).optional(),
-		stack: z.array(z.string().min(1)).min(1),
+		stack: z.array(z.string().min(1)).optional(),
 		links: z
 			.object({
 				live: z.string().url().optional(),

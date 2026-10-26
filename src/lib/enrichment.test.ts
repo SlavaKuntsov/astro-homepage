@@ -148,7 +148,7 @@ describe('parseLanguages', () => {
 
 // The manual fields always win on conflict: the Project's own `summary` is the
 // description and its `stack` backstops the badges, while the repo's topics lead
-// when it has them and its description is kept as provenance.
+// when it has them and its description fills in when no summary is authored.
 describe('mergeProjectMetadata', () => {
 	const repo = {
 		stars: 42,
@@ -158,7 +158,7 @@ describe('mergeProjectMetadata', () => {
 		languages: expectedLanguages,
 	};
 
-	it('takes the badges from the repo topics and keeps the manual summary', () => {
+	it('takes the badges from the repo topics and the authored summary', () => {
 		expect(
 			mergeProjectMetadata(
 				{ summary: 'Manual summary', stack: ['Fallback'] },
@@ -170,8 +170,20 @@ describe('mergeProjectMetadata', () => {
 			tags: ['astro', 'portfolio'],
 			languages: expectedLanguages,
 			description: 'Manual summary',
-			repoDescription: 'The repo description',
 		});
+	});
+
+	it('falls back to the repo description when no summary is authored', () => {
+		expect(
+			mergeProjectMetadata({ stack: ['Fallback'] }, repo).description
+		).toBe('The repo description');
+	});
+
+	it('treats a null summary like an absent one', () => {
+		expect(
+			mergeProjectMetadata({ summary: null, stack: ['Fallback'] }, repo)
+				.description
+		).toBe('The repo description');
 	});
 
 	it('falls back to the manual stack when the repo has no topics', () => {
@@ -195,8 +207,11 @@ describe('mergeProjectMetadata', () => {
 			tags: ['Astro'],
 			languages: [],
 			description: 'Manual summary',
-			repoDescription: null,
 		});
+	});
+
+	it('has an empty description when neither the Project nor a repo supplies one', () => {
+		expect(mergeProjectMetadata({ stack: [] }, null).description).toBe('');
 	});
 });
 
@@ -298,7 +313,6 @@ describe('enrichProject', () => {
 			tags: ['Astro', 'TypeScript'],
 			languages: [],
 			description: 'A manual summary that must win.',
-			repoDescription: null,
 		});
 	});
 

@@ -8,7 +8,8 @@
  *
  * - **The repo supplies the badges.** A Project's header tags are the repo's
  *   topics; the manual `stack` is the fallback for a private repo or one with
- *   no topics. The manual `summary` stays the description, never overwritten.
+ *   no topics. The description is the manual `summary` when authored, otherwise
+ *   the repo's own description.
  * - **It is never required.** A network error, a rate limit, or an unknown repo
  *   resolves to `null` metadata and the build carries on unaffected.
  *
@@ -47,10 +48,11 @@ export interface ProjectMetadata {
 	tags: string[];
 	/** The repo's language breakdown, largest first; empty when unknown. */
 	languages: LanguageShare[];
-	/** The Project's description — the manual `summary`, which always wins. */
+	/**
+	 * The one description the Site shows: the manual `summary` when authored,
+	 * otherwise the repo's own description, otherwise empty.
+	 */
 	description: string;
-	/** The repo's own description, shown as provenance; `null` when unknown. */
-	repoDescription: string | null;
 }
 
 /** The slice of the Fetch API this module needs, so tests can supply a fake. */
@@ -143,9 +145,9 @@ export function parseLanguages(payload: unknown): LanguageShare[] {
 
 /**
  * Combine fetched repo metadata with the Project's manual fields. The badges
- * come from the repo's topics (falling back to the manual `stack`), the manual
- * `summary` is the displayed description and is never overwritten, and the
- * repo's description is preserved as `repoDescription`.
+ * come from the repo's topics (falling back to the manual `stack`), and the
+ * description is the manual `summary` when authored — which wins — otherwise
+ * the repo's own description.
  */
 export function mergeProjectMetadata(
 	manual: Pick<ProjectEntry['data'], 'summary' | 'stack'>,
@@ -156,10 +158,9 @@ export function mergeProjectMetadata(
 	return {
 		stars: repo?.stars ?? null,
 		language: repo?.language ?? null,
-		tags: topics.length > 0 ? topics : manual.stack,
+		tags: topics.length > 0 ? topics : (manual.stack ?? []),
 		languages: repo?.languages ?? [],
-		description: manual.summary,
-		repoDescription: repo?.description ?? null,
+		description: manual.summary ?? repo?.description ?? '',
 	};
 }
 

@@ -1,10 +1,10 @@
 ---
-// A Project's detail page (ticket #9): the manual description and markdown body
+// A Project's detail page (ticket #9): the description and markdown body
 // (ADR-0004), the image gallery, links, header tags, and — for a public Project
 // whose GitHub repo was reached at build — the Enrichment language breakdown.
-// The tags are the repo's topics (the manual `stack` is the fallback) and the
-// manual `summary` is always the description; when the fetch failed the
-// breakdown is simply absent and the page renders.
+// The tags are the repo's topics (the manual `stack` is the fallback), the
+// description is the manual `summary` or else the repo's, and when the fetch
+// failed the repo bits are simply absent and the page renders.
 import type { CollectionEntry } from 'astro:content';
 import { render } from 'astro:content';
 import { SITE_TITLE } from '@/consts';
@@ -63,7 +63,9 @@ if (data.links?.other)
 		<header class='flex flex-col gap-4'>
 			<div class='flex flex-col gap-3'>
 				<h1 class='text-3xl font-semibold'>{data.title}</h1>
-				<p class='text-lg text-muted-foreground'>{meta.description}</p>
+				{meta.description !== '' && (
+					<p class='text-lg text-muted-foreground'>{meta.description}</p>
+				)}
 			</div>
 
 			<StackChips items={meta.tags} label={t.projects.tags} />
@@ -122,16 +124,9 @@ if (data.links?.other)
 					aria-label={t.projects.languages}
 					data-project-languages
 				>
-					<div class='flex flex-col gap-1'>
-						<h2 class='font-heading text-lg font-semibold text-foreground'>
-							{t.projects.languages}
-						</h2>
-						{meta.repoDescription !== null && (
-							<p class='text-sm text-muted-foreground' data-project-repo-description>
-								{meta.repoDescription}
-							</p>
-						)}
-					</div>
+					<h2 class='font-heading text-lg font-semibold text-foreground'>
+						{t.projects.languages}
+					</h2>
 
 					<ul class='flex flex-col gap-3'>
 						{meta.languages.map(({ name, percent }) => (
