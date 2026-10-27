@@ -62,6 +62,8 @@ html:not(.theme-ready) *::after {
 	--color-border: var(--border);
 	--color-input: var(--input);
 	--color-ring: var(--ring);
+	/* The scrim behind a modal (the lightbox); dark in both Themes. */
+	--color-overlay: var(--overlay);
 
 	/* Radii. */
 	--radius-sm: calc(var(--radius) - 0.25rem);
@@ -100,6 +102,7 @@ html:not(.theme-ready) *::after {
 	--border: #e7d8c5;
 	--input: #e7d8c5;
 	--ring: #b54a12;
+	--overlay: rgb(0 0 0 / 0.7);
 }
 
 [data-theme='dark'] {
@@ -121,6 +124,7 @@ html:not(.theme-ready) *::after {
 	--border: #39343d;
 	--input: #39343d;
 	--ring: #f2a25c;
+	--overlay: rgb(0 0 0 / 0.7);
 }
 
 @layer base {

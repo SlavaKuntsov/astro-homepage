@@ -51,6 +51,10 @@ const ru: Translation = {
 	},
 	arts: {
 		heading: 'Картиночки',
+		gallery: 'Галерея',
+		tags: 'Теги',
+		link: 'Ссылка',
+		closeLightbox: 'Закрыть',
 	},
 	experience: {
 		heading: 'Опыт работы',

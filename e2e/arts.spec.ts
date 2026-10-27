@@ -1,0 +1,227 @@
+import type { Locator, Page } from '@playwright/test';
+import { expect, test } from './fixtures';
+
+/**
+ * The `arts` collection and its gallery with a lightbox (ticket #10, ADR-0004).
+ * This is the rendered-page seam, so it asserts what a visitor sees and does:
+ * a responsive grid of Artworks per Locale, and a lightbox that opens on a
+ * click or Enter, closes on Esc, the close button, or the backdrop, keeps focus
+ * inside itself, and hands focus back to the thumbnail that opened it.
+ *
+ * The schema, the manifest ordering, and the slug pairing are pinned by unit
+ * tests (`src/lib/arts.test.ts`); here they are only observed through the page.
+ */
+
+const items = (page: Page) => page.locator('[data-art]');
+const gallery = (page: Page) => page.locator('[data-arts-gallery]');
+const lightbox = (page: Page) => page.locator('[data-arts-lightbox]');
+const lightboxImage = (page: Page) =>
+	page.locator('[data-arts-lightbox-image]');
+const lightboxCaption = (page: Page) =>
+	page.locator('[data-arts-lightbox-caption]');
+const closeButton = (page: Page) => page.locator('[data-arts-lightbox-close]');
+const firstOpener = (page: Page) => page.locator('[data-art-open]').first();
+
+const titleOf = (item: Locator) => item.locator('[data-art-title]').innerText();
+
+/** Opens the lightbox from the first thumbnail and returns that opener. */
+const openLightbox = async (page: Page) => {
+	const opener = firstOpener(page);
+	await opener.click();
+
+	await expect(lightbox(page)).toHaveJSProperty('open', true);
+
+	return opener;
+};
+
+test.describe('the RU arts gallery at /arts', () => {
+	test('renders an H1 and one artwork per item', async ({ page }) => {
+		const response = await page.goto('/arts');
+		expect(response?.status()).toBe(200);
+
+		await expect(
+			page.getByRole('heading', { level: 1, name: 'Картиночки' })
+		).toBeVisible();
+
+		await expect(gallery(page)).toHaveAttribute('aria-label', 'Галерея');
+
+		const all = items(page);
+		expect(await all.count()).toBeGreaterThanOrEqual(1);
+
+		for (const item of await all.all()) {
+			// Each Artwork is one image with a visible, non-empty title, and the
+			// whole item is a link — so a keyboard user can open it.
+			await expect(item.locator('img')).toBeVisible();
+			await expect(item.locator('[data-art-title]')).not.toBeEmpty();
+			await expect(item.getByRole('link').first()).not.toBeEmpty();
+		}
+	});
+
+	test('renders thumbnails that scale with the viewport', async ({ page }) => {
+		await page.setViewportSize({ width: 360, height: 740 });
+		await page.goto('/arts');
+
+		for (const img of await page.locator('[data-art-thumb]').all()) {
+			await expect(img).toHaveAttribute('loading', 'lazy');
+			await expect(img).toHaveAttribute('width', /\d+/);
+			await expect(img).toHaveAttribute('height', /\d+/);
+		}
+
+		// A fluid grid must not overflow the narrow viewport (spec: responsive
+		// images), and the images must be laid out inside it.
+		const fits = await page.evaluate(
+			() => document.documentElement.scrollWidth <= window.innerWidth + 1
+		);
+		expect(fits).toBe(true);
+
+		const box = await firstOpener(page).locator('img').boundingBox();
+		expect(box?.width ?? 0).toBeGreaterThan(0);
+		expect(box?.width ?? 9999).toBeLessThanOrEqual(360);
+	});
+
+	test('shows the tags of an artwork that has them', async ({ page }) => {
+		await page.goto('/arts');
+
+		const tags = items(page).first().getByRole('list', { name: 'Теги' });
+		await expect(tags).toBeVisible();
+		await expect(tags.locator('li').first()).not.toBeEmpty();
+	});
+
+	test('opens the lightbox on click, showing the same image and title', async ({
+		page,
+	}) => {
+		await page.goto('/arts');
+
+		const item = items(page).first();
+		const title = await titleOf(item);
+
+		const opener = await openLightbox(page);
+
+		const thumbSrc = await opener
+			.locator('img')
+			.evaluate(
+				img => new URL(img.getAttribute('src') ?? '', location.href).href
+			);
+		expect(
+			await lightboxImage(page).evaluate(img => (img as HTMLImageElement).src)
+		).toBe(thumbSrc);
+
+		await expect(lightboxCaption(page)).toHaveText(title);
+		// The dialog is named by the Artwork it shows, not a generic label.
+		await expect(lightbox(page)).toHaveAccessibleName(title);
+		await expect(closeButton(page)).toBeFocused();
+	});
+
+	test('opens the lightbox with the keyboard', async ({ page }) => {
+		await page.goto('/arts');
+
+		await firstOpener(page).focus();
+		await page.keyboard.press('Enter');
+
+		await expect(lightbox(page)).toHaveJSProperty('open', true);
+	});
+
+	test('closes on Esc and returns focus to the thumbnail', async ({ page }) => {
+		await page.goto('/arts');
+
+		const opener = await openLightbox(page);
+		await page.keyboard.press('Escape');
+
+		await expect(lightbox(page)).toHaveJSProperty('open', false);
+		await expect(opener).toBeFocused();
+	});
+
+	test('closes on the close button and returns focus', async ({ page }) => {
+		await page.goto('/arts');
+
+		const opener = await openLightbox(page);
+		await closeButton(page).click();
+
+		await expect(lightbox(page)).toHaveJSProperty('open', false);
+		await expect(opener).toBeFocused();
+	});
+
+	test('closes when the backdrop is clicked', async ({ page }) => {
+		await page.goto('/arts');
+
+		await openLightbox(page);
+
+		// The dialog is centred and smaller than the viewport, so the top-left
+		// corner is backdrop.
+		await page.mouse.click(4, 4);
+
+		await expect(lightbox(page)).toHaveJSProperty('open', false);
+	});
+
+	test('keeps focus trapped inside the open lightbox', async ({ page }) => {
+		await page.goto('/arts');
+
+		await openLightbox(page);
+
+		for (let i = 0; i < 4; i++) {
+			await page.keyboard.press('Tab');
+
+			const contained = await page.evaluate(
+				() =>
+					document
+						.querySelector('[data-arts-lightbox]')
+						?.contains(document.activeElement) ?? false
+			);
+			expect(contained).toBe(true);
+		}
+	});
+});
+
+test.describe('the EN arts gallery at /en/arts', () => {
+	test('renders the English heading and labels', async ({ page }) => {
+		const response = await page.goto('/en/arts');
+		expect(response?.status()).toBe(200);
+
+		await expect(
+			page.getByRole('heading', { level: 1, name: 'Arts' })
+		).toBeVisible();
+		await expect(gallery(page)).toHaveAttribute('aria-label', 'Gallery');
+
+		const opener = await openLightbox(page);
+		await expect(closeButton(page)).toHaveAttribute('aria-label', 'Close');
+		await expect(lightboxCaption(page)).toHaveText(
+			await titleOf(items(page).first())
+		);
+
+		await closeButton(page).click();
+		await expect(opener).toBeFocused();
+	});
+});
+
+test('both Locales pair the same artwork slugs', async ({ page }) => {
+	await page.goto('/arts');
+	const ru = await items(page).evaluateAll(nodes =>
+		nodes.map(node => node.getAttribute('data-slug') ?? '')
+	);
+
+	await page.goto('/en/arts');
+	const en = await items(page).evaluateAll(nodes =>
+		nodes.map(node => node.getAttribute('data-slug') ?? '')
+	);
+
+	expect(ru.length).toBeGreaterThanOrEqual(1);
+	expect(en).toEqual(ru);
+});
+
+test.describe('the arts page is discoverable', () => {
+	test('the nav links to /arts and marks it current', async ({ page }) => {
+		await page.goto('/');
+
+		const link = page.locator('header nav a[href="/arts"]').first();
+		await expect(link).toBeVisible();
+		await expect(link).not.toHaveAttribute('aria-current', 'page');
+
+		await page.goto('/arts');
+		await expect(link).toHaveAttribute('aria-current', 'page');
+	});
+
+	test('the legacy /ru/arts route redirects to /arts', async ({ page }) => {
+		await page.goto('/ru/arts');
+		await page.waitForURL(url => url.pathname.replace(/\/+$/, '') === '/arts');
+	});
+});

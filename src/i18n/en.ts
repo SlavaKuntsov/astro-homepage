@@ -51,6 +51,10 @@ const en: Translation = {
 	},
 	arts: {
 		heading: 'Arts',
+		gallery: 'Gallery',
+		tags: 'Tags',
+		link: 'Link',
+		closeLightbox: 'Close',
 	},
 	experience: {
 		heading: 'Experience',

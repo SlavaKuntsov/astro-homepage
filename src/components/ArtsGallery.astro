@@ -1,0 +1,243 @@
+---
+// The Arts gallery (ticket #10): the Artworks as a responsive grid that opens a
+// dependency-free lightbox. The markup is static and server-rendered; a small
+// vanilla script (ADR-0002) drives a native `<dialog>` — which already makes the
+// rest of the page inert and closes on Esc — and adds the three behaviours it
+// does not: wrapping Tab so focus cannot leave the dialog, closing on a backdrop
+// click, and restoring focus to the thumbnail that opened it. Each opener is a
+// real link to the image, so it works — and the artwork is viewable — without
+// JavaScript.
+import type { ArtworkEntry } from '@/lib/arts';
+import { slugOfEntryId } from '@/lib/collection';
+import type { Translation } from '@/types/Translation';
+import StackChips from './StackChips.astro';
+
+interface Props {
+	/** The Artworks, already in authored order (see `orderedArts`). */
+	arts: readonly ArtworkEntry[];
+	t: Translation;
+}
+
+const { arts, t } = Astro.props;
+---
+
+<ul
+	class='mt-8 grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4'
+	aria-label={t.arts.gallery}
+	data-arts-gallery
+>
+	{
+		arts.map(entry => {
+			const { data } = entry;
+			const slug = slugOfEntryId(entry.id);
+
+			return (
+				<li
+					class='flex flex-col gap-3'
+					data-art
+					data-slug={slug}
+				>
+					<a
+						href={data.image}
+						class='group flex flex-col gap-2 rounded-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background'
+						data-art-open
+					>
+						<span class='overflow-hidden rounded-xl border border-border bg-muted transition-colors'>
+							<img
+								src={data.image}
+								alt=''
+								width='480'
+								height='480'
+								loading='lazy'
+								class='aspect-square w-full object-cover transition-transform duration-300 group-hover:scale-[1.03]'
+								data-art-thumb
+							/>
+						</span>
+
+						<span
+							class='font-heading text-base font-semibold text-foreground transition-colors group-hover:text-primary'
+							data-art-title
+						>
+							{data.title}
+						</span>
+					</a>
+
+					{data.tags !== undefined && data.tags.length > 0 && (
+						<StackChips items={data.tags} label={t.arts.tags} />
+					)}
+
+					{data.link !== undefined && (
+						<a
+							href={data.link}
+							target='_blank'
+							rel='noopener noreferrer'
+							class='w-fit text-sm font-medium text-primary underline decoration-primary/40 underline-offset-4 transition-colors hover:decoration-primary'
+						>
+							{t.arts.link} ↗
+						</a>
+					)}
+				</li>
+			);
+		})
+	}
+</ul>
+
+<!--
+	One dialog for the whole gallery. Its content fills it, so a click on the
+	::backdrop targets the dialog element itself while a click on the artwork
+	does not — the pointer rule the script relies on.
+-->
+<dialog
+	class='arts-lightbox m-auto w-[92vw] max-w-prose overflow-hidden rounded-2xl border-0 bg-card p-0 text-foreground shadow-2xl backdrop:bg-overlay'
+	aria-labelledby='arts-lightbox-caption'
+	data-arts-lightbox
+>
+	<figure class='relative m-0'>
+		<img
+			alt=''
+			width='960'
+			height='960'
+			class='max-h-[75vh] w-full bg-muted object-contain'
+			data-arts-lightbox-image
+		/>
+
+		<figcaption
+			id='arts-lightbox-caption'
+			class='px-4 py-3 font-heading text-base font-semibold text-foreground'
+			data-arts-lightbox-caption
+		>
+		</figcaption>
+
+		<button
+			type='button'
+			class='absolute right-3 top-3 inline-flex size-9 cursor-pointer items-center justify-center rounded-full border border-border bg-card/90 text-foreground transition-colors hover:bg-muted'
+			aria-label={t.arts.closeLightbox}
+			data-arts-lightbox-close
+		>
+			<svg
+				viewBox='0 0 24 24'
+				width='18'
+				height='18'
+				fill='none'
+				stroke='currentColor'
+				stroke-width='2'
+				stroke-linecap='round'
+				aria-hidden='true'
+			>
+				<path d='M6 6l12 12M18 6L6 18'></path>
+			</svg>
+		</button>
+	</figure>
+</dialog>
+
+<script>
+	// The grid and the dialog are page content, so a client-side navigation
+	// replaces them: bind the (new) elements each page load instead of holding a
+	// reference. Binding is idempotent, so re-running the script is harmless.
+	const GALLERY = '[data-arts-gallery]';
+	const OPENER = '[data-art-open]';
+	const TITLE = '[data-art-title]';
+	const DIALOG = '[data-arts-lightbox]';
+	const CLOSE = '[data-arts-lightbox-close]';
+	const IMAGE = '[data-arts-lightbox-image]';
+	const CAPTION = '[data-arts-lightbox-caption]';
+	const FOCUSABLE =
+		'a[href], button:not([disabled]), [tabindex]:not([tabindex="-1"])';
+
+	/** The thumbnail that opened the lightbox, to focus when it closes. */
+	let opener: HTMLElement | null = null;
+
+	/** Whether a click carried a modifier, so the browser should handle it. */
+	const isModified = (event: MouseEvent) =>
+		event.metaKey || event.ctrlKey || event.shiftKey || event.altKey;
+
+	const open = (trigger: HTMLElement) => {
+		const dialog = document.querySelector<HTMLDialogElement>(DIALOG);
+		if (!dialog) return;
+
+		const thumb = trigger.querySelector<HTMLImageElement>('img');
+		const image = dialog.querySelector<HTMLImageElement>(IMAGE);
+		const caption = dialog.querySelector<HTMLElement>(CAPTION);
+
+		if (image && thumb) image.src = thumb.currentSrc || thumb.src;
+		if (caption) {
+			caption.textContent = trigger.querySelector(TITLE)?.textContent ?? '';
+		}
+
+		opener = trigger;
+		dialog.showModal();
+		dialog.querySelector<HTMLElement>(CLOSE)?.focus();
+	};
+
+	const bindDialog = () => {
+		const dialog = document.querySelector<HTMLDialogElement>(DIALOG);
+		if (!dialog || dialog.dataset.lightboxBound) return;
+
+		dialog.dataset.lightboxBound = 'true';
+		dialog.addEventListener('click', event => {
+			const target = event.target as Element | null;
+
+			// The close button, or the ::backdrop (a click outside the content
+			// targets the dialog itself); a click on the artwork does neither.
+			if (target?.closest(CLOSE) || event.target === dialog) dialog.close();
+		});
+
+		// A modal dialog makes the rest of the page inert, but Tab still leaves
+		// the dialog for the browser chrome past its last control: wrap Tab at
+		// the ends so focus is genuinely trapped (spec user story 25).
+		dialog.addEventListener('keydown', event => {
+			if (event.key !== 'Tab') return;
+
+			const focusable = Array.from(
+				dialog.querySelectorAll<HTMLElement>(FOCUSABLE)
+			).filter(element => element.offsetParent !== null);
+			if (focusable.length === 0) return;
+
+			const first = focusable[0];
+			const last = focusable[focusable.length - 1];
+			const active = document.activeElement;
+
+			// Only the two ends wrap; everywhere else the browser moves focus.
+			if (active !== first && active !== last) return;
+
+			event.preventDefault();
+			(event.shiftKey ? last : first).focus();
+		});
+
+		// Esc is handled by the dialog itself; either way, return the keyboard
+		// user to the thumbnail they opened.
+		dialog.addEventListener('close', () => {
+			opener?.focus();
+			opener = null;
+		});
+	};
+
+	const bindGallery = () => {
+		const gallery = document.querySelector<HTMLElement>(GALLERY);
+		if (!gallery || gallery.dataset.lightboxBound) return;
+
+		gallery.dataset.lightboxBound = 'true';
+		gallery.addEventListener('click', event => {
+			const target = event.target as Element | null;
+			const trigger = target?.closest<HTMLElement>(OPENER);
+
+			// Only a modifier-free click on a thumbnail opens the lightbox; the
+			// artwork's own external link is not inside an opener, and a
+			// modifier-click keeps its meaning (the opener's href is the image,
+			// so it still works without JavaScript).
+			if (!trigger) return;
+			if (event instanceof MouseEvent && isModified(event)) return;
+
+			event.preventDefault();
+			open(trigger);
+		});
+	};
+
+	const sync = () => {
+		bindDialog();
+		bindGallery();
+	};
+
+	document.addEventListener('astro:page-load', sync);
+	sync();
+</script>
