@@ -276,10 +276,14 @@ html:not(.theme-ready) *::after {
 /*
  * A doodle on paper: a slight, deterministic tilt that straightens and lifts
  * when hovered or focused. Uses the individual `rotate`/`translate` properties
- * so it composes with the reveal animation below, which animates the same
- * properties on the parent.
+ * so it composes with the reveal, which moves the same properties on the parent
+ * `<li>` rather than this element.
+ *
+ * `position: relative` makes the card the containing block for the opener's
+ * stretched `::after` below.
  */
 .art-sticker {
+	position: relative;
 	background-color: var(--paper);
 	rotate: var(--tilt, 0deg);
 	box-shadow:
@@ -297,6 +301,19 @@ html:not(.theme-ready) *::after {
 	box-shadow:
 		0 2px 4px rgb(0 0 0 / 0.08),
 		0 20px 34px -18px rgb(0 0 0 / 0.45);
+}
+
+/*
+ * The whole card opens the lightbox: the opener's `::after` is stretched over
+ * it, so a click anywhere — including the tag chips, which are not interactive
+ * — opens the Artwork, and the card is one hover/focus target. The card is the
+ * containing block (see `.art-sticker`); the Artwork's external link lifts
+ * above the overlay with `relative z-10` to stay clickable.
+ */
+.art-opener::after {
+	content: '';
+	position: absolute;
+	inset: 0;
 }
 
 /* A faint "graph paper" wash behind the grid, mixed from the border token. */

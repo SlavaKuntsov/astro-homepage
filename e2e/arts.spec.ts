@@ -155,6 +155,27 @@ test.describe('the RU arts gallery at /arts', () => {
 		await expect(closeButton(page)).toBeFocused();
 	});
 
+	test('opens the lightbox from anywhere on the card', async ({ page }) => {
+		await page.goto('/arts');
+
+		// The tag chips sit below the title, outside the opener's own box, so
+		// only the opener's stretched overlay can make them open the Artwork.
+		// Clicked with the mouse: Playwright would rightly call the chip
+		// obscured, because the overlay is what receives the click.
+		const chip = items(page)
+			.first()
+			.getByRole('list', { name: 'Теги' })
+			.locator('li')
+			.first();
+		const box = await chip.boundingBox();
+		if (!box) throw new Error('the tag chip has no box');
+
+		await page.mouse.click(box.x + box.width / 2, box.y + box.height / 2);
+
+		await expect(lightbox(page)).toHaveJSProperty('open', true);
+		await expect(lightboxCaption(page)).toHaveText(await titleAt(page, 0));
+	});
+
 	test('opens the lightbox with the keyboard', async ({ page }) => {
 		await page.goto('/arts');
 
