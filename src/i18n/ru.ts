@@ -55,6 +55,8 @@ const ru: Translation = {
 		tags: 'Теги',
 		link: 'Ссылка',
 		closeLightbox: 'Закрыть',
+		previous: 'Предыдущая работа',
+		next: 'Следующая работа',
 	},
 	experience: {
 		heading: 'Опыт работы',

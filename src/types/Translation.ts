@@ -72,6 +72,10 @@ export interface Translation {
 		link: string;
 		/** Accessible label for the lightbox's close button. */
 		closeLightbox: string;
+		/** Accessible label for the lightbox's "previous Artwork" button. */
+		previous: string;
+		/** Accessible label for the lightbox's "next Artwork" button. */
+		next: string;
 	};
 	experience: {
 		/** The `/experience` page's `<h1>`. */

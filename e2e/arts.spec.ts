@@ -6,7 +6,8 @@ import { expect, test } from './fixtures';
  * This is the rendered-page seam, so it asserts what a visitor sees and does:
  * a responsive grid of Artworks per Locale, and a lightbox that opens on a
  * click or Enter, closes on Esc, the close button, or the backdrop, keeps focus
- * inside itself, and hands focus back to the thumbnail that opened it.
+ * inside itself, hands focus back to the thumbnail that opened it, and steps
+ * between Artworks with its buttons, the arrow keys, or a swipe.
  *
  * The schema, the manifest ordering, and the slug pairing are pinned by unit
  * tests (`src/lib/arts.test.ts`); here they are only observed through the page.
@@ -20,9 +21,16 @@ const lightboxImage = (page: Page) =>
 const lightboxCaption = (page: Page) =>
 	page.locator('[data-arts-lightbox-caption]');
 const closeButton = (page: Page) => page.locator('[data-arts-lightbox-close]');
+const previousButton = (page: Page) =>
+	page.locator('[data-arts-lightbox-previous]');
+const nextButton = (page: Page) => page.locator('[data-arts-lightbox-next]');
+const counter = (page: Page) => page.locator('[data-arts-lightbox-counter]');
 const firstOpener = (page: Page) => page.locator('[data-art-open]').first();
 
 const titleOf = (item: Locator) => item.locator('[data-art-title]').innerText();
+
+/** The title of the nth Artwork in the gallery, in display order. */
+const titleAt = (page: Page, index: number) => titleOf(items(page).nth(index));
 
 /** Opens the lightbox from the first thumbnail and returns that opener. */
 const openLightbox = async (page: Page) => {
@@ -32,6 +40,20 @@ const openLightbox = async (page: Page) => {
 	await expect(lightbox(page)).toHaveJSProperty('open', true);
 
 	return opener;
+};
+
+/** Drags horizontally across the lightbox image by `distance` pixels. */
+const swipe = async (page: Page, distance: number) => {
+	const box = await lightboxImage(page).boundingBox();
+	if (!box) throw new Error('the lightbox image has no box');
+
+	const y = box.y + box.height / 2;
+	const from = box.x + box.width / 2;
+
+	await page.mouse.move(from, y);
+	await page.mouse.down();
+	await page.mouse.move(from + distance, y, { steps: 8 });
+	await page.mouse.up();
 };
 
 test.describe('the RU arts gallery at /arts', () => {
@@ -169,6 +191,104 @@ test.describe('the RU arts gallery at /arts', () => {
 			);
 			expect(contained).toBe(true);
 		}
+	});
+});
+
+test.describe('stepping through the arts lightbox', () => {
+	test('shows the position of the shown artwork', async ({ page }) => {
+		await page.goto('/arts');
+
+		const total = await items(page).count();
+		expect(total).toBeGreaterThan(1);
+
+		await openLightbox(page);
+		await expect(counter(page)).toHaveText(`1 / ${total}`);
+	});
+
+	test('steps with the buttons, wrapping around', async ({ page }) => {
+		await page.goto('/arts');
+
+		const total = await items(page).count();
+		await openLightbox(page);
+
+		await nextButton(page).click();
+		await expect(lightboxCaption(page)).toHaveText(await titleAt(page, 1));
+		await expect(counter(page)).toHaveText(`2 / ${total}`);
+
+		// The image follows the caption.
+		const nextThumb = await items(page)
+			.nth(1)
+			.locator('img')
+			.evaluate(img => new URL(img.getAttribute('src') ?? '', location.href).href);
+		expect(
+			await lightboxImage(page).evaluate(img => (img as HTMLImageElement).src)
+		).toBe(nextThumb);
+
+		await previousButton(page).click();
+		await expect(counter(page)).toHaveText(`1 / ${total}`);
+
+		// Stepping back past the first Artwork wraps to the last.
+		await previousButton(page).click();
+		await expect(lightboxCaption(page)).toHaveText(
+			await titleAt(page, total - 1)
+		);
+		await expect(counter(page)).toHaveText(`${total} / ${total}`);
+	});
+
+	test('steps with the arrow keys', async ({ page }) => {
+		await page.goto('/arts');
+
+		const total = await items(page).count();
+		await openLightbox(page);
+
+		await page.keyboard.press('ArrowRight');
+		await expect(lightboxCaption(page)).toHaveText(await titleAt(page, 1));
+		await expect(counter(page)).toHaveText(`2 / ${total}`);
+
+		await page.keyboard.press('ArrowLeft');
+		await expect(lightboxCaption(page)).toHaveText(await titleAt(page, 0));
+		await expect(counter(page)).toHaveText(`1 / ${total}`);
+	});
+
+	test('steps with a swipe without closing the lightbox', async ({ page }) => {
+		await page.goto('/arts');
+
+		const total = await items(page).count();
+		await openLightbox(page);
+
+		await swipe(page, -140);
+		await expect(counter(page)).toHaveText(`2 / ${total}`);
+		await expect(lightbox(page)).toHaveJSProperty('open', true);
+
+		await swipe(page, 140);
+		await expect(counter(page)).toHaveText(`1 / ${total}`);
+		await expect(lightbox(page)).toHaveJSProperty('open', true);
+	});
+
+	test('labels the navigation in the page’s Locale', async ({ page }) => {
+		await page.goto('/arts');
+		await openLightbox(page);
+
+		await expect(previousButton(page)).toHaveAttribute(
+			'aria-label',
+			'Предыдущая работа'
+		);
+		await expect(nextButton(page)).toHaveAttribute(
+			'aria-label',
+			'Следующая работа'
+		);
+
+		await page.goto('/en/arts');
+		await openLightbox(page);
+
+		await expect(previousButton(page)).toHaveAttribute(
+			'aria-label',
+			'Previous artwork'
+		);
+		await expect(nextButton(page)).toHaveAttribute(
+			'aria-label',
+			'Next artwork'
+		);
 	});
 });
 

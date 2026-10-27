@@ -64,6 +64,14 @@ html:not(.theme-ready) *::after {
 	--color-ring: var(--ring);
 	/* The scrim behind a modal (the lightbox); dark in both Themes. */
 	--color-overlay: var(--overlay);
+	/* The light "paper" an Artwork is drawn on; stays light in both Themes. */
+	--color-paper: var(--paper);
+	/*
+	 * Ink on that paper. Deliberately not `--foreground`: the paper is light in
+	 * both Themes, so text on it must be dark in both — a Theme-following
+	 * foreground would be white on white under the dark Theme.
+	 */
+	--color-ink: var(--ink);
 
 	/* Radii. */
 	--radius-sm: calc(var(--radius) - 0.25rem);
@@ -103,6 +111,10 @@ html:not(.theme-ready) *::after {
 	--input: #e7d8c5;
 	--ring: #b54a12;
 	--overlay: rgb(0 0 0 / 0.7);
+	--paper: #fffdf8;
+	/* Ink reads on `--paper`, which is light in both Themes, so this value is
+	   deliberately not overridden under `[data-theme='dark']`. */
+	--ink: #241f1a;
 }
 
 [data-theme='dark'] {
@@ -125,6 +137,8 @@ html:not(.theme-ready) *::after {
 	--input: #39343d;
 	--ring: #f2a25c;
 	--overlay: rgb(0 0 0 / 0.7);
+	/* Dimmer than the light Theme's paper, so it does not glare on dark. */
+	--paper: #e8e1d5;
 }
 
 @layer base {
@@ -246,4 +260,84 @@ html:not(.theme-ready) *::after {
 }
 .skip-link:focus {
 	transform: translateY(0);
+}
+
+/* ── Arts gallery (ticket #10) ─────────────────────────────────────────────
+ *
+ * The Artworks are black ink on transparency, so each one sits on a light
+ * "paper" tile: on the dark Theme the ink would otherwise be black on a
+ * near-black surface and all but disappear. Paper is a token, not a raw
+ * value, and stays light in both Themes.
+ */
+.art-paper {
+	background-color: var(--paper);
+}
+
+/*
+ * A doodle on paper: a slight, deterministic tilt that straightens and lifts
+ * when hovered or focused. Uses the individual `rotate`/`translate` properties
+ * so it composes with the reveal animation below, which animates the same
+ * properties on the parent.
+ */
+.art-sticker {
+	background-color: var(--paper);
+	rotate: var(--tilt, 0deg);
+	box-shadow:
+		0 1px 2px rgb(0 0 0 / 0.06),
+		0 10px 24px -14px rgb(0 0 0 / 0.35);
+	transition:
+		rotate 300ms ease,
+		translate 300ms ease,
+		box-shadow 300ms ease;
+}
+.art-sticker:hover,
+.art-sticker:focus-within {
+	rotate: 0deg;
+	translate: 0 -0.35rem;
+	box-shadow:
+		0 2px 4px rgb(0 0 0 / 0.08),
+		0 20px 34px -18px rgb(0 0 0 / 0.45);
+}
+
+/* A faint "graph paper" wash behind the grid, mixed from the border token. */
+.paper-grid {
+	background-image:
+		repeating-linear-gradient(
+			to right,
+			color-mix(in oklab, var(--border) 55%, transparent) 0 1px,
+			transparent 1px 1.5rem
+		),
+		repeating-linear-gradient(
+			to bottom,
+			color-mix(in oklab, var(--border) 55%, transparent) 0 1px,
+			transparent 1px 1.5rem
+		);
+}
+
+/*
+ * Scroll-driven reveal: pure CSS, so there is no "hide then show" flash — an
+ * Artwork already in view at load sits at the end of its range and paints
+ * immediately. Guarded by `@supports`, so browsers without view() timelines
+ * render the grid statically, and skipped entirely under reduced motion (the
+ * global reduced-motion rule cannot neutralise a scroll timeline).
+ */
+@keyframes art-reveal {
+	from {
+		opacity: 0;
+		translate: 0 1.25rem;
+	}
+	to {
+		opacity: 1;
+		translate: 0 0;
+	}
+}
+
+@supports (animation-timeline: view()) {
+	@media (prefers-reduced-motion: no-preference) {
+		.art-item {
+			animation: art-reveal linear both;
+			animation-timeline: view();
+			animation-range: entry 15% cover 40%;
+		}
+	}
 }

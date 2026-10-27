@@ -55,6 +55,8 @@ const en: Translation = {
 		tags: 'Tags',
 		link: 'Link',
 		closeLightbox: 'Close',
+		previous: 'Previous artwork',
+		next: 'Next artwork',
 	},
 	experience: {
 		heading: 'Experience',
