@@ -1,5 +1,6 @@
 import { defineCollection } from 'astro:content';
 import { glob } from 'astro/loaders';
+import { artworkSchema } from './lib/arts';
 import { experienceSchema } from './lib/experience';
 import { projectSchema } from './lib/projects';
 import { skillGroupSchema } from './lib/skills';
@@ -30,4 +31,12 @@ const projects = defineCollection({
 	schema: projectSchema,
 });
 
-export const collections = { experience, skills, projects };
+// ADR-0004: one markdown file per Locale under `arts/{ru,en}/<slug>.md`. The
+// schema (`src/lib/arts.ts`) fails the build on bad frontmatter; the gallery
+// (ticket #10) renders the Artworks in `arts/order.json` order (ADR-0009).
+const arts = defineCollection({
+	loader: glob({ pattern: '**/*.md', base: './src/content/arts' }),
+	schema: artworkSchema,
+});
+
+export const collections = { experience, skills, projects, arts };

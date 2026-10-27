@@ -64,6 +64,18 @@ export interface Translation {
 	arts: {
 		/** The page's `<h1>`. */
 		heading: string;
+		/** Accessible label for the Artwork gallery grid. */
+		gallery: string;
+		/** Accessible label for an Artwork's tag chips. */
+		tags: string;
+		/** Link label for an Artwork's external page. */
+		link: string;
+		/** Accessible label for the lightbox's close button. */
+		closeLightbox: string;
+		/** Accessible label for the lightbox's "previous Artwork" button. */
+		previous: string;
+		/** Accessible label for the lightbox's "next Artwork" button. */
+		next: string;
 	};
 	experience: {
 		/** The `/experience` page's `<h1>`. */
