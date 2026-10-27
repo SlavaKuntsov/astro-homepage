@@ -315,29 +315,23 @@ html:not(.theme-ready) *::after {
 }
 
 /*
- * Scroll-driven reveal: pure CSS, so there is no "hide then show" flash — an
- * Artwork already in view at load sits at the end of its range and paints
- * immediately. Guarded by `@supports`, so browsers without view() timelines
- * render the grid statically, and skipped entirely under reduced motion (the
- * global reduced-motion rule cannot neutralise a scroll timeline).
+ * Scroll reveal, opt-in from the script: an Artwork below the fold at load is
+ * hidden and fades in as it is scrolled to. Only below-the-fold items are ever
+ * hidden — an Artwork already on screen must be painted at full strength on the
+ * first frame. A `view()` timeline cannot promise that: it freezes a
+ * partly-visible Artwork mid-fade, and on a page too short to scroll that is
+ * where it stays. Without JavaScript nothing is hidden at all.
  */
-@keyframes art-reveal {
-	from {
-		opacity: 0;
-		translate: 0 1.25rem;
-	}
-	to {
-		opacity: 1;
-		translate: 0 0;
-	}
+.art-item[data-reveal] {
+	transition:
+		opacity 500ms ease,
+		translate 500ms ease;
+	transition-delay: var(--reveal-delay, 0ms);
 }
 
-@supports (animation-timeline: view()) {
-	@media (prefers-reduced-motion: no-preference) {
-		.art-item {
-			animation: art-reveal linear both;
-			animation-timeline: view();
-			animation-range: entry 15% cover 40%;
-		}
+@media (prefers-reduced-motion: no-preference) {
+	.art-item[data-reveal='pending'] {
+		opacity: 0;
+		translate: 0 1.25rem;
 	}
 }

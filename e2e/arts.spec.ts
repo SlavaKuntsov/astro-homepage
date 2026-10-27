@@ -101,6 +101,27 @@ test.describe('the RU arts gallery at /arts', () => {
 		expect(box?.width ?? 9999).toBeLessThanOrEqual(360);
 	});
 
+	test('paints every artwork on screen at full strength on load', async ({
+		page,
+	}) => {
+		// The scroll reveal may only hide Artworks below the fold. A card caught
+		// mid-reveal while it is on screen is a first-frame bug, and on a page
+		// too short to scroll (the 1100 case) it used to stay faded for good.
+		for (const height of [400, 700, 900, 1100]) {
+			await page.setViewportSize({ width: 1280, height });
+			await page.goto('/arts');
+
+			// Asserted without retrying: a faded card must not pass by fading in.
+			const faded = await items(page).evaluateAll(nodes =>
+				nodes
+					.filter(node => node.getBoundingClientRect().top < window.innerHeight)
+					.map(node => Number(getComputedStyle(node).opacity))
+					.filter(opacity => opacity < 1)
+			);
+			expect(faded).toEqual([]);
+		}
+	});
+
 	test('shows the tags of an artwork that has them', async ({ page }) => {
 		await page.goto('/arts');
 

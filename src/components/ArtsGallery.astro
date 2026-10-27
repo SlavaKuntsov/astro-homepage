@@ -7,6 +7,9 @@
 // click, stepping between Artworks (buttons, ←/→, or a swipe), and restoring
 // focus to the thumbnail that opened it. Each opener is a real link to the
 // image, so it works — and the artwork is viewable — without JavaScript.
+//
+// The same script fades Artworks in as they are scrolled to, touching only the
+// ones below the fold (see `bindReveal`).
 import type { ArtworkEntry } from '@/lib/arts';
 import { slugOfEntryId } from '@/lib/collection';
 import type { Translation } from '@/types/Translation';
@@ -214,11 +217,17 @@ const hasNavigation = arts.length > 1;
 	const CLOSE = '[data-arts-lightbox-close]';
 	const PREVIOUS = '[data-arts-lightbox-previous]';
 	const NEXT = '[data-arts-lightbox-next]';
+	const REVEAL_ITEM = '[data-art]';
 	const IMAGE = '[data-arts-lightbox-image]';
 	const CAPTION = '[data-arts-lightbox-caption]';
 	const COUNTER = '[data-arts-lightbox-counter]';
 	const FOCUSABLE =
 		'a[href], button:not([disabled]), [tabindex]:not([tabindex="-1"])';
+
+	/** How many Artworks share a row at the widest layout, for the stagger. */
+	const REVEAL_COLUMNS = 4;
+	/** The stagger between Artworks of one row, so the grid cascades in. */
+	const REVEAL_STAGGER = 70;
 
 	/** A drag shorter than this is a click, not a swipe. */
 	const SWIPE_THRESHOLD = 40;
@@ -392,9 +401,52 @@ const hasNavigation = arts.length > 1;
 		});
 	};
 
+	/**
+	 * Fades Artworks in as they are scrolled to. Only what is below the fold is
+	 * hidden: an Artwork already on screen is never touched, because it has to
+	 * be painted at full strength on the first frame, and hiding it here — after
+	 * the first paint — would flash it. Without JavaScript nothing is hidden.
+	 */
+	const bindReveal = () => {
+		const gallery = document.querySelector<HTMLElement>(GALLERY);
+		if (!gallery || gallery.dataset.revealBound) return;
+
+		gallery.dataset.revealBound = 'true';
+
+		const pending = Array.from(
+			gallery.querySelectorAll<HTMLElement>(REVEAL_ITEM)
+		).filter(item => item.getBoundingClientRect().top > window.innerHeight);
+		if (pending.length === 0) return;
+
+		pending.forEach((item, index) => {
+			item.style.setProperty(
+				'--reveal-delay',
+				`${(index % REVEAL_COLUMNS) * REVEAL_STAGGER}ms`
+			);
+			item.dataset.reveal = 'pending';
+		});
+
+		// The bottom margin starts the fade just before an Artwork crosses the
+		// fold, so it is never on screen at zero opacity.
+		const observer = new IntersectionObserver(
+			entries => {
+				for (const entry of entries) {
+					if (!entry.isIntersecting) continue;
+
+					(entry.target as HTMLElement).dataset.reveal = 'shown';
+					observer.unobserve(entry.target);
+				}
+			},
+			{ rootMargin: '0px 0px 15% 0px' }
+		);
+
+		for (const item of pending) observer.observe(item);
+	};
+
 	const sync = () => {
 		bindDialog();
 		bindGallery();
+		bindReveal();
 	};
 
 	document.addEventListener('astro:page-load', sync);
