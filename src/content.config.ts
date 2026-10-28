@@ -1,6 +1,7 @@
 import { defineCollection } from 'astro:content';
 import { glob } from 'astro/loaders';
 import { artworkSchema } from './lib/arts';
+import { educationSchema } from './lib/education';
 import { experienceSchema } from './lib/experience';
 import { projectSchema } from './lib/projects';
 import { skillGroupSchema } from './lib/skills';
@@ -12,6 +13,15 @@ import { skillGroupSchema } from './lib/skills';
 const experience = defineCollection({
 	loader: glob({ pattern: '**/*.md', base: './src/content/experience' }),
 	schema: experienceSchema,
+});
+
+// ADR-0004: one markdown file per Locale under `education/{ru,en}/<slug>.md`.
+// The Zod schema (`src/lib/education.ts`) fails the build on a missing or
+// mistyped field; entries are dated by year. The home page renders them in
+// `education/order.json` order (ADR-0009).
+const education = defineCollection({
+	loader: glob({ pattern: '**/*.md', base: './src/content/education' }),
+	schema: educationSchema,
 });
 
 // ADR-0008: the one locale-independent collection — the technology names read
@@ -39,4 +49,4 @@ const arts = defineCollection({
 	schema: artworkSchema,
 });
 
-export const collections = { experience, skills, projects, arts };
+export const collections = { experience, education, skills, projects, arts };

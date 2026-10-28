@@ -29,10 +29,11 @@ A refactored, Astro-native version of the Site that:
 - **Never flashes** — the correct theme and locale are correct on the very first
   frame, on reload and on navigation.
 - Presents the **resume as typed markdown content collections** (experience,
-  skills) so it is easy to maintain and impossible to render untyped.
+  education, skills) so it is easy to maintain and impossible to render untyped.
 - Adds real **Projects** pages (index + detail, images, links, optional build-time
   GitHub enrichment for public repos) and an **Arts** gallery with a lightbox.
-- Adds a print-optimized **CV** page plus a downloadable PDF.
+- Renders a print-optimized **CV** (the home page's resume sections) plus a
+  downloadable PDF.
 - Ships **almost no client JavaScript** and keeps the warm, personal aesthetic of
   the current Site, but cleaner and more modern.
 - Stays on **Vercel**.
@@ -49,8 +50,8 @@ A refactored, Astro-native version of the Site that:
    that I can match the stack against my role.
 5. As a recruiter, I want a "Download CV" action that gives me a PDF, so that I can
    keep it for later.
-6. As a recruiter, I want a `/cv` page I can print cleanly to PDF, so that I can
-   archive the resume from the browser.
+6. As a recruiter, I want the Site's resume pages to print cleanly to PDF, so
+   that I can archive the resume from the browser.
 7. As a recruiter, I want to see showcased projects with a screenshot, a short
    description, and links to the live site and source, so that I can judge quality.
 8. As a recruiter, I want private projects to still be described in text and image
@@ -137,6 +138,9 @@ type Theme = 'light' | 'dark';           // persisted at localStorage["theme"]
   `position`, `start`, `end?` or `current: boolean`, `location?`,
   `employmentType?`, `industries?: string[]`, `summary`, `highlights: string[]`,
   `environment: string[]`. Body: long-form markdown.
+- `education/{ru,en}/<slug>.md` — frontmatter: `institution`, `institutionUrl?`,
+  `level`, `faculty?`, `field?`, `start` (YYYY), `end?` or `current: boolean`,
+  `location?`. Dated by year (ADR-0010).
 - `projects/{ru,en}/<slug>.md` — frontmatter: `title`, `summary?`, `cover?`,
   `images?: string[]`, `stack?`, `links?: { live?, github?, other? }`,
   `visibility: 'public' | 'private'`, `featured?: boolean`, optional
@@ -151,7 +155,7 @@ type Theme = 'light' | 'dark';           // persisted at localStorage["theme"]
   slugs, or group ids), not an `order` field (ADR-0009).
 - Locale pairing is by matching `slug` across `ru/` and `en/` folders.
 - A shared, non-localized module holds locale-independent data (owner links,
-  navigation) — used by header/footer/CV.
+  navigation) — used by the header, footer, and CV sections.
 
 **Projects enrichment**
 
@@ -165,13 +169,14 @@ type Theme = 'light' | 'dark';           // persisted at localStorage["theme"]
 
 **Pages**
 
-- `/` (ru) and `/en/` — home: hero, about, experience highlights, featured
-  projects, arts preview, contacts.
+- `/` (ru) and `/en/` — home: hero, about, experience highlights, education,
+  skills, featured projects, arts preview, contacts. This is the Site's CV.
 - `/experience` + `/en/experience` — full experience timeline.
 - `/projects`, `/projects/<slug>` (+ `/en/…`) — index and detail.
 - `/arts` (+ `/en/arts`) — gallery with lightbox.
-- `/cv` (+ `/en/cv`) — print-optimized resume, generated from `experience` and
-  skills, plus a link to `/resume.pdf` (a static file placed in `public/`).
+- Every page is print-optimized; the home page is the CV, and the contacts
+  section links to a static `/resume.pdf` (a file placed in `public/`). There is
+  no dedicated `/cv` route.
 - 404 page.
 
 **Interactivity (all vanilla/Astro)**

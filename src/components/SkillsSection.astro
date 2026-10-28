@@ -1,8 +1,8 @@
 ---
 // The Resume's skills as grouped chips (ticket #8). The groups come from the
 // `skills` collection (ADR-0008) — locale-independent data — and only each
-// group's label is translated, so the same component drops into the home page
-// and the CV page (ticket #10) without duplicating the list.
+// group's label is translated, so the home page's CV renders it without
+// duplicating the list.
 import {
 	orderedGroups,
 	skillGroupIdOf,

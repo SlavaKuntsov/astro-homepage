@@ -1,0 +1,70 @@
+---
+// The home page's education section (ticket #11): the `education` collection's
+// degrees as a compact timeline. It reuses the same date-labeling and slug
+// conventions as the experience timeline, so the two sections read as one CV.
+// The present word is shared with experience (`t.experience.present`).
+import type { EducationEntry } from '@/lib/education';
+import { formatYearPeriod } from '@/lib/education';
+import { slugOfEntryId } from '@/lib/collection';
+import type { Translation } from '@/types/Translation';
+
+interface Props {
+	/** Entries already filtered to this Locale and sorted newest-first. */
+	entries: EducationEntry[];
+	t: Translation;
+}
+
+const { entries, t }: Props = Astro.props;
+---
+
+<section class='flex flex-col gap-5' data-education-section>
+	<h2 class='font-heading text-2xl font-semibold text-foreground'>
+		{t.education.heading}
+	</h2>
+
+	<ol class='flex flex-col gap-6'>
+		{
+			entries.map(entry => {
+				const { data } = entry;
+				const detail = [data.level, data.faculty, data.field]
+					.filter(Boolean)
+					.join(' · ');
+				const period = formatYearPeriod(data, t.experience.present);
+
+				return (
+					<li
+						class='relative border-l-2 border-border pl-6 sm:pl-8'
+						data-education-entry
+						data-slug={slugOfEntryId(entry.id)}
+					>
+						<span
+							class='absolute -left-[7px] top-2 size-3 rounded-full border-2 border-background bg-primary transition-colors'
+							aria-hidden='true'
+						/>
+						<article class='flex flex-col gap-1'>
+							<h3 class='font-heading text-lg font-semibold text-foreground'>
+								{data.institutionUrl ? (
+									<a
+										href={data.institutionUrl}
+										target='_blank'
+										rel='noopener noreferrer'
+										class='underline decoration-border underline-offset-4 transition-colors hover:decoration-primary'
+									>
+										{data.institution}
+									</a>
+								) : (
+									data.institution
+								)}
+							</h3>
+							<p class='text-muted-foreground'>{detail}</p>
+							<p class='text-sm text-muted-foreground'>
+								{period}
+								{data.location && <span> · {data.location}</span>}
+							</p>
+						</article>
+					</li>
+				);
+			})
+		}
+	</ol>
+</section>

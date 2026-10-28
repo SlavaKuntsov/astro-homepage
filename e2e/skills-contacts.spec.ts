@@ -11,8 +11,8 @@ import { expect, test } from './fixtures';
  * the contacts in `src/lib/contacts.ts`; the collection/helpers are pinned by
  * unit tests (`src/lib/skills.test.ts`, `src/lib/contacts.test.ts`). Here we
  * prove the labels are translated, the order is honored, and the targets land
- * where the data says. Both sections are built to be reused by the home page and
- * the CV page (ticket #10) from that one source.
+ * where the data says. Both sections are the home page's CV, rendered from that
+ * one source.
  */
 
 const contact = (page: Page, kind: string) =>
