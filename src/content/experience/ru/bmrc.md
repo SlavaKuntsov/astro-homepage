@@ -11,7 +11,7 @@ industries:
   - Банк
 summary: Поддерживаю и развиваю крупные распределённые системы для финансового сектора и веду их поэтапный перевод с legacy-стека на современный веб.
 highlights:
-  - Участвую в поэтапном переносе систем с .NET Framework и WPF на .NET 10, Web API (REST) и CQRS, интегрируя бэкенд с React-фронтендом на TypeScript (TanStack Query / Router, Zustand, Tailwind CSS, shadcn/ui).
+  - Участвую в поэтапном переносе систем с .NET Framework и WPF на .NET 10, Web API (REST) и CQRS, интегрируя бэкенд с Angular-фронтендом на TypeScript (RxJS, NgRx, PrimeNG, Tailwind CSS).
   - Поддерживаю, дорабатываю и локально рефакторю существующие WPF-приложения ради стабильности кода.
   - Ускоряю тяжёлые отчёты в PostgreSQL — переписываю SQL вручную (CTE, оконные функции) вместо ORM и настраиваю партиционирование таблиц по периодам.
   - 'Декомпозирую технические заявки, веду документацию (прохождение нормоконтроля) и пишу Bash- и Python-скрипты для рутины: выгрузки данных, парсинг логов, миграция конфигов.'
@@ -20,13 +20,12 @@ environment:
   - .NET Framework
   - Web API (REST)
   - CQRS
-  - React
   - TypeScript
-  - TanStack Query
-  - TanStack Router
-  - Zustand
+  - Angular
+  - RxJS
+  - NgRx
+  - PrimeNG
   - Tailwind CSS
-  - shadcn/ui
   - WPF
   - Avalonia
   - Python
