@@ -22,7 +22,7 @@ const total = arts.length;
 const hasNavigation = total > 1;
 
 const controlClass =
-	'inline-flex size-10 cursor-pointer items-center justify-center rounded-full border border-border bg-card/90 text-foreground shadow-sm transition-colors hover:bg-muted';
+	'inline-flex size-8 cursor-pointer items-center justify-center rounded-full border border-border bg-card/90 text-foreground shadow-sm transition-colors hover:bg-muted';
 ---
 
 {
@@ -56,9 +56,12 @@ const controlClass =
 				aria-roledescription='carousel'
 				aria-label={t.arts.gallery}
 			>
-				<div class='overflow-hidden rounded-2xl'>
+				<div
+					class='cursor-grab overflow-hidden rounded-2xl active:cursor-grabbing'
+					data-arts-viewport
+				>
 					<div
-						class='flex transition-transform duration-500 ease-out motion-reduce:transition-none'
+						class='flex touch-pan-y select-none transition-transform duration-300 ease-out motion-reduce:transition-none'
 						style='transform: translateX(0)'
 						data-arts-track
 					>
@@ -76,6 +79,7 @@ const controlClass =
 									width='480'
 									height='480'
 									loading='eager'
+									draggable='false'
 									class='h-[250px] w-full object-contain'
 								/>
 							</div>
@@ -93,8 +97,8 @@ const controlClass =
 						>
 							<svg
 								viewBox='0 0 24 24'
-								width='20'
-								height='20'
+								width='18'
+								height='18'
 								fill='none'
 								stroke='currentColor'
 								stroke-width='2'
@@ -114,8 +118,8 @@ const controlClass =
 						>
 							<svg
 								viewBox='0 0 24 24'
-								width='20'
-								height='20'
+								width='18'
+								height='18'
 								fill='none'
 								stroke='currentColor'
 								stroke-width='2'
@@ -138,6 +142,7 @@ const controlClass =
 	// bind the (new) elements each page load instead of holding a reference.
 	// Binding is idempotent, so re-running the script is harmless.
 	const CAROUSEL = '[data-arts-carousel]';
+	const VIEWPORT = '[data-arts-viewport]';
 	const TRACK = '[data-arts-track]';
 	const SLIDE = '[data-arts-slide]';
 	const PREVIOUS = '[data-arts-carousel-previous]';
@@ -145,6 +150,13 @@ const controlClass =
 
 	/** How long each Artwork stays, matching the carousel the hero used to run. */
 	const AUTOPLAY_DELAY = 4000;
+	/** A drag shorter than this snaps back instead of stepping. */
+	const DRAG_THRESHOLD = 40;
+	/** A vertical gesture taller than this is the page scrolling, not a slide. */
+	const SCROLL_SLOP = 8;
+
+	const reduceMotion = () =>
+		window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
 	const bindCarousel = () => {
 		const carousel = document.querySelector<HTMLElement>(CAROUSEL);
@@ -152,22 +164,41 @@ const controlClass =
 
 		carousel.dataset.carouselBound = 'true';
 
+		const viewport = carousel.querySelector<HTMLElement>(VIEWPORT);
 		const track = carousel.querySelector<HTMLElement>(TRACK);
-		if (!track) return;
+		if (!viewport || !track) return;
 
 		const slides = Array.from(track.querySelectorAll<HTMLElement>(SLIDE));
-		if (slides.length < 2) return;
+		const count = slides.length;
+		if (count < 2) return;
 
 		const previous = carousel.querySelector<HTMLButtonElement>(PREVIOUS);
 		const next = carousel.querySelector<HTMLButtonElement>(NEXT);
 
-		let index = 0;
+		// Clone the ends so wrapping animates: the first Artwork follows the last
+		// (and the last precedes the first) instead of the track jumping. The
+		// clones carry no `data-arts-slide`, so they are not real slides.
+		const cloneOf = (slide: HTMLElement) => {
+			const node = slide.cloneNode(true) as HTMLElement;
+			node.removeAttribute('data-arts-slide');
+			node.setAttribute('data-arts-clone', '');
+			node.setAttribute('aria-hidden', 'true');
+			return node;
+		};
+		track.append(cloneOf(slides[0]));
+		track.prepend(cloneOf(slides[count - 1]));
+
+		// The track's live position: 0 is the clone of the last Artwork, 1..count
+		// are the real ones, and count + 1 is the clone of the first.
+		let position = 1;
 		let timer: number | undefined;
 
-		/** Paints the Artwork at `index`; `instant` skips the slide transition. */
+		const slideWidth = () => viewport.clientWidth;
+
+		/** Paints the Artwork at `position`; `instant` skips the slide transition. */
 		const paint = (instant = false) => {
 			if (instant) track.style.transition = 'none';
-			track.style.transform = `translateX(-${index * 100}%)`;
+			track.style.transform = `translateX(-${position * 100}%)`;
 			if (instant) {
 				// Flush the jump before restoring the transition, so the browser
 				// does not animate between the old and new positions.
@@ -176,15 +207,26 @@ const controlClass =
 			}
 		};
 
-		const go = (delta: number) => {
-			index = (index + delta + slides.length) % slides.length;
+		/** Snaps off a clone onto the matching real Artwork. */
+		const settle = () => {
+			if (position === count + 1) {
+				position = 1;
+				paint(true);
+			} else if (position === 0) {
+				position = count;
+				paint(true);
+			}
+		};
 
-			// Wrapping jumps instantly, so autoplay does not slide back across
-			// every Artwork; a normal step animates.
-			const wrapped =
-				(delta > 0 && index === 0) ||
-				(delta < 0 && index === slides.length - 1);
-			paint(wrapped);
+		const go = (delta: number) => {
+			// A step may follow a wrap that has not settled yet (a fast click or
+			// swipe), so land on the real Artwork before moving again.
+			settle();
+			position += delta;
+			paint(false);
+			// With reduced motion the transition is off, so `transitionend` never
+			// fires: settle now instead.
+			if (reduceMotion()) settle();
 		};
 
 		const stop = () => {
@@ -197,7 +239,7 @@ const controlClass =
 		const start = () => {
 			if (timer !== undefined) return;
 			// Motion-sensitive visitors get no autoplay; the controls still work.
-			if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+			if (reduceMotion()) return;
 
 			timer = window.setInterval(() => go(1), AUTOPLAY_DELAY);
 		};
@@ -211,6 +253,67 @@ const controlClass =
 
 		previous?.addEventListener('click', () => step(-1));
 		next?.addEventListener('click', () => step(1));
+
+		// Wrapping lands on a clone; snap to the real Artwork once it has slid in.
+		track.addEventListener('transitionend', event => {
+			if (event.propertyName === 'transform') settle();
+		});
+
+		// Drag or swipe to change Artwork: follow the pointer, then step if it
+		// travelled far enough, else snap back. Pointer events cover mouse and
+		// touch alike; `touch-pan-y` leaves vertical scrolling to the browser.
+		let pointerId: number | null = null;
+		let startX = 0;
+		let startY = 0;
+		let deltaX = 0;
+
+		const endDrag = (cancelled: boolean) => {
+			if (pointerId !== null && viewport.hasPointerCapture(pointerId)) {
+				viewport.releasePointerCapture(pointerId);
+			}
+			pointerId = null;
+			track.style.transition = '';
+
+			if (!cancelled && Math.abs(deltaX) > DRAG_THRESHOLD) {
+				go(deltaX < 0 ? 1 : -1);
+			} else {
+				paint(false);
+			}
+		};
+
+		viewport.addEventListener('pointerdown', event => {
+			if (event.pointerType === 'mouse' && event.button !== 0) return;
+
+			pointerId = event.pointerId;
+			startX = event.clientX;
+			startY = event.clientY;
+			deltaX = 0;
+			stop();
+			track.style.transition = 'none';
+			viewport.setPointerCapture(event.pointerId);
+		});
+
+		viewport.addEventListener('pointermove', event => {
+			if (event.pointerId !== pointerId) return;
+
+			const dx = event.clientX - startX;
+			const dy = event.clientY - startY;
+
+			if (Math.abs(dy) > Math.abs(dx) && Math.abs(dy) > SCROLL_SLOP) {
+				endDrag(true);
+				return;
+			}
+
+			deltaX = dx;
+			track.style.transform = `translateX(${-position * slideWidth() + dx}px)`;
+		});
+
+		viewport.addEventListener('pointerup', event => {
+			if (event.pointerId === pointerId) endDrag(false);
+		});
+		viewport.addEventListener('pointercancel', event => {
+			if (event.pointerId === pointerId) endDrag(true);
+		});
 
 		// Autoplay pauses while the pointer or the keyboard focus is inside...
 		carousel.addEventListener('pointerenter', stop);

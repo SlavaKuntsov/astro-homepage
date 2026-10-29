@@ -147,12 +147,14 @@ test.describe('the carousel controls', () => {
 				);
 				expect(await isTopmost(page, '[data-arts-carousel-next]')).toBe(true);
 
-				await expect.poll(() => offsetX(page)).toBeGreaterThan(-1);
+				const start = await offsetX(page);
 				await nextControl(page).click();
-				await expect.poll(() => offsetX(page)).toBeLessThan(-1);
+				await expect.poll(() => offsetX(page)).toBeLessThan(start - 1);
 
 				await previousControl(page).click();
-				await expect.poll(() => offsetX(page)).toBeGreaterThan(-1);
+				await expect
+					.poll(async () => Math.abs((await offsetX(page)) - start))
+					.toBeLessThan(1);
 			});
 		}
 	}
@@ -164,7 +166,53 @@ test('the carousel autoplays through the Artworks', async ({ page }) => {
 
 	// The pointer is at the origin, off the carousel, so autoplay is running;
 	// the first step lands well within the 4s beat.
-	await expect.poll(() => offsetX(page), { timeout: 8000 }).toBeLessThan(-1);
+	const start = await offsetX(page);
+	await expect
+		.poll(() => offsetX(page), { timeout: 8000 })
+		.toBeLessThan(start - 1);
+});
+
+test('dragging the Artwork steps the carousel', async ({ page }) => {
+	await page.goto('/');
+
+	const box = await page.locator('[data-arts-slide] img').first().boundingBox();
+	if (!box) throw new Error('no Artwork to drag');
+
+	const start = await offsetX(page);
+	const x = box.x + box.width / 2;
+	const y = box.y + box.height / 2;
+
+	// A leftward drag past the threshold steps forward.
+	await page.mouse.move(x, y);
+	await page.mouse.down();
+	await page.mouse.move(x - 140, y, { steps: 8 });
+	await page.mouse.up();
+
+	await expect.poll(() => offsetX(page)).toBeLessThan(start - 1);
+});
+
+test('wrapping from the last Artwork back to the first is animated', async ({
+	page,
+}) => {
+	await page.goto('/');
+
+	// Slow the slide down so the mid-transition state is observable.
+	await page.addStyleTag({
+		content: '[data-arts-track] { transition-duration: 1s !important; }',
+	});
+
+	// Step to the last Artwork and let it settle there.
+	const count = await slides(page).count();
+	for (let i = 0; i < count - 1; i += 1) await nextControl(page).click();
+	await page.waitForTimeout(1200);
+
+	const last = await offsetX(page);
+	await nextControl(page).click();
+	await page.waitForTimeout(150);
+
+	// A third of the way into the wrap the track is already past the last
+	// Artwork, heading for the clone of the first — it slid rather than snapped.
+	expect(await offsetX(page)).toBeLessThan(last - 1);
 });
 
 test('the carousel fades its edges without covering a control', async ({
