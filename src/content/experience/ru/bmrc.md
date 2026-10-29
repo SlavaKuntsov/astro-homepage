@@ -8,6 +8,7 @@ location: Минск
 industries:
   - Государственные организации
   - Финансовый сектор
+  - Банк
 summary: Поддерживаю и развиваю крупные распределённые системы для финансового сектора и веду их поэтапный перевод с legacy-стека на современный веб.
 highlights:
   - Участвую в поэтапном переносе систем с .NET Framework и WPF на .NET 10, Web API (REST) и CQRS, интегрируя бэкенд с React-фронтендом на TypeScript (TanStack Query / Router, Zustand, Tailwind CSS, shadcn/ui).

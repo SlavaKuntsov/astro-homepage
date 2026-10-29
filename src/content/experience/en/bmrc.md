@@ -8,7 +8,8 @@ location: Minsk
 industries:
   - Public sector
   - Financial sector
-summary: I maintain and grow large distributed systems for the financial sector while driving their step-by-step migration from a legacy stack to the modern web.
+  - Bank
+summary: Maintain and grow large distributed systems for the financial sector while driving their step-by-step migration from a legacy stack to the modern web.
 highlights:
   - Migrating systems from .NET Framework and WPF to .NET 10, Web API (REST), and CQRS, integrating the backend with a React front end in TypeScript (TanStack Query / Router, Zustand, Tailwind CSS, shadcn/ui).
   - Maintaining, extending, and locally refactoring the existing WPF applications for code stability.

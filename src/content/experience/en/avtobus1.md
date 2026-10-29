@@ -28,4 +28,4 @@ environment:
   - JavaScript
 ---
 
-The internal ERP system of a road-transport company: orders, finance, staff, accounting, and reference data.
+The internal ERP system of a road-transport company covers orders, finance, staff, accounting, and reference data. I extended its functionality and kept it stable: adding new screens and grids, moving computation into the database, and improving ORM and SQL performance.

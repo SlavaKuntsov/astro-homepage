@@ -8,7 +8,7 @@ location: Minsk
 industries:
   - Software development
   - System integration
-summary: Backend developer on a microservice cinema ticketing platform.
+summary: Built the server side of a microservice cinema ticketing platform.
 highlights:
   - Designed microservices, implemented business logic (CQRS), and integrated services through RabbitMQ.
   - Designed database schemas and optimised queries, organising storage across PostgreSQL, MongoDB, Redis, and object storage.
