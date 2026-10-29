@@ -15,17 +15,24 @@ const ORIGIN = 'https://slava-homepage.vercel.app';
 interface ExpectedPage {
 	/** The route to visit. */
 	path: string;
+	/** The Locale the route renders in (ADR-0005). */
+	locale: 'ru' | 'en';
 	/** The RU counterpart path (used for the hreflang `ru`/`x-default` links). */
 	ruPath: string;
 	/** The EN counterpart path (used for the hreflang `en` link). */
 	enPath: string;
 	title: string;
 	description: string;
+	/** The page's `og:type`; defaults to `website`. */
+	ogType?: 'website' | 'article';
 }
+
+const SITE_NAME = { ru: 'Кунцов Святослав', en: 'Sviataslau Kuntsou' } as const;
 
 const PAGES: ExpectedPage[] = [
 	{
 		path: '/',
+		locale: 'ru',
 		ruPath: '/',
 		enPath: '/en',
 		title: 'Кунцов Святослав — Разработчик ПО',
@@ -34,6 +41,7 @@ const PAGES: ExpectedPage[] = [
 	},
 	{
 		path: '/en/',
+		locale: 'en',
 		ruPath: '/',
 		enPath: '/en',
 		title: 'Sviataslau Kuntsou — Software Developer',
@@ -42,6 +50,7 @@ const PAGES: ExpectedPage[] = [
 	},
 	{
 		path: '/experience',
+		locale: 'ru',
 		ruPath: '/experience',
 		enPath: '/en/experience',
 		title: 'Опыт работы — Кунцов Святослав',
@@ -50,6 +59,7 @@ const PAGES: ExpectedPage[] = [
 	},
 	{
 		path: '/en/experience',
+		locale: 'en',
 		ruPath: '/experience',
 		enPath: '/en/experience',
 		title: 'Experience — Sviataslau Kuntsou',
@@ -58,6 +68,7 @@ const PAGES: ExpectedPage[] = [
 	},
 	{
 		path: '/projects',
+		locale: 'ru',
 		ruPath: '/projects',
 		enPath: '/en/projects',
 		title: 'Проекты — Кунцов Святослав',
@@ -66,6 +77,7 @@ const PAGES: ExpectedPage[] = [
 	},
 	{
 		path: '/en/projects',
+		locale: 'en',
 		ruPath: '/projects',
 		enPath: '/en/projects',
 		title: 'Projects — Sviataslau Kuntsou',
@@ -74,6 +86,7 @@ const PAGES: ExpectedPage[] = [
 	},
 	{
 		path: '/arts',
+		locale: 'ru',
 		ruPath: '/arts',
 		enPath: '/en/arts',
 		title: 'Арты — Кунцов Святослав',
@@ -81,6 +94,7 @@ const PAGES: ExpectedPage[] = [
 	},
 	{
 		path: '/en/arts',
+		locale: 'en',
 		ruPath: '/arts',
 		enPath: '/en/arts',
 		title: 'Arts — Sviataslau Kuntsou',
@@ -89,19 +103,23 @@ const PAGES: ExpectedPage[] = [
 	// A Project detail page (deterministic description: authored `summary`).
 	{
 		path: '/projects/private-crm',
+		locale: 'ru',
 		ruPath: '/projects/private-crm',
 		enPath: '/en/projects/private-crm',
 		title: 'CRM для логистики — Кунцов Святослав',
 		description:
 			'Внутренняя система для диспетчеров: заявки, маршруты и расчёты.',
+		ogType: 'article',
 	},
 	{
 		path: '/en/projects/private-crm',
+		locale: 'en',
 		ruPath: '/projects/private-crm',
 		enPath: '/en/projects/private-crm',
 		title: 'Logistics CRM — Sviataslau Kuntsou',
 		description:
 			'An internal system for dispatchers covering orders, routes, and billing.',
+		ogType: 'article',
 	},
 ];
 
@@ -114,10 +132,6 @@ const pathOf = (href: string | null) => {
 	return new URL(href as string).pathname.replace(/\/+$/, '') || '/';
 };
 
-/** ADR-0005: EN lives under `/en/…`; every other route is the default RU. */
-const localeOf = (path: string): 'ru' | 'en' =>
-	path === '/en' || path.startsWith('/en/') ? 'en' : 'ru';
-
 test.describe('per-page metadata', () => {
 	for (const expected of PAGES) {
 		test(`${expected.path} emits title, description, canonical, OG and Twitter`, async ({
@@ -126,9 +140,7 @@ test.describe('per-page metadata', () => {
 			const response = await page.goto(expected.path);
 			expect(response?.status()).toBe(200);
 
-			const locale = localeOf(expected.path);
-			const siteName =
-				locale === 'ru' ? 'Кунцов Святослав' : 'Sviataslau Kuntsou';
+			const { locale } = expected;
 
 			// Primary tags.
 			await expect(page).toHaveTitle(expected.title);
@@ -153,8 +165,12 @@ test.describe('per-page metadata', () => {
 			expect(pathOf(await alternate('x-default'))).toBe(expected.ruPath);
 
 			// Open Graph.
-			expect(await meta(page, 'meta[property="og:type"]')).toBe('website');
-			expect(await meta(page, 'meta[property="og:site_name"]')).toBe(siteName);
+			expect(await meta(page, 'meta[property="og:type"]')).toBe(
+				expected.ogType ?? 'website'
+			);
+			expect(await meta(page, 'meta[property="og:site_name"]')).toBe(
+				SITE_NAME[locale]
+			);
 			expect(await meta(page, 'meta[property="og:title"]')).toBe(
 				expected.title
 			);
@@ -208,6 +224,21 @@ test.describe('per-page metadata', () => {
 		await expect(
 			page.locator('link[rel="alternate"][hreflang="x-default"]')
 		).toHaveAttribute('href', canonical as string);
+	});
+
+	// A Project detail page shares the Project's cover, not the Site image.
+	test('a Project detail page shares the Project cover', async ({ page }) => {
+		await page.goto('/projects/astro-homepage');
+
+		const cover = `${ORIGIN}/images/projects/astro-homepage/cover.png`;
+		await expect(page.locator('meta[property="og:image"]')).toHaveAttribute(
+			'content',
+			cover
+		);
+		await expect(page.locator('meta[name="twitter:image"]')).toHaveAttribute(
+			'content',
+			cover
+		);
 	});
 });
 

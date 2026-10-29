@@ -12,6 +12,8 @@ interface Props {
 	description: string;
 	lang: Locale;
 	image?: string;
+	/** The page's Open Graph type; a Project detail page is an `article`. */
+	ogType?: 'website' | 'article';
 	/** Set when the page paints italic body text (the home greeting does). */
 	preloadItalic?: boolean;
 }
@@ -23,6 +25,7 @@ const {
 	description,
 	lang,
 	image = DEFAULT_OG_IMAGE,
+	ogType = 'website',
 	preloadItalic = false,
 } = Astro.props;
 
@@ -84,7 +87,7 @@ const bodyPreload = preloadItalic
 	<meta name='description' content={description} />
 
 	<!-- Open Graph -->
-	<meta property='og:type' content='website' />
+	<meta property='og:type' content={ogType} />
 	<meta property='og:site_name' content={t.meta.siteName} />
 	<meta property='og:url' content={canonicalURL} />
 	<meta property='og:title' content={title} />

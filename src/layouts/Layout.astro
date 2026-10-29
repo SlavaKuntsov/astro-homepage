@@ -11,12 +11,15 @@ interface Props {
 	description: string;
 	/** The Locale of the page; the shell renders its chrome in this Locale. */
 	lang: Locale;
+	/** The page's social-share image; defaults to the Site image in `BaseHead`. */
 	image?: string;
+	/** The page's Open Graph type; a Project detail page is an `article`. */
+	ogType?: 'website' | 'article';
 	/** Set when the page paints italic body text (the home greeting does). */
 	preloadItalic?: boolean;
 }
 
-const { title, description, lang, image, preloadItalic } = Astro.props;
+const { title, description, lang, image, ogType, preloadItalic } = Astro.props;
 const t = translations[lang];
 ---
 
@@ -26,6 +29,7 @@ const t = translations[lang];
 		title={title}
 		description={description}
 		image={image}
+		ogType={ogType}
 		lang={lang}
 		preloadItalic={preloadItalic}
 	/>

@@ -23,8 +23,9 @@ export default defineConfig({
 		mdx(),
 		// Emit `sitemap-index.xml` + `sitemap-0.xml`. The i18n option adds an
 		// `<xhtml:link rel="alternate">` set to each URL so crawlers pair the
-		// ru/en pages. The hreflang values are the same as the `<head>`'s
-		// alternates (`src/layouts/BaseHead.astro`), so the two always agree.
+		// ru/en pages, using the same `ru`/`en` hreflang values as the page
+		// `<head>`; the `<head>` additionally declares `x-default`, which this
+		// sitemap schema cannot carry.
 		sitemap({
 			i18n: {
 				defaultLocale: 'ru',

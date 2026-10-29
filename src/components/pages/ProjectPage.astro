@@ -43,6 +43,8 @@ if (data.links?.other)
 <Layout
 	title={`${data.title} — ${t.meta.siteName}`}
 	description={meta.description || t.meta.projects.description}
+	image={data.cover}
+	ogType='article'
 	lang={lang}
 >
 	<article
