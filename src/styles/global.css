@@ -47,12 +47,15 @@ html:not(.theme-ready) *::after {
 	--color-background: var(--background);
 	--color-foreground: var(--foreground);
 	/*
-	 * The accent surface of the chrome's action buttons — the Theme and Locale
-	 * toggles and the "Download CV" action. A light "orange-300" in the light
-	 * Theme, a softer orange under `data-theme='dark'` so it does not glare.
+	 * Button surfaces. `--control` is the header's chrome controls (the Theme
+	 * and Locale toggles): a light "orange-300" in the light Theme, a neutral
+	 * grey under `data-theme='dark'`. `--action` is a primary action (Download
+	 * CV), warm in both Themes.
 	 */
 	--color-control: var(--control);
 	--color-control-foreground: var(--control-foreground);
+	--color-action: var(--action);
+	--color-action-foreground: var(--action-foreground);
 	--color-card: var(--card);
 	--color-card-foreground: var(--card-foreground);
 	--color-popover: var(--popover);
@@ -110,6 +113,8 @@ html:not(.theme-ready) *::after {
 	--primary-foreground: #fff8ef;
 	--control: #fdba74;
 	--control-foreground: #241f1a;
+	--action: #fdba74;
+	--action-foreground: #241f1a;
 	--secondary: #f1e5d5;
 	--secondary-foreground: #3b2a1b;
 	--muted: #f4eadc;
@@ -136,9 +141,12 @@ html:not(.theme-ready) *::after {
 	--popover-foreground: #f3ece2;
 	--primary: #f2a25c;
 	--primary-foreground: #2a1607;
-	/* A touch deeper than the light Theme's orange, so it does not glare here. */
-	--control: #f2a25c;
-	--control-foreground: #2a1607;
+	/* The chrome controls drop to a neutral grey here, so the orange does not
+	   glare; the primary action keeps a softer orange. */
+	--control: #52525b;
+	--control-foreground: #f4f4f5;
+	--action: #f2a25c;
+	--action-foreground: #2a1607;
 	--secondary: #2b282f;
 	--secondary-foreground: #f3ece2;
 	--muted: #2a262c;
