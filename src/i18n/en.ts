@@ -39,6 +39,8 @@ const en: Translation = {
 	},
 	projects: {
 		heading: 'Projects',
+		featuredHeading: 'Featured projects',
+		viewAll: 'All projects',
 		viewProject: 'View project',
 		back: 'All projects',
 		tags: 'Tags',
@@ -51,6 +53,7 @@ const en: Translation = {
 	},
 	arts: {
 		heading: 'Arts',
+		viewAll: 'All artworks',
 		gallery: 'Gallery',
 		tags: 'Tags',
 		link: 'Link',

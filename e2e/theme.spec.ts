@@ -159,7 +159,7 @@ test.describe('the Theme transition is synchronized', () => {
 				header: read('header'),
 				footer: read('footer'),
 				toggle: read('[data-theme-toggle]'),
-				heroFade: read('[data-hero-fade]'),
+				edgeFade: read('[data-edge-fade]'),
 			};
 		});
 
@@ -172,7 +172,7 @@ test.describe('the Theme transition is synchronized', () => {
 		}
 	});
 
-	test('the hero edge fade tracks the background while the Theme changes', async ({
+	test('the gallery edge fade tracks the background while the Theme changes', async ({
 		page,
 	}) => {
 		await page.goto('/');
@@ -181,7 +181,7 @@ test.describe('the Theme transition is synchronized', () => {
 		// Slow the transition down so the mid-state is observable.
 		await page.addStyleTag({
 			content: `html.theme-ready body,
-				html.theme-ready [data-hero-fade] {
+				html.theme-ready [data-edge-fade] {
 					transition-duration: 1s !important;
 					transition-timing-function: ease !important;
 				}`,
@@ -192,7 +192,7 @@ test.describe('the Theme transition is synchronized', () => {
 
 		const colors = await page.evaluate(() => ({
 			body: getComputedStyle(document.body).backgroundColor,
-			fade: getComputedStyle(document.querySelector('[data-hero-fade]')!)
+			fade: getComputedStyle(document.querySelector('[data-edge-fade]')!)
 				.backgroundColor,
 		}));
 

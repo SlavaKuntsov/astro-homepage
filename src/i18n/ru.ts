@@ -39,6 +39,8 @@ const ru: Translation = {
 	},
 	projects: {
 		heading: 'Проекты',
+		featuredHeading: 'Избранные проекты',
+		viewAll: 'Все проекты',
 		viewProject: 'Смотреть проект',
 		back: 'Все проекты',
 		tags: 'Теги',
@@ -51,6 +53,7 @@ const ru: Translation = {
 	},
 	arts: {
 		heading: 'Картиночки',
+		viewAll: 'Все работы',
 		gallery: 'Галерея',
 		tags: 'Теги',
 		link: 'Ссылка',

@@ -1,0 +1,41 @@
+---
+// The home page's arts preview (ticket #12): the `arts` collection's Artworks
+// as the gallery's `rail` layout — one overflowing row edged by the
+// Theme-tracking fades and stepped by the gallery's previous/next controls —
+// with a link to the full `/arts` gallery. Collection-driven, so the preview
+// never hardcodes an Artwork.
+import ArtsGallery from '@/components/ArtsGallery.astro';
+import type { ArtworkEntry } from '@/lib/arts';
+import { localizePath } from '@/lib/i18n';
+import type { Locale } from '@/lib/i18n';
+import type { Translation } from '@/types/Translation';
+
+interface Props {
+	/** The Artworks, already in authored order (see `orderedArts`). */
+	arts: readonly ArtworkEntry[];
+	lang: Locale;
+	t: Translation;
+}
+
+const { arts, lang, t }: Props = Astro.props;
+const href = localizePath('/arts', lang);
+---
+
+{
+	arts.length > 0 && (
+		<section class='flex flex-col gap-5' data-arts-preview>
+			<h2 class='font-heading text-2xl font-semibold text-foreground'>
+				{t.arts.heading}
+			</h2>
+
+			<ArtsGallery arts={arts} t={t} layout='rail' />
+
+			<a
+				href={href}
+				class='w-fit font-medium text-primary underline decoration-primary/40 underline-offset-4 transition-colors hover:decoration-primary'
+			>
+				{t.arts.viewAll}
+			</a>
+		</section>
+	)
+}

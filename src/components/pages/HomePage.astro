@@ -1,13 +1,22 @@
 ---
+// The home page (ticket #12): the Site's CV, assembled from the content
+// collections — never hardcoded. A recruiter sees the hero (name, position,
+// one-line pitch, avatar) first, then the resume sections (about, experience
+// highlights, education, skills), the showcase previews (featured Projects and
+// Artworks), and the contacts. Each preview links to its full page, and the
+// page loads with no Flash (`e2e/theme.spec.ts`, `e2e/home.spec.ts`).
+import ArtsPreview from '@/components/ArtsPreview.astro';
 import ContactsSection from '@/components/ContactsSection.astro';
 import EducationSection from '@/components/EducationSection.astro';
 import ExperienceHighlights from '@/components/ExperienceHighlights.astro';
+import FeaturedProjects from '@/components/FeaturedProjects.astro';
 import Heading from '@/components/Heading.astro';
 import MainContent from '@/components/MainContent.astro';
 import SkillsSection from '@/components/SkillsSection.astro';
 import { SITE_DESCRIPTION, SITE_TITLE } from '@/consts';
 import { translations } from '@/i18n';
 import Layout from '@/layouts/Layout.astro';
+import { orderedArts } from '@/lib/arts';
 import { entriesForLocale } from '@/lib/collection';
 import { orderedEducation } from '@/lib/education';
 import type { Locale } from '@/lib/i18n';
@@ -25,6 +34,8 @@ const education = orderedEducation(
 	entriesForLocale(await getCollection('education'), lang)
 );
 const skills = await getCollection('skills');
+const projects = entriesForLocale(await getCollection('projects'), lang);
+const arts = orderedArts(entriesForLocale(await getCollection('arts'), lang));
 ---
 
 <Layout
@@ -41,6 +52,8 @@ const skills = await getCollection('skills');
 		<ExperienceHighlights entries={experience} lang={lang} t={t} />
 		<EducationSection entries={education} t={t} />
 		<SkillsSection entries={skills} t={t} />
+		<FeaturedProjects entries={projects} lang={lang} t={t} />
+		<ArtsPreview arts={arts} lang={lang} t={t} />
 		<ContactsSection t={t} />
 	</div>
 </Layout>

@@ -206,15 +206,20 @@ html:not(.theme-ready) *::after {
 }
 
 /*
- * The hero edge fades are a solid Theme color behind a static mask, not a
+ * The gallery's edge fades are a solid Theme color behind a static mask, not a
  * background gradient: gradient stops do not follow the body's
  * background-color transition, so they flashed as light bars while the Theme
- * changed. A solid background-color transitions in lockstep with the body.
+ * changed. A solid background-color transitions in lockstep with the body. A
+ * fade is painted only on a side that actually overflows (`data-active`), so it
+ * never dims an edge with nothing behind it.
  */
-.hero-fade {
+.edge-fade {
 	background-color: var(--background);
-	transition: background-color var(--default-transition-duration, 300ms)
-		var(--default-transition-timing-function, ease);
+	transition:
+		background-color var(--default-transition-duration, 300ms)
+			var(--default-transition-timing-function, ease),
+		opacity var(--default-transition-duration, 300ms)
+			var(--default-transition-timing-function, ease);
 	-webkit-mask-image: linear-gradient(
 		to right,
 		black 0%,
@@ -224,7 +229,7 @@ html:not(.theme-ready) *::after {
 	mask-image: linear-gradient(to right, black 0%, black 50%, transparent 100%);
 }
 
-.hero-fade-right {
+.edge-fade-right {
 	-webkit-mask-image: linear-gradient(
 		to left,
 		black 0%,
@@ -232,6 +237,15 @@ html:not(.theme-ready) *::after {
 		transparent 100%
 	);
 	mask-image: linear-gradient(to left, black 0%, black 50%, transparent 100%);
+}
+
+.edge-fade[data-active='false'] {
+	opacity: 0;
+}
+
+/* The home preview's rail scrolls; a thin scrollbar keeps it discoverable. */
+.arts-rail {
+	scrollbar-width: thin;
 }
 
 /* The mobile menu uses a native <details>; hide the native marker. */
@@ -423,6 +437,20 @@ html:not(.theme-ready) *::after {
 	[data-experience-entry],
 	[data-education-entry] {
 		break-inside: avoid;
+	}
+
+	/* The home preview's rail is a horizontal strip: on paper it wraps so no
+	   Artwork is clipped, and the controls and edge fades — which do nothing
+	   and imply scrollability — are dropped. */
+	.arts-rail {
+		overflow: visible !important;
+		flex-wrap: wrap;
+	}
+
+	[data-arts-previous],
+	[data-arts-next],
+	[data-edge-fade] {
+		display: none !important;
 	}
 
 	h1,
