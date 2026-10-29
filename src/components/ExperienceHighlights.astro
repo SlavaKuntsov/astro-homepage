@@ -7,6 +7,8 @@ import { localizePath } from '@/lib/i18n';
 import type { Locale } from '@/lib/i18n';
 import { slugOfEntryId } from '@/lib/collection';
 import {
+	durationInMonths,
+	formatDuration,
 	formatPeriod,
 	recentEntries,
 	type ExperienceEntry,
@@ -29,6 +31,8 @@ const highlights = recentEntries(entries, limit);
 // below is the way through to the rest).
 const hasMore = entries.length > highlights.length;
 const href = localizePath('/experience', lang);
+// One build-time clock, so every role's duration is measured identically.
+const now = new Date();
 ---
 
 {
@@ -51,6 +55,10 @@ const href = localizePath('/experience', lang);
 						<p class='text-sm text-muted-foreground'>
 							{entry.data.company}
 							<span> · {formatPeriod(entry.data, lang, t.experience.present)}</span>
+							<span>
+								{' · '}
+								{formatDuration(durationInMonths(entry.data, now), lang)}
+							</span>
 						</p>
 					</li>
 				))}

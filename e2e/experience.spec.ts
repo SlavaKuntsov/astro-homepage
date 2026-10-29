@@ -60,6 +60,16 @@ test.describe('the RU timeline at /experience', () => {
 		expect(dates).toEqual(newestFirst);
 	});
 
+	test('shows how long each role lasted', async ({ page }) => {
+		await page.goto('/experience');
+
+		for (const entry of await entries(page).all()) {
+			await expect(entry).toContainText(
+				/\d+\s+(год|года|лет|месяц|месяца|месяцев)/
+			);
+		}
+	});
+
 	test('renders the environment of each entry', async ({ page }) => {
 		await page.goto('/experience');
 

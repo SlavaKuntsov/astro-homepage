@@ -9,7 +9,9 @@ import {
 	slugOfEntryId,
 } from '@/lib/collection';
 import {
+	durationInMonths,
 	experienceSchema,
+	formatDuration,
 	formatPeriod,
 	orderedEntries,
 	recentEntries,
@@ -179,7 +181,9 @@ describe('entry ordering', () => {
 // to the end of the timeline, so the list and the content files are kept in step.
 describe('order manifest', () => {
 	it('lists every experience slug exactly once', () => {
-		const dir = fileURLToPath(new URL('../content/experience/ru', import.meta.url));
+		const dir = fileURLToPath(
+			new URL('../content/experience/ru', import.meta.url)
+		);
 		const slugs = readdirSync(dir)
 			.filter(name => name.endsWith('.md'))
 			.map(name => name.replace(/\.md$/, ''));
@@ -218,5 +222,48 @@ describe('date formatting', () => {
 		expect(
 			formatPeriod({ start: '2021-09', end: '2023-06' }, 'en', 'Present')
 		).toBe('September 2021 — June 2023');
+	});
+});
+
+// Duration is the plain difference between the first and the last month (so
+// September 2024 — September 2025 is "1 year"), and an ongoing role is measured
+// up to the injected clock so the page is deterministic.
+describe('duration', () => {
+	it('is the difference between the first and the last month', () => {
+		expect(durationInMonths({ start: '2024-09', end: '2025-09' })).toBe(12);
+		expect(durationInMonths({ start: '2024-11', end: '2025-02' })).toBe(3);
+	});
+
+	it('measures an ongoing role up to the given clock', () => {
+		expect(
+			durationInMonths(
+				{ start: '2025-10', current: true },
+				new Date('2026-10-30')
+			)
+		).toBe(12);
+	});
+
+	it('never drops below zero for a role in its first month', () => {
+		expect(
+			durationInMonths(
+				{ start: '2025-10', current: true },
+				new Date('2025-10-15')
+			)
+		).toBe(0);
+	});
+
+	it('renders whole months with correct plurals per Locale', () => {
+		expect(formatDuration(12, 'ru')).toBe('1 год');
+		expect(formatDuration(13, 'ru')).toBe('1 год 1 месяц');
+		expect(formatDuration(3, 'ru')).toBe('3 месяца');
+		expect(formatDuration(1, 'ru')).toBe('1 месяц');
+		expect(formatDuration(25, 'ru')).toBe('2 года 1 месяц');
+		expect(formatDuration(12, 'en')).toBe('1 year');
+		expect(formatDuration(4, 'en')).toBe('4 months');
+	});
+
+	it('reads a sub-month span as "less than a month"', () => {
+		expect(formatDuration(0, 'ru')).toBe('менее месяца');
+		expect(formatDuration(0, 'en')).toBe('less than a month');
 	});
 });
