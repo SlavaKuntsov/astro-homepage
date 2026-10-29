@@ -1,6 +1,7 @@
 ---
-title: Piece 6
+title: Pixel cat
 image: /images/arts2/art6.png
+tags:
+  - cat
+  - pixel art
 ---
-
-<!-- Placeholder artwork: the content-migration ticket (#14) replaces it, including its title, tags, and image. -->

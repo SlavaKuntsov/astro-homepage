@@ -1,6 +1,7 @@
 ---
-title: Работа 2
+title: Плачущий кот
 image: /images/arts2/art2.png
+tags:
+  - кот
+  - слёзы
 ---
-
-<!-- Placeholder artwork: the content-migration ticket (#14) replaces it, including its title, tags, and image. -->

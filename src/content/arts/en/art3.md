@@ -1,6 +1,7 @@
 ---
-title: Piece 3
+title: Cat with a daisy
 image: /images/arts2/art3.png
+tags:
+  - cat
+  - flowers
 ---
-
-<!-- Placeholder artwork: the content-migration ticket (#14) replaces it, including its title, tags, and image. -->

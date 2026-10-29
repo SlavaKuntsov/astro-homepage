@@ -2,7 +2,8 @@
 skills:
   - React.js
   - Angular
-  - Node.js
   - WPF
+  - Tailwind CSS
+  - shadcn/ui
   - Flutter
 ---

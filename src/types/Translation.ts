@@ -55,6 +55,8 @@ export interface Translation {
 		main: {
 			h_about: string;
 			about: string;
+			/** The owner's natural-language proficiency, e.g. "Languages: …". */
+			languages: string;
 		};
 	};
 	projects: {
