@@ -15,14 +15,16 @@ _Avoid_: language, lang-code.
 (`Резюме_Software_Developer_..._от_23_10_2026.pdf`); the human-owned source of
 truth for experience, education, and skills. _Avoid_: cv (see **CV**).
 
-**CV** — the Site's own `/cv` page, generated from **content collections** and
-print-optimized, plus a downloadable static `resume.pdf`. _Avoid_: resume.
+**CV** — the Site's own resume presentation: the home page's sections (about,
+experience highlights, education, skills, contacts) and the experience page,
+generated from **content collections**, print-optimized, plus a downloadable
+static `resume.pdf`. There is no dedicated `/cv` route. _Avoid_: resume.
 
 ## Content
 
 **Content collection** — one of the Astro collections: `experience`,
-`projects`, `arts` (each per-**locale**) and `skills` (locale-independent, see
-ADR-0008). _Avoid_: data folder, content dir.
+`education`, `projects`, `arts` (each per-**locale**) and `skills`
+(locale-independent, see ADR-0008). _Avoid_: data folder, content dir.
 
 **Skill group** — one group of the owner's skills (`languages`, `backend`, …),
 authored as `skills/<id>.md`; the skills themselves are locale-independent while
@@ -32,6 +34,10 @@ the group's label is localized. _Avoid_: skill tag, category.
 file with typed frontmatter (company, company URL, position, dates, location,
 employment type, industries, summary, highlights, environment).
 _Avoid_: job, position.
+
+**Education entry** — one degree at one institution, authored as a single
+markdown file with typed frontmatter (institution, institution URL, level,
+faculty, field, location), dated by year. _Avoid_: school, university, study.
 
 **Project** — a showcased piece of work: manual fields (title, description,
 images, links, stack) plus optional build-time enrichment from a public GitHub

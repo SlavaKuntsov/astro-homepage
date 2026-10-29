@@ -1,7 +1,8 @@
 /**
  * Shared entry helpers for the per-Locale content collections (ADR-0004):
- * `experience`, `projects`, and `arts` each author one markdown file per Locale
- * under `{ru,en}/<slug>.md`, with the Locale and slug read from the entry id
+ * `experience`, `education`, `projects`, and `arts` each author one markdown
+ * file per Locale under `{ru,en}/<slug>.md`, with the Locale and slug read from
+ * the entry id
  * rather than duplicated in frontmatter. Keeping the rule here — rather than in
  * whichever collection landed first — means every collection reads its id the
  * same way and fails with the same message when a file is misplaced.

@@ -66,6 +66,9 @@ const ru: Translation = {
 		environment: 'Окружение',
 		industries: 'Отрасли',
 	},
+	education: {
+		heading: 'Образование',
+	},
 	skills: {
 		heading: 'Навыки',
 		groups: {

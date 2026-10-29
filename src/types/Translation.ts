@@ -91,6 +91,10 @@ export interface Translation {
 		/** Label for an entry's industries line. */
 		industries: string;
 	};
+	education: {
+		/** The home page's education section `<h2>`. */
+		heading: string;
+	};
 	skills: {
 		/** The Skills section's `<h2>`. */
 		heading: string;

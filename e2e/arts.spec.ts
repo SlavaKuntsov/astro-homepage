@@ -307,6 +307,54 @@ test.describe('stepping through the arts lightbox', () => {
 		await expect(lightbox(page)).toHaveJSProperty('open', true);
 	});
 
+	test('leaves no selection highlight over the artwork', async ({ page }) => {
+		await page.goto('/arts');
+		await openLightbox(page);
+
+		// A drag in the lightbox is how a swipe starts, and it must never select
+		// the Artwork: a selection paints the Theme's `--accent` — a warm peach
+		// — over the picture, which reads as the Artwork turning yellow. Safari
+		// selects the image from a drag inside it; Chromium needs the drag to
+		// span the caption text, so this press starts on the title and ends on
+		// the artwork.
+		const image = await lightboxImage(page).boundingBox();
+		const title = await lightboxCaption(page).boundingBox();
+		if (!image || !title) throw new Error('the lightbox has no boxes');
+
+		await page.mouse.move(
+			title.x + title.width / 2,
+			title.y + title.height / 2,
+		);
+		await page.mouse.down();
+		await page.mouse.move(
+			image.x + image.width / 2,
+			image.y + image.height / 2,
+			{ steps: 10 },
+		);
+		await page.mouse.up();
+
+		/** Does the selection paint over the Artwork? */
+		const highlighted = await page.evaluate(() => {
+			const selection = window.getSelection();
+			if (!selection || selection.rangeCount === 0 || selection.isCollapsed) {
+				return false;
+			}
+			const box = document
+				.querySelector('[data-arts-lightbox-image]')!
+				.getBoundingClientRect();
+			return [...selection.getRangeAt(0).getClientRects()].some(
+				(rect) =>
+					rect.right > box.left &&
+					rect.left < box.right &&
+					rect.bottom > box.top &&
+					rect.top < box.bottom,
+			);
+		});
+
+		expect(highlighted).toBe(false);
+		await expect(lightbox(page)).toHaveJSProperty('open', true);
+	});
+
 	test('labels the navigation in the page’s Locale', async ({ page }) => {
 		await page.goto('/arts');
 		await openLightbox(page);

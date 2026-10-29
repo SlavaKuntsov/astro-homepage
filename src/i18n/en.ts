@@ -66,6 +66,9 @@ const en: Translation = {
 		environment: 'Environment',
 		industries: 'Industries',
 	},
+	education: {
+		heading: 'Education',
+	},
 	skills: {
 		heading: 'Skills',
 		groups: {

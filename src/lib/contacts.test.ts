@@ -7,9 +7,9 @@ import {
 	type ContactKind,
 } from '@/lib/contacts';
 
-// The owner's contact targets are locale-independent and shared by the Footer,
-// the Contacts section (ticket #8), and the CV page, so the addresses and URLs
-// live in exactly one place. These tests pin that list; the *labels* are
+// The owner's contact targets are locale-independent and shared by the Footer
+// and the Contacts section (ticket #8), so the addresses and URLs live in
+// exactly one place. These tests pin that list; the *labels* are
 // localized through the Translation tables and asserted at the rendered seam
 // (`e2e/skills-contacts.spec.ts`).
 const REQUIRED: ContactKind[] = ['email', 'github', 'telegram', 'instagram'];

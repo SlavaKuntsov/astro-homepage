@@ -31,8 +31,13 @@ const hasNavigation = arts.length > 1;
 ---
 
 <div class='paper-grid mt-8 rounded-3xl border border-border p-4 sm:p-6'>
+	<!--
+		The wall of stickers is presentation, not text, and dragging across a
+		card is how a scroll or a swipe starts: nothing here may be selected, or
+		the selection would paint the Theme's `--accent` over the Artwork.
+	-->
 	<ul
-		class='grid grid-cols-2 gap-5 sm:grid-cols-3 sm:gap-6 lg:grid-cols-4'
+		class='grid select-none grid-cols-2 gap-5 sm:grid-cols-3 sm:gap-6 lg:grid-cols-4'
 		aria-label={t.arts.gallery}
 		data-arts-gallery
 	>
@@ -104,9 +109,14 @@ const hasNavigation = arts.length > 1;
 	stretching it is what made it look washed out. It still shrinks to fit a
 	narrow viewport, and grows on its own if the Artwork is ever re-exported
 	larger (#14).
+
+	Nothing inside it is selectable (`select-none`): a drag — the start of a
+	swipe — would otherwise select the Artwork, and a selection paints the
+	Theme's `--accent`, a warm peach, over the whole picture, which reads as the
+	Artwork turning yellow.
 -->
 <dialog
-	class='arts-lightbox m-auto w-fit max-w-[min(92vw,36rem)] overflow-hidden rounded-2xl border-0 bg-card p-0 text-foreground shadow-2xl backdrop:bg-overlay'
+	class='arts-lightbox m-auto w-fit max-w-[min(92vw,36rem)] select-none overflow-hidden rounded-2xl border-0 bg-card p-0 text-foreground shadow-2xl backdrop:bg-overlay'
 	aria-labelledby='arts-lightbox-caption'
 	data-arts-lightbox
 >

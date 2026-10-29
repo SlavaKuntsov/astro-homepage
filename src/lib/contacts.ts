@@ -1,7 +1,7 @@
 /**
  * The owner's contact links — the single, locale-independent source of the
- * targets shown in the Footer, the Contacts section (ticket #8), and the CV
- * page. Only the URLs and handles live here; the visible labels are localized
+ * targets shown in the Footer and the Contacts section (ticket #8). Only the
+ * URLs and handles live here; the visible labels are localized
  * in the Translation tables (`t.contacts.labels`), keyed by `kind`, so no
  * component hard-codes an address.
  */
@@ -52,8 +52,8 @@ export function isExternalHref(href: string): boolean {
 
 /**
  * The `target`/`rel` a contact link needs: web links open in a new tab and drop
- * the referrer, while `mailto:` links stay in place. Kept here so the Footer,
- * the Contacts section, and the CV page share one policy.
+ * the referrer, while `mailto:` links stay in place. Kept here so the Footer
+ * and the Contacts section share one policy.
  */
 export function contactLinkAttrs(contact: Contact): {
 	target?: string;
