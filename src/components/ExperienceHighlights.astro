@@ -24,6 +24,10 @@ interface Props {
 
 const { entries, lang, t, limit = 3 } = Astro.props;
 const highlights = recentEntries(entries, limit);
+// The block is a preview: when there are more roles than it shows, the list must
+// say so rather than read as the whole career (the "View full experience" link
+// below is the way through to the rest).
+const hasMore = entries.length > highlights.length;
 const href = localizePath('/experience', lang);
 ---
 
@@ -50,6 +54,15 @@ const href = localizePath('/experience', lang);
 						</p>
 					</li>
 				))}
+
+				{hasMore && (
+					<li
+						class='border-l-2 border-border pl-5 text-sm italic text-muted-foreground'
+						data-experience-more
+					>
+						… {t.experience.more}
+					</li>
+				)}
 			</ol>
 
 			<a

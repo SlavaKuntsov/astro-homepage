@@ -86,6 +86,7 @@ const ru: Translation = {
 		present: 'настоящее время',
 		highlightsHeading: 'Ключевые достижения',
 		viewAll: 'Весь опыт',
+		more: 'и т.д.',
 		environment: 'Окружение',
 		industries: 'Отрасли',
 	},

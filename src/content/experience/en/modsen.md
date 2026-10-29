@@ -1,6 +1,5 @@
 ---
 company: MODSEN
-companyUrl: https://modsen.com
 position: Software Engineer
 start: 2024-11
 end: 2025-02

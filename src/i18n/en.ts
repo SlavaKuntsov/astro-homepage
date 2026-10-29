@@ -86,6 +86,7 @@ const en: Translation = {
 		present: 'Present',
 		highlightsHeading: 'Career highlights',
 		viewAll: 'View full experience',
+		more: 'etc.',
 		environment: 'Environment',
 		industries: 'Industries',
 	},

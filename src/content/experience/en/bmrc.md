@@ -3,7 +3,7 @@ company: BMRC
 companyUrl: https://www.bisc.by
 position: C#/.NET Developer
 start: 2025-10
-current: true
+end: 2026-10
 location: Minsk
 industries:
   - Public sector

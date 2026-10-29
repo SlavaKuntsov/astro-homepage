@@ -1,6 +1,5 @@
 ---
 company: HyperQuant
-companyUrl: https://hyperquant.net
 position: C#/.NET-разработчик
 start: 2024-09
 end: 2025-09

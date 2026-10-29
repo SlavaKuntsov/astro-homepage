@@ -1,6 +1,5 @@
 ---
 company: Avtobus1.ru
-companyUrl: https://avtobus1.ru
 position: C#/.NET-разработчик
 start: 2023-08
 end: 2024-08
