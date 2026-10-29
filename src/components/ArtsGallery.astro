@@ -11,16 +11,7 @@
 // The same script fades Artworks in as they are scrolled to, touching only the
 // ones below the fold (see `bindReveal`).
 //
-// Two layouts share all of the above:
-//
-// - `grid` (default) is the full `/arts` gallery: every Artwork, wrapped in a
-//   paper panel.
-// - `rail` is the home page's preview (ticket #12): one horizontal row that
-//   overflows its band, edged by the Theme-tracking fades and stepped by
-//   previous/next controls. The controls sit *above* the fades (`z-20` over
-//   `z-10`), so the fades can dim the overflowing Artworks without ever
-//   covering — and therefore never blocking — a control. That occlusion is the
-//   regression this preview rebuilds away from (`bindRail`).
+// The Artworks are a grid of "stickers" wrapped in a paper panel.
 import type { ArtworkEntry } from '@/lib/arts';
 import { slugOfEntryId } from '@/lib/collection';
 import type { Translation } from '@/types/Translation';
@@ -30,108 +21,27 @@ interface Props {
 	/** The Artworks, already in authored order (see `orderedArts`). */
 	arts: readonly ArtworkEntry[];
 	t: Translation;
-	/** `grid` (the `/arts` page) or `rail` (the home preview). */
-	layout?: 'grid' | 'rail';
 }
 
-const { arts, t, layout = 'grid' } = Astro.props;
-const isRail = layout === 'rail';
+const { arts, t } = Astro.props;
 
 /** A deterministic tilt per Artwork, so the grid reads as doodles on paper. */
 const TILTS = [-1.6, 1.3, -0.9, 1.7, -1.2, 1];
 const tiltFor = (index: number) => TILTS[index % TILTS.length];
 
 const hasNavigation = arts.length > 1;
-
-/** The layout-specific classes for the panel, the list, and one item. */
-const panelClass = isRail
-	? 'relative mt-8'
-	: 'paper-grid mt-8 rounded-3xl border border-border p-4 sm:p-6';
-const listClass = isRail
-	? 'arts-rail flex snap-x gap-5 overflow-x-auto py-3'
-	: 'grid grid-cols-2 gap-5 sm:grid-cols-3 sm:gap-6 lg:grid-cols-4';
-const itemClass = isRail ? 'w-44 shrink-0 snap-start sm:w-56' : '';
 ---
 
-<div class={panelClass}>
-	{
-		isRail && (
-			<>
-				<!--
-					Both fades render inactive: the script lights up the side(s)
-					that actually overflow. Without JavaScript nothing is faded,
-					rather than a fade assuming an overflow that may not exist.
-				-->
-				<div
-					class='edge-fade pointer-events-none absolute inset-y-0 left-12 z-10 w-8 sm:w-12'
-					data-edge-fade
-					data-arts-fade='left'
-					data-active='false'
-					aria-hidden='true'
-				/>
-				<div
-					class='edge-fade edge-fade-right pointer-events-none absolute inset-y-0 right-12 z-10 w-8 sm:w-12'
-					data-edge-fade
-					data-arts-fade='right'
-					data-active='false'
-					aria-hidden='true'
-				/>
-
-				<button
-					type='button'
-					class='absolute left-1 top-1/2 z-20 inline-flex size-10 -translate-y-1/2 cursor-pointer items-center justify-center rounded-full border border-border bg-card/90 text-foreground shadow-sm transition-colors hover:bg-muted'
-					aria-label={t.arts.previous}
-					data-arts-previous
-				>
-					<svg
-						viewBox='0 0 24 24'
-						width='20'
-						height='20'
-						fill='none'
-						stroke='currentColor'
-						stroke-width='2'
-						stroke-linecap='round'
-						stroke-linejoin='round'
-						aria-hidden='true'
-					>
-						<path d='M15 6l-6 6 6 6' />
-					</svg>
-				</button>
-
-				<button
-					type='button'
-					class='absolute right-1 top-1/2 z-20 inline-flex size-10 -translate-y-1/2 cursor-pointer items-center justify-center rounded-full border border-border bg-card/90 text-foreground shadow-sm transition-colors hover:bg-muted'
-					aria-label={t.arts.next}
-					data-arts-next
-				>
-					<svg
-						viewBox='0 0 24 24'
-						width='20'
-						height='20'
-						fill='none'
-						stroke='currentColor'
-						stroke-width='2'
-						stroke-linecap='round'
-						stroke-linejoin='round'
-						aria-hidden='true'
-					>
-						<path d='M9 6l6 6-6 6' />
-					</svg>
-				</button>
-			</>
-		)
-	}
-
+<div class='paper-grid mt-8 rounded-3xl border border-border p-4 sm:p-6'>
 	<!--
 		The wall of stickers is presentation, not text, and dragging across a
 		card is how a scroll or a swipe starts: nothing here may be selected, or
 		the selection would paint the Theme's `--accent` over the Artwork.
 	-->
 	<ul
-		class={`select-none ${listClass}`}
+		class='grid select-none grid-cols-2 gap-5 sm:grid-cols-3 sm:gap-6 lg:grid-cols-4'
 		aria-label={t.arts.gallery}
 		data-arts-gallery
-		data-arts-rail={isRail ? '' : undefined}
 	>
 		{
 			arts.map((entry, index) => {
@@ -139,7 +49,7 @@ const itemClass = isRail ? 'w-44 shrink-0 snap-start sm:w-56' : '';
 				const slug = slugOfEntryId(entry.id);
 
 				return (
-					<li class={`art-item ${itemClass}`} data-art data-slug={slug}>
+					<li class='art-item' data-art data-slug={slug}>
 						<div
 							class='art-sticker flex h-full flex-col gap-3 rounded-2xl border border-ink/15 p-3'
 							style={`--tilt: ${tiltFor(index)}deg`}
@@ -322,13 +232,6 @@ const itemClass = isRail ? 'w-44 shrink-0 snap-start sm:w-56' : '';
 	// replaces them: bind the (new) elements each page load instead of holding a
 	// reference. Binding is idempotent, so re-running the script is harmless.
 	const GALLERY = '[data-arts-gallery]';
-	const RAIL = '[data-arts-rail]';
-	const RAIL_PREVIOUS = '[data-arts-previous]';
-	const RAIL_NEXT = '[data-arts-next]';
-	const RAIL_FADE = {
-		left: '[data-arts-fade="left"]',
-		right: '[data-arts-fade="right"]',
-	} as const;
 	const OPENER = '[data-art-open]';
 	const TITLE = '[data-art-title]';
 	const DIALOG = '[data-arts-lightbox]';
@@ -561,98 +464,11 @@ const itemClass = isRail ? 'w-44 shrink-0 snap-start sm:w-56' : '';
 		for (const item of pending) observer.observe(item);
 	};
 
-	/**
-	 * Repaints the rail's edge fades from its current scroll position: a fade is
-	 * shown only on a side that actually overflows. Re-queries the DOM each call
-	 * because a client-side navigation replaces the rail — a captured reference
-	 * would go stale.
-	 */
-	const syncRailFades = () => {
-		const rail = document.querySelector<HTMLElement>(RAIL);
-		if (!rail) return;
-
-		const max = Math.max(rail.scrollWidth - rail.clientWidth, 0);
-		const atStart = rail.scrollLeft <= 1;
-		const atEnd = rail.scrollLeft >= max - 1;
-		const left = document.querySelector<HTMLElement>(RAIL_FADE.left);
-		const right = document.querySelector<HTMLElement>(RAIL_FADE.right);
-
-		if (left) left.dataset.active = String(!atStart);
-		if (right) right.dataset.active = String(!atEnd);
-	};
-
-	/**
-	 * Binds the home preview's rail: the previous/next controls scroll one
-	 * Artwork at a time (wrapping at the ends), and each edge fade lights up
-	 * only on a side that actually overflows. The controls are stacked above
-	 * the fades, so a fade can dim the overflowing Artworks without ever
-	 * covering — and therefore never blocking — a control (ticket #12).
-	 */
-	const bindRail = () => {
-		const rail = document.querySelector<HTMLElement>(RAIL);
-		if (!rail || rail.dataset.railBound) return;
-
-		rail.dataset.railBound = 'true';
-
-		const previous = document.querySelector<HTMLButtonElement>(RAIL_PREVIOUS);
-		const next = document.querySelector<HTMLButtonElement>(RAIL_NEXT);
-
-		const maxScroll = () => Math.max(rail.scrollWidth - rail.clientWidth, 0);
-
-		/** One Artwork's width plus the gap between Artworks. */
-		const step = () => {
-			const item = rail.querySelector<HTMLElement>(ART_ITEM);
-			if (!item) return rail.clientWidth * 0.8;
-
-			const gap = Number.parseFloat(getComputedStyle(rail).columnGap) || 0;
-			return item.offsetWidth + gap;
-		};
-
-		const scrollBy = (direction: number) => {
-			const max = maxScroll();
-			const atStart = rail.scrollLeft <= 1;
-			const atEnd = rail.scrollLeft >= max - 1;
-			const distance = step();
-
-			// Wrap at the ends, like the lightbox's own stepping.
-			const target =
-				direction > 0
-					? atEnd
-						? 0
-						: Math.min(rail.scrollLeft + distance, max)
-					: atStart
-						? max
-						: Math.max(rail.scrollLeft - distance, 0);
-
-			rail.scrollTo({
-				left: target,
-				behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches
-					? 'auto'
-					: 'smooth',
-			});
-		};
-
-		previous?.addEventListener('click', () => scrollBy(-1));
-		next?.addEventListener('click', () => scrollBy(1));
-		rail.addEventListener('scroll', syncRailFades, { passive: true });
-
-		syncRailFades();
-	};
-
 	const sync = () => {
 		bindDialog();
 		bindGallery();
-		bindRail();
-		// The rail preview never hides its Artworks: it is a shallow band, so
-		// the grid's below-the-fold reveal would only stagger a strip that is
-		// already in view. The `/arts` grid keeps its reveal.
-		if (!document.querySelector(RAIL)) bindReveal();
+		bindReveal();
 	};
-
-	// Added once per document. A client-side navigation replaces the rail, so
-	// the handler re-queries it (`syncRailFades`) rather than capturing it —
-	// and it is not re-added on every page load, which would leak listeners.
-	window.addEventListener('resize', syncRailFades);
 
 	document.addEventListener('astro:page-load', sync);
 	sync();

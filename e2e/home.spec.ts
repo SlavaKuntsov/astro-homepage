@@ -4,13 +4,13 @@ import { expect, test } from './fixtures';
 /**
  * The home page composition (ticket #12): the Site's CV assembled from the
  * content collections. This is the rendered-page seam, so it asserts what a
- * recruiter sees — the hero (name, position, one-line pitch, avatar) above the
- * fold, the resume sections, the featured-Projects and Arts previews (both
- * collection-driven, never hardcoded) with links to their full pages, and the
- * arts preview's controls actually painted above the edge fades and operable.
+ * recruiter sees — the hero carousel first, the hero (name, position, one-line
+ * pitch, avatar), the resume sections, and the contacts. The carousel is
+ * collection-driven (never hardcoded) and its controls are actually painted
+ * above the edge fades and operable.
  *
  * The no-Flash half of the contract lives in `theme.spec.ts` (theme, on `/`)
- * and `smoke.spec.ts` (Locale); this file only re-asserts that the preview is
+ * and `smoke.spec.ts` (Locale); this file only re-asserts that the carousel is
  * server-rendered, so the Locale and the Artworks are right with no JavaScript.
  */
 
@@ -19,10 +19,6 @@ const LOCALES = [
 		path: '/',
 		name: 'Кунцов Святослав',
 		position: 'Разработчик программного обеспечения',
-		artsHeading: 'Картиночки',
-		artsViewAll: 'Все работы',
-		featuredHeading: 'Избранные проекты',
-		projectsViewAll: 'Все проекты',
 		experienceViewAll: 'Весь опыт',
 		previous: 'Предыдущая работа',
 		next: 'Следующая работа',
@@ -31,22 +27,18 @@ const LOCALES = [
 		path: '/en/',
 		name: 'Sviataslau Kuntsou',
 		position: 'Software Developer',
-		artsHeading: 'Arts',
-		artsViewAll: 'All artworks',
-		featuredHeading: 'Featured projects',
-		projectsViewAll: 'All projects',
 		experienceViewAll: 'View full experience',
 		previous: 'Previous artwork',
 		next: 'Next artwork',
 	},
 ] as const;
 
-const featured = (page: Page) => page.locator('[data-featured-projects]');
-const artworkPreview = (page: Page) => page.locator('[data-arts-preview]');
-const rail = (page: Page) =>
-	page.locator('[data-arts-preview] [data-arts-rail]');
-const previousControl = (page: Page) => page.locator('[data-arts-previous]');
-const nextControl = (page: Page) => page.locator('[data-arts-next]');
+const carousel = (page: Page) => page.locator('[data-arts-carousel]');
+const track = (page: Page) => page.locator('[data-arts-track]');
+const slides = (page: Page) => page.locator('[data-arts-slide]');
+const previousControl = (page: Page) =>
+	page.locator('[data-arts-carousel-previous]');
+const nextControl = (page: Page) => page.locator('[data-arts-carousel-next]');
 
 /** Whether an element's whole box is inside the first screen. */
 const isAboveTheFold = async (page: Page, selector: string) => {
@@ -57,39 +49,34 @@ const isAboveTheFold = async (page: Page, selector: string) => {
 	return box.y >= 0 && box.y + box.height <= viewport.height;
 };
 
-/**
- * The regression this ticket rebuilds away from: an opaque edge fade painted
- * over a control. If either fade's box overlaps either control's box, the fade
- * can paint the control away. The rebuilt preview keeps them apart, so no fade
- * can ever cover a control — in either Theme or Locale.
- */
-const controlsClearOfFades = (page: Page) =>
-	page.evaluate(() => {
-		const fades = [
-			...document.querySelectorAll<HTMLElement>('[data-edge-fade]'),
-		];
-		const controls = [
-			...document.querySelectorAll<HTMLElement>(
-				'[data-arts-previous], [data-arts-next]'
-			),
-		];
-		if (fades.length === 0 || controls.length === 0) return false;
+/** The carousel track's current horizontal offset, in pixels. */
+const offsetX = (page: Page) =>
+	track(page).evaluate(
+		el => new DOMMatrixReadOnly(getComputedStyle(el).transform).m41
+	);
 
-		const intersects = (a: DOMRect, b: DOMRect) =>
-			a.left < b.right &&
-			a.right > b.left &&
-			a.top < b.bottom &&
-			a.bottom > b.top;
-
-		return controls.every(control =>
-			fades.every(
-				fade =>
-					!intersects(
-						control.getBoundingClientRect(),
-						fade.getBoundingClientRect()
-					)
-			)
+/** The `src` of every matching image, in DOM order. */
+const imageSources = (page: Page, selector: string) =>
+	page
+		.locator(selector)
+		.evaluateAll(nodes =>
+			nodes.map(node => (node as HTMLImageElement).getAttribute('src') ?? '')
 		);
+
+/**
+ * Whether a control is the topmost element at its own centre: if a fade (or
+ * anything else) were painted over it, `elementFromPoint` would return that
+ * element instead. This is the occlusion the old hero carousel suffered, and
+ * the rebuilt one must not.
+ */
+const isTopmost = (page: Page, selector: string) =>
+	page.locator(selector).evaluate(el => {
+		const rect = el.getBoundingClientRect();
+		const top = document.elementFromPoint(
+			rect.left + rect.width / 2,
+			rect.top + rect.height / 2
+		);
+		return top === el || el.contains(top);
 	});
 
 test.describe('the hero is above the fold', () => {
@@ -117,122 +104,27 @@ test.describe('the hero is above the fold', () => {
 	}
 });
 
-test.describe('the featured projects', () => {
-	test('come from the collection and link to the index and each Project', async ({
-		page,
-	}) => {
-		await page.goto('/');
+test('the carousel shows the collection’s Artworks in order', async ({
+	page,
+}) => {
+	await page.goto('/');
+	await expect(carousel(page)).toBeVisible();
 
-		const section = featured(page);
-		await expect(section).toBeVisible();
-		await expect(
-			section.getByRole('heading', { level: 2, name: 'Избранные проекты' })
-		).toBeVisible();
+	const shown = await imageSources(page, '[data-arts-slide] img');
+	expect(shown.length).toBeGreaterThan(1);
 
-		// Only the Projects marked `featured`, in index order (ADR-0009).
-		const slugs = await section
-			.locator('[data-project]')
-			.evaluateAll(nodes =>
-				nodes.map(node => node.getAttribute('data-slug') ?? '')
-			);
-		expect(slugs).toEqual(['astro-homepage', 'flowix']);
+	// The same Artworks, in the same order, as the full gallery — so the
+	// carousel cannot drift from the `arts` collection.
+	await page.goto('/arts');
+	const full = await imageSources(page, '[data-art-thumb]');
 
-		for (const slug of slugs) {
-			await expect(
-				section.locator(`[data-project][data-slug="${slug}"]`).getByRole('link')
-			).toHaveAttribute('href', `/projects/${slug}`);
-		}
-
-		await expect(
-			section.getByRole('link', { name: 'Все проекты' })
-		).toHaveAttribute('href', '/projects');
-	});
-
-	test('are localized on /en/', async ({ page }) => {
-		await page.goto('/en/');
-
-		const section = featured(page);
-		await expect(
-			section.getByRole('heading', { level: 2, name: 'Featured projects' })
-		).toBeVisible();
-		await expect(
-			section.getByRole('link', { name: 'All projects' })
-		).toHaveAttribute('href', '/en/projects');
-		await expect(
-			section.locator('[data-project][data-slug="flowix"]').getByRole('link')
-		).toHaveAttribute('href', '/en/projects/flowix');
-	});
+	expect(full.slice(0, shown.length)).toEqual(shown);
 });
 
-test.describe('the arts preview', () => {
-	test('previews the collection and links to the full gallery', async ({
-		page,
-	}) => {
-		await page.goto('/');
-
-		const section = artworkPreview(page);
-		await expect(section).toBeVisible();
-		await expect(
-			section.getByRole('heading', { level: 2, name: 'Картиночки' })
-		).toBeVisible();
-
-		// The same Artworks, in the same order, as the full gallery — so the
-		// preview cannot drift from the `arts` collection. It may be a leading
-		// slice of the gallery, but never a reordered or hardcoded one.
-		const preview = await section
-			.locator('[data-art]')
-			.evaluateAll(nodes =>
-				nodes.map(node => node.getAttribute('data-slug') ?? '')
-			);
-
-		await page.goto('/arts');
-		const full = await page
-			.locator('[data-art]')
-			.evaluateAll(nodes =>
-				nodes.map(node => node.getAttribute('data-slug') ?? '')
-			);
-
-		expect(preview.length).toBeGreaterThan(1);
-		expect(full.slice(0, preview.length)).toEqual(preview);
-
-		await page.goto('/');
-		await expect(
-			page
-				.locator('[data-arts-preview]')
-				.getByRole('link', { name: 'Все работы' })
-		).toHaveAttribute('href', '/arts');
-	});
-
-	test('is localized on /en/', async ({ page }) => {
-		await page.goto('/en/');
-
-		await expect(
-			artworkPreview(page).getByRole('heading', {
-				level: 2,
-				name: 'Arts',
-			})
-		).toBeVisible();
-		await expect(
-			artworkPreview(page).getByRole('link', { name: 'All artworks' })
-		).toHaveAttribute('href', '/en/arts');
-	});
-
-	test('opens a previewed Artwork in the shared lightbox', async ({ page }) => {
-		await page.goto('/');
-
-		await artworkPreview(page).locator('[data-art-open]').first().click();
-
-		await expect(page.locator('[data-arts-lightbox]')).toHaveJSProperty(
-			'open',
-			true
-		);
-	});
-});
-
-test.describe('the arts preview controls', () => {
+test.describe('the carousel controls', () => {
 	for (const { path, previous, next } of LOCALES) {
 		for (const theme of ['light', 'dark'] as const) {
-			test(`are visible, clear of the fades, and step the rail (${path}, ${theme})`, async ({
+			test(`are visible, unoccluded, and step the carousel (${path}, ${theme})`, async ({
 				page,
 				seedLocalStorage,
 			}) => {
@@ -248,46 +140,54 @@ test.describe('the arts preview controls', () => {
 				);
 				await expect(nextControl(page)).toHaveAttribute('aria-label', next);
 
-				expect(await controlsClearOfFades(page)).toBe(true);
-
 				// A control that is not operable (occluded or inert) leaves the
-				// rail where it is; a working one steps it.
-				await expect
-					.poll(() => rail(page).evaluate(el => el.scrollLeft))
-					.toBe(0);
+				// carousel where it is; a working one steps it.
+				expect(await isTopmost(page, '[data-arts-carousel-previous]')).toBe(
+					true
+				);
+				expect(await isTopmost(page, '[data-arts-carousel-next]')).toBe(true);
+
+				await expect.poll(() => offsetX(page)).toBeGreaterThan(-1);
 				await nextControl(page).click();
-				await expect
-					.poll(() => rail(page).evaluate(el => el.scrollLeft))
-					.toBeGreaterThan(0);
+				await expect.poll(() => offsetX(page)).toBeLessThan(-1);
 
 				await previousControl(page).click();
-				await expect
-					.poll(() => rail(page).evaluate(el => el.scrollLeft))
-					.toBe(0);
+				await expect.poll(() => offsetX(page)).toBeGreaterThan(-1);
 			});
 		}
 	}
 });
 
-test('the edge fades follow the overflowing side', async ({ page }) => {
+test('the carousel autoplays through the Artworks', async ({ page }) => {
 	await page.goto('/');
+	await expect(carousel(page)).toBeVisible();
 
-	const left = page.locator('[data-arts-fade="left"]');
-	const right = page.locator('[data-arts-fade="right"]');
-
-	// At the start there is nothing to fade on the left; the right overflows.
-	await expect(left).toHaveAttribute('data-active', 'false');
-	await expect(right).toHaveAttribute('data-active', 'true');
-
-	await rail(page).evaluate(el => el.scrollTo({ left: el.scrollWidth }));
-
-	await expect(left).toHaveAttribute('data-active', 'true');
-	await expect(right).toHaveAttribute('data-active', 'false');
+	// The pointer is at the origin, off the carousel, so autoplay is running;
+	// the first step lands well within the 4s beat.
+	await expect.poll(() => offsetX(page), { timeout: 8000 }).toBeLessThan(-1);
 });
 
-test('the home page links to the full experience, projects, and arts pages', async ({
+test('the carousel fades its edges without covering a control', async ({
 	page,
 }) => {
+	await page.setViewportSize({ width: 1280, height: 800 });
+	await page.goto('/');
+
+	await expect(page.locator('[data-edge-fade]')).toHaveCount(2);
+	expect(await isTopmost(page, '[data-arts-carousel-previous]')).toBe(true);
+	expect(await isTopmost(page, '[data-arts-carousel-next]')).toBe(true);
+});
+
+test('the home page drops the featured-Projects and arts previews', async ({
+	page,
+}) => {
+	await page.goto('/');
+
+	await expect(page.locator('[data-featured-projects]')).toHaveCount(0);
+	await expect(page.locator('[data-arts-preview]')).toHaveCount(0);
+});
+
+test('the home page links to the full experience page', async ({ page }) => {
 	await page.goto('/');
 
 	await expect(
@@ -295,25 +195,18 @@ test('the home page links to the full experience, projects, and arts pages', asy
 			.locator('[data-experience-highlights]')
 			.getByRole('link', { name: 'Весь опыт' })
 	).toHaveAttribute('href', '/experience');
-	await expect(
-		featured(page).getByRole('link', { name: 'Все проекты' })
-	).toHaveAttribute('href', '/projects');
-	await expect(
-		artworkPreview(page).getByRole('link', { name: 'Все работы' })
-	).toHaveAttribute('href', '/arts');
 });
 
 test.describe('the home page without JavaScript', () => {
 	test.use({ javaScriptEnabled: false });
 
-	test('server-renders the preview in the right Locale', async ({ page }) => {
+	test('server-renders the carousel in the right Locale', async ({ page }) => {
 		await page.goto('/');
 
 		// The Locale is resolved on the server, not after hydration.
 		await expect(page.locator('html')).toHaveAttribute('lang', 'ru');
-		expect(
-			await artworkPreview(page).locator('[data-art]').count()
-		).toBeGreaterThanOrEqual(1);
+		expect(await slides(page).count()).toBeGreaterThan(1);
+		await expect(slides(page).first()).toBeVisible();
 		await expect(nextControl(page)).toBeVisible();
 	});
 });

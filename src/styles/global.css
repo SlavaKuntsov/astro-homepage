@@ -243,11 +243,6 @@ html:not(.theme-ready) *::after {
 	opacity: 0;
 }
 
-/* The home preview's rail scrolls; a thin scrollbar keeps it discoverable. */
-.arts-rail {
-	scrollbar-width: thin;
-}
-
 /* The mobile menu uses a native <details>; hide the native marker. */
 [data-mobile-menu] > summary {
 	list-style: none;
@@ -439,16 +434,9 @@ html:not(.theme-ready) *::after {
 		break-inside: avoid;
 	}
 
-	/* The home preview's rail is a horizontal strip: on paper it wraps so no
-	   Artwork is clipped, and the controls and edge fades — which do nothing
-	   and imply scrollability — are dropped. */
-	.arts-rail {
-		overflow: visible !important;
-		flex-wrap: wrap;
-	}
-
-	[data-arts-previous],
-	[data-arts-next],
+	/* The hero carousel's controls and edge fades do nothing on paper. */
+	[data-arts-carousel-previous],
+	[data-arts-carousel-next],
 	[data-edge-fade] {
 		display: none !important;
 	}

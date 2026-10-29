@@ -84,21 +84,6 @@ export function orderedProjects<T extends ProjectEntry>(
 	});
 }
 
-/**
- * The Projects the home page features: those whose frontmatter says
- * `featured`, in the same index order (`orderedProjects`) the `/projects` page
- * leads with. Collection-driven, so the home block never hardcodes a Project.
- * Returns a copy; the input is never reordered in place.
- */
-export function featuredProjects<T extends ProjectEntry>(
-	entries: readonly T[],
-	order: readonly string[] = projectOrder
-): T[] {
-	return orderedProjects(entries, order).filter(
-		entry => entry.data.featured === true
-	);
-}
-
 /** The image shown on an index card: the cover, else the first gallery image. */
 export function coverImage(
 	data: Pick<ProjectFrontmatter, 'cover' | 'images'>

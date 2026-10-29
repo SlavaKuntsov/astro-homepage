@@ -42,10 +42,6 @@ export interface Translation {
 	projects: {
 		/** The `/projects` index page's `<h1>`. */
 		heading: string;
-		/** The home page's featured-Projects section `<h2>`. */
-		featuredHeading: string;
-		/** Link from the home page's featured block to the `/projects` index. */
-		viewAll: string;
 		/** Link from an index card to the Project's detail page. */
 		viewProject: string;
 		/** Link from a detail page back to the index. */
@@ -68,8 +64,6 @@ export interface Translation {
 	arts: {
 		/** The page's `<h1>`. */
 		heading: string;
-		/** Link from the home page's arts preview to the `/arts` gallery. */
-		viewAll: string;
 		/** Accessible label for the Artwork gallery grid. */
 		gallery: string;
 		/** Accessible label for an Artwork's tag chips. */
@@ -78,9 +72,9 @@ export interface Translation {
 		link: string;
 		/** Accessible label for the lightbox's close button. */
 		closeLightbox: string;
-		/** Accessible label for the lightbox's "previous Artwork" button. */
+		/** Accessible label for a "previous Artwork" control. */
 		previous: string;
-		/** Accessible label for the lightbox's "next Artwork" button. */
+		/** Accessible label for a "next Artwork" control. */
 		next: string;
 	};
 	experience: {

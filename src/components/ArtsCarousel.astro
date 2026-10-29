@@ -1,0 +1,236 @@
+---
+// The home page's hero gallery: the `arts` collection's Artworks as a
+// one-at-a-time carousel, restored from the React `Carousel` the hero used to
+// run — but Astro-native (ADR-0002): static markup plus a small vanilla script,
+// server-rendered from the collection so it never hardcodes an Artwork and
+// shows its first Artwork without JavaScript.
+//
+// The previous/next controls sit inside the Artwork's own edges and are stacked
+// above the edge fades (`z-20` over `z-10`), so a fade can never paint a
+// control away — the occlusion the old hero carousel suffered.
+import type { ArtworkEntry } from '@/lib/arts';
+import type { Translation } from '@/types/Translation';
+
+interface Props {
+	/** The Artworks, already in authored order (see `orderedArts`). */
+	arts: readonly ArtworkEntry[];
+	t: Translation;
+}
+
+const { arts, t }: Props = Astro.props;
+const total = arts.length;
+const hasNavigation = total > 1;
+
+const controlClass =
+	'inline-flex size-10 cursor-pointer items-center justify-center rounded-full border border-border bg-card/90 text-foreground shadow-sm transition-colors hover:bg-muted';
+---
+
+{
+	total > 0 && (
+		<div
+			class='relative flex min-h-72.5 w-full items-center justify-center'
+			data-arts-carousel
+		>
+			<!--
+				The fades blend the carousel into the page and sit outboard of the
+				Artwork, so they dim nothing that matters. They are desktop-only:
+				on a phone the Artwork fills the band, and a fade there would dim
+				the Artwork itself.
+			-->
+			<div
+				class='edge-fade pointer-events-none absolute inset-y-0 left-0 z-10 hidden w-24 sm:block'
+				data-edge-fade
+				data-arts-fade='left'
+				aria-hidden='true'
+			/>
+			<div
+				class='edge-fade edge-fade-right pointer-events-none absolute inset-y-0 right-0 z-10 hidden w-24 sm:block'
+				data-edge-fade
+				data-arts-fade='right'
+				aria-hidden='true'
+			/>
+
+			<div
+				class='relative w-full max-w-xs'
+				role='region'
+				aria-roledescription='carousel'
+				aria-label={t.arts.gallery}
+			>
+				<div class='overflow-hidden rounded-2xl'>
+					<div
+						class='flex transition-transform duration-500 ease-out motion-reduce:transition-none'
+						style='transform: translateX(0)'
+						data-arts-track
+					>
+						{arts.map((entry, index) => (
+							<div
+								class='w-full shrink-0'
+								role='group'
+								aria-roledescription='slide'
+								aria-label={`${index + 1} / ${total}`}
+								data-arts-slide
+							>
+								<img
+									src={entry.data.image}
+									alt={entry.data.title}
+									width='480'
+									height='480'
+									loading='eager'
+									class='h-[250px] w-full object-contain'
+								/>
+							</div>
+						))}
+					</div>
+				</div>
+
+				{hasNavigation && (
+					<>
+						<button
+							type='button'
+							class={`absolute left-1 top-1/2 z-20 -translate-y-1/2 ${controlClass}`}
+							aria-label={t.arts.previous}
+							data-arts-carousel-previous
+						>
+							<svg
+								viewBox='0 0 24 24'
+								width='20'
+								height='20'
+								fill='none'
+								stroke='currentColor'
+								stroke-width='2'
+								stroke-linecap='round'
+								stroke-linejoin='round'
+								aria-hidden='true'
+							>
+								<path d='M15 6l-6 6 6 6' />
+							</svg>
+						</button>
+
+						<button
+							type='button'
+							class={`absolute right-1 top-1/2 z-20 -translate-y-1/2 ${controlClass}`}
+							aria-label={t.arts.next}
+							data-arts-carousel-next
+						>
+							<svg
+								viewBox='0 0 24 24'
+								width='20'
+								height='20'
+								fill='none'
+								stroke='currentColor'
+								stroke-width='2'
+								stroke-linecap='round'
+								stroke-linejoin='round'
+								aria-hidden='true'
+							>
+								<path d='M9 6l6 6-6 6' />
+							</svg>
+						</button>
+					</>
+				)}
+			</div>
+		</div>
+	)
+}
+
+<script>
+	// The carousel is page content, so a client-side navigation replaces it:
+	// bind the (new) elements each page load instead of holding a reference.
+	// Binding is idempotent, so re-running the script is harmless.
+	const CAROUSEL = '[data-arts-carousel]';
+	const TRACK = '[data-arts-track]';
+	const SLIDE = '[data-arts-slide]';
+	const PREVIOUS = '[data-arts-carousel-previous]';
+	const NEXT = '[data-arts-carousel-next]';
+
+	/** How long each Artwork stays, matching the carousel the hero used to run. */
+	const AUTOPLAY_DELAY = 4000;
+
+	const bindCarousel = () => {
+		const carousel = document.querySelector<HTMLElement>(CAROUSEL);
+		if (!carousel || carousel.dataset.carouselBound) return;
+
+		carousel.dataset.carouselBound = 'true';
+
+		const track = carousel.querySelector<HTMLElement>(TRACK);
+		if (!track) return;
+
+		const slides = Array.from(track.querySelectorAll<HTMLElement>(SLIDE));
+		if (slides.length < 2) return;
+
+		const previous = carousel.querySelector<HTMLButtonElement>(PREVIOUS);
+		const next = carousel.querySelector<HTMLButtonElement>(NEXT);
+
+		let index = 0;
+		let timer: number | undefined;
+
+		/** Paints the Artwork at `index`; `instant` skips the slide transition. */
+		const paint = (instant = false) => {
+			if (instant) track.style.transition = 'none';
+			track.style.transform = `translateX(-${index * 100}%)`;
+			if (instant) {
+				// Flush the jump before restoring the transition, so the browser
+				// does not animate between the old and new positions.
+				void track.offsetWidth;
+				track.style.transition = '';
+			}
+		};
+
+		const go = (delta: number) => {
+			index = (index + delta + slides.length) % slides.length;
+
+			// Wrapping jumps instantly, so autoplay does not slide back across
+			// every Artwork; a normal step animates.
+			const wrapped =
+				(delta > 0 && index === 0) ||
+				(delta < 0 && index === slides.length - 1);
+			paint(wrapped);
+		};
+
+		const stop = () => {
+			if (timer !== undefined) {
+				window.clearInterval(timer);
+				timer = undefined;
+			}
+		};
+
+		const start = () => {
+			if (timer !== undefined) return;
+			// Motion-sensitive visitors get no autoplay; the controls still work.
+			if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+
+			timer = window.setInterval(() => go(1), AUTOPLAY_DELAY);
+		};
+
+		/** A control step: restart the countdown from the Artwork it lands on. */
+		const step = (delta: number) => {
+			stop();
+			go(delta);
+			start();
+		};
+
+		previous?.addEventListener('click', () => step(-1));
+		next?.addEventListener('click', () => step(1));
+
+		// Autoplay pauses while the pointer or the keyboard focus is inside...
+		carousel.addEventListener('pointerenter', stop);
+		carousel.addEventListener('pointerleave', start);
+		carousel.addEventListener('focusin', stop);
+		carousel.addEventListener('focusout', start);
+
+		// ...and while the carousel is scrolled off screen.
+		const observer = new IntersectionObserver(entries => {
+			for (const entry of entries) {
+				if (entry.isIntersecting) start();
+				else stop();
+			}
+		});
+		observer.observe(carousel);
+
+		paint(true);
+		start();
+	};
+
+	document.addEventListener('astro:page-load', bindCarousel);
+	bindCarousel();
+</script>

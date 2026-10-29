@@ -1,15 +1,14 @@
 ---
 // The home page (ticket #12): the Site's CV, assembled from the content
-// collections — never hardcoded. A recruiter sees the hero (name, position,
-// one-line pitch, avatar) first, then the resume sections (about, experience
-// highlights, education, skills), the showcase previews (featured Projects and
-// Artworks), and the contacts. Each preview links to its full page, and the
-// page loads with no Flash (`e2e/theme.spec.ts`, `e2e/home.spec.ts`).
-import ArtsPreview from '@/components/ArtsPreview.astro';
+// collections — never hardcoded. A recruiter sees the hero carousel first, then
+// the hero (name, position, one-line pitch, avatar), the resume sections
+// (about, experience highlights, education, skills) and the contacts. The
+// carousel and every section are collection-driven, and the page loads with no
+// Flash (`e2e/theme.spec.ts`, `e2e/home.spec.ts`).
+import ArtsCarousel from '@/components/ArtsCarousel.astro';
 import ContactsSection from '@/components/ContactsSection.astro';
 import EducationSection from '@/components/EducationSection.astro';
 import ExperienceHighlights from '@/components/ExperienceHighlights.astro';
-import FeaturedProjects from '@/components/FeaturedProjects.astro';
 import Heading from '@/components/Heading.astro';
 import MainContent from '@/components/MainContent.astro';
 import SkillsSection from '@/components/SkillsSection.astro';
@@ -34,7 +33,6 @@ const education = orderedEducation(
 	entriesForLocale(await getCollection('education'), lang)
 );
 const skills = await getCollection('skills');
-const projects = entriesForLocale(await getCollection('projects'), lang);
 const arts = orderedArts(entriesForLocale(await getCollection('arts'), lang));
 ---
 
@@ -47,13 +45,12 @@ const arts = orderedArts(entriesForLocale(await getCollection('arts'), lang));
 	<div
 		class='mx-auto flex w-full max-w-prose flex-col items-start gap-7 sm:gap-8'
 	>
+		<ArtsCarousel arts={arts} t={t} />
 		<Heading t={t} />
 		<MainContent t={t} />
 		<ExperienceHighlights entries={experience} lang={lang} t={t} />
 		<EducationSection entries={education} t={t} />
 		<SkillsSection entries={skills} t={t} />
-		<FeaturedProjects entries={projects} lang={lang} t={t} />
-		<ArtsPreview arts={arts} lang={lang} t={t} />
 		<ContactsSection t={t} />
 	</div>
 </Layout>

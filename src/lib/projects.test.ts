@@ -4,7 +4,6 @@ import { describe, expect, it } from 'vitest';
 import projectOrder from '@/content/projects/order.json';
 import {
 	coverImage,
-	featuredProjects,
 	galleryImages,
 	orderedProjects,
 	projectSchema,
@@ -147,43 +146,6 @@ describe('project ordering', () => {
 				['listed']
 			).map(p => p.id)
 		).toEqual(['ru/listed', 'ru/unlisted']);
-	});
-});
-
-// The home page's featured block is collection-driven: it leads with the
-// Projects whose frontmatter says `featured`, in the same index order the
-// `/projects` page uses. Nothing on the home page is hardcoded, so adding a
-// featured Project is a frontmatter edit, never a component edit.
-describe('featured projects', () => {
-	const projects = [
-		withProject('ru/plain', { featured: false }),
-		withProject('ru/featured-b', { featured: true }),
-		withProject('ru/featured-a', { featured: true }),
-		withProject('ru/unmarked'),
-	];
-
-	const order = ['plain', 'featured-b', 'featured-a', 'unmarked'];
-
-	it('keeps only the featured projects, in index order', () => {
-		expect(featuredProjects(projects, order).map(p => p.id)).toEqual([
-			'ru/featured-b',
-			'ru/featured-a',
-		]);
-	});
-
-	it('has nothing to feature when no project is marked', () => {
-		expect(featuredProjects([withProject('ru/plain')], order)).toEqual([]);
-	});
-
-	it('does not mutate the input', () => {
-		featuredProjects(projects, order);
-
-		expect(projects.map(p => p.id)).toEqual([
-			'ru/plain',
-			'ru/featured-b',
-			'ru/featured-a',
-			'ru/unmarked',
-		]);
 	});
 });
 
