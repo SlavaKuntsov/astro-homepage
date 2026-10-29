@@ -1,6 +1,12 @@
 import type { ContactKind } from '@/lib/contacts';
 import type { SkillGroupId } from '@/lib/skills';
 
+/** The metadata a page emits: its `<title>` and `<meta name="description">`. */
+export interface PageMeta {
+	title: string;
+	description: string;
+}
+
 export interface Translation {
 	a11y: {
 		skipToContent: string;
@@ -17,6 +23,18 @@ export interface Translation {
 	site: {
 		/** The owner's name as written in this Locale. */
 		ownerName: string;
+	};
+	/**
+	 * Per-page, per-Locale SEO metadata (ticket #13). `siteName` is the Site
+	 * identity for `og:site_name` and a detail page's title suffix; each page
+	 * block is the literal `<title>`/description that page emits.
+	 */
+	meta: {
+		siteName: string;
+		home: PageMeta;
+		experience: PageMeta;
+		projects: PageMeta;
+		arts: PageMeta;
 	};
 	nav: {
 		home: string;

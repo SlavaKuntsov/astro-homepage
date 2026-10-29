@@ -12,7 +12,6 @@ import ExperienceHighlights from '@/components/ExperienceHighlights.astro';
 import Heading from '@/components/Heading.astro';
 import MainContent from '@/components/MainContent.astro';
 import SkillsSection from '@/components/SkillsSection.astro';
-import { SITE_DESCRIPTION, SITE_TITLE } from '@/consts';
 import { translations } from '@/i18n';
 import Layout from '@/layouts/Layout.astro';
 import { orderedArts } from '@/lib/arts';
@@ -37,8 +36,8 @@ const arts = orderedArts(entriesForLocale(await getCollection('arts'), lang));
 ---
 
 <Layout
-	title={SITE_TITLE}
-	description={SITE_DESCRIPTION}
+	title={t.meta.home.title}
+	description={t.meta.home.description}
 	lang={lang}
 	preloadItalic
 >

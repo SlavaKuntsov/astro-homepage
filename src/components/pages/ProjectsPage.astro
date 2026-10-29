@@ -4,7 +4,6 @@
 // (ADR-0009). Each card is `ProjectCard`, shared with the home page's featured
 // block so the index and the preview render a Project the same way.
 import ProjectCard from '@/components/ProjectCard.astro';
-import { SITE_DESCRIPTION, SITE_TITLE } from '@/consts';
 import { translations } from '@/i18n';
 import Layout from '@/layouts/Layout.astro';
 import { entriesForLocale } from '@/lib/collection';
@@ -26,7 +25,11 @@ const entries = orderedProjects(
 const projects = await enrichProjects(entries);
 ---
 
-<Layout title={SITE_TITLE} description={SITE_DESCRIPTION} lang={lang}>
+<Layout
+	title={t.meta.projects.title}
+	description={t.meta.projects.description}
+	lang={lang}
+>
 	<h1 class='text-3xl font-semibold'>{t.projects.heading}</h1>
 
 	<ul class='mt-8 grid gap-6 sm:grid-cols-2' data-projects-list>

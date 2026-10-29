@@ -7,7 +7,6 @@
 // failed the repo bits are simply absent and the page renders.
 import type { CollectionEntry } from 'astro:content';
 import { render } from 'astro:content';
-import { SITE_TITLE } from '@/consts';
 import { translations } from '@/i18n';
 import Layout from '@/layouts/Layout.astro';
 import { slugOfEntryId } from '@/lib/collection';
@@ -42,8 +41,10 @@ if (data.links?.other)
 ---
 
 <Layout
-	title={`${data.title} — ${SITE_TITLE}`}
-	description={meta.description}
+	title={`${data.title} — ${t.meta.siteName}`}
+	description={meta.description || t.meta.projects.description}
+	image={data.cover}
+	ogType='article'
 	lang={lang}
 >
 	<article
