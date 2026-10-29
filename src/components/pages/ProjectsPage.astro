@@ -1,21 +1,17 @@
 ---
 // The Projects index (ticket #9): the showcased work as collection-driven
 // cards, featured projects first and the rest in `projects/order.json` order
-// (ADR-0009). The whole card is one link to `/projects/<slug>` — its accessible
-// name is the title via `aria-labelledby`, so a click anywhere opens the
-// Project. A card's tags are the repo's topics (the manual `stack` is the
-// fallback) and a public Project whose repo was reached at build also shows its
-// stars and primary language.
+// (ADR-0009). Each card is `ProjectCard`, shared with the home page's featured
+// block so the index and the preview render a Project the same way.
+import ProjectCard from '@/components/ProjectCard.astro';
 import { SITE_DESCRIPTION, SITE_TITLE } from '@/consts';
 import { translations } from '@/i18n';
 import Layout from '@/layouts/Layout.astro';
-import { entriesForLocale, slugOfEntryId } from '@/lib/collection';
+import { entriesForLocale } from '@/lib/collection';
 import { enrichProjects } from '@/lib/enrichment';
-import { localizePath } from '@/lib/i18n';
 import type { Locale } from '@/lib/i18n';
-import { coverImage, orderedProjects } from '@/lib/projects';
+import { orderedProjects } from '@/lib/projects';
 import { getCollection } from 'astro:content';
-import StackChips from '@/components/StackChips.astro';
 
 interface Props {
 	/** The Locale this page renders in. */
@@ -28,85 +24,14 @@ const entries = orderedProjects(
 	entriesForLocale(await getCollection('projects'), lang)
 );
 const projects = await enrichProjects(entries);
-const projectHref = (slug: string) => localizePath(`/projects/${slug}`, lang);
 ---
 
 <Layout title={SITE_TITLE} description={SITE_DESCRIPTION} lang={lang}>
 	<h1 class='text-3xl font-semibold'>{t.projects.heading}</h1>
 
 	<ul class='mt-8 grid gap-6 sm:grid-cols-2' data-projects-list>
-		{
-			projects.map(({ entry, meta }) => {
-				const { data } = entry;
-				const slug = slugOfEntryId(entry.id);
-				const href = projectHref(slug);
-				const cover = coverImage(data);
-
-				return (
-					<li
-						class='group flex flex-col overflow-hidden rounded-2xl border border-border bg-card transition-colors hover:border-primary has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-primary'
-						data-project
-						data-slug={slug}
-						data-visibility={data.visibility}
-						data-featured={data.featured === true}
-						data-github-repo={data.githubRepo}
-					>
-						<a
-							href={href}
-							aria-labelledby={`project-${slug}`}
-							class='flex flex-1 flex-col focus-visible:outline-none'
-						>
-							{cover && (
-								<img
-									src={cover}
-									alt=''
-									width='640'
-									height='360'
-									loading='lazy'
-									class='aspect-video w-full object-cover'
-									data-project-cover
-								/>
-							)}
-
-							<div class='flex flex-1 flex-col gap-4 p-5'>
-								<h2
-									id={`project-${slug}`}
-									class='font-heading text-xl font-semibold text-foreground transition-colors group-hover:text-primary'
-								>
-									{data.title}
-								</h2>
-
-								{meta.description !== '' && (
-									<p class='text-base text-muted-foreground'>
-										{meta.description}
-									</p>
-								)}
-
-								<StackChips items={meta.tags} label={t.projects.tags} />
-
-								{(meta.stars !== null || meta.language !== null) && (
-									<p class='flex flex-wrap items-center gap-3 text-sm text-muted-foreground'>
-										{meta.stars !== null && (
-											<span data-project-stars>
-												<span aria-hidden='true'>★ </span>
-												<span class='sr-only'>{t.projects.stars}: </span>
-												{meta.stars}
-											</span>
-										)}
-										{meta.language !== null && (
-											<span data-project-language>{meta.language}</span>
-										)}
-									</p>
-								)}
-
-								<span class='mt-auto w-fit font-medium text-primary underline decoration-primary/40 underline-offset-4 transition-colors group-hover:decoration-primary'>
-									{t.projects.viewProject}
-								</span>
-							</div>
-						</a>
-					</li>
-				);
-			})
-		}
+		{projects.map(({ entry, meta }) => (
+			<ProjectCard entry={entry} meta={meta} lang={lang} t={t} />
+		))}
 	</ul>
 </Layout>

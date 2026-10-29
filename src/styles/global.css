@@ -46,6 +46,16 @@ html:not(.theme-ready) *::after {
 	/* Semantic palette (values switch under `[data-theme='dark']`). */
 	--color-background: var(--background);
 	--color-foreground: var(--foreground);
+	/*
+	 * Button surfaces. `--control` is the header's chrome controls (the Theme
+	 * and Locale toggles): a light "orange-300" in the light Theme, a neutral
+	 * grey under `data-theme='dark'`. `--action` is a primary action (Download
+	 * CV), warm in both Themes.
+	 */
+	--color-control: var(--control);
+	--color-control-foreground: var(--control-foreground);
+	--color-action: var(--action);
+	--color-action-foreground: var(--action-foreground);
 	--color-card: var(--card);
 	--color-card-foreground: var(--card-foreground);
 	--color-popover: var(--popover);
@@ -91,7 +101,8 @@ html:not(.theme-ready) *::after {
 :root {
 	--radius: 0.75rem;
 
-	--background: #fdf7ee;
+	/* The warm "orange-75" wash the Site originally opened on. */
+	--background: #fff5e8;
 	--foreground: #241f1a;
 	--card: white;
 	/*--card: #fffcf7;*/
@@ -100,6 +111,10 @@ html:not(.theme-ready) *::after {
 	--popover-foreground: #241f1a;
 	--primary: #b54a12;
 	--primary-foreground: #fff8ef;
+	--control: #fdba74;
+	--control-foreground: #241f1a;
+	--action: #fdba74;
+	--action-foreground: #241f1a;
 	--secondary: #f1e5d5;
 	--secondary-foreground: #3b2a1b;
 	--muted: #f4eadc;
@@ -126,6 +141,12 @@ html:not(.theme-ready) *::after {
 	--popover-foreground: #f3ece2;
 	--primary: #f2a25c;
 	--primary-foreground: #2a1607;
+	/* The chrome controls drop to a neutral grey here, so the orange does not
+	   glare; the primary action keeps a softer orange. */
+	--control: #52525b;
+	--control-foreground: #f4f4f5;
+	--action: #f2a25c;
+	--action-foreground: #2a1607;
 	--secondary: #2b282f;
 	--secondary-foreground: #f3ece2;
 	--muted: #2a262c;
@@ -206,15 +227,20 @@ html:not(.theme-ready) *::after {
 }
 
 /*
- * The hero edge fades are a solid Theme color behind a static mask, not a
+ * The gallery's edge fades are a solid Theme color behind a static mask, not a
  * background gradient: gradient stops do not follow the body's
  * background-color transition, so they flashed as light bars while the Theme
- * changed. A solid background-color transitions in lockstep with the body.
+ * changed. A solid background-color transitions in lockstep with the body. A
+ * fade is painted only on a side that actually overflows (`data-active`), so it
+ * never dims an edge with nothing behind it.
  */
-.hero-fade {
+.edge-fade {
 	background-color: var(--background);
-	transition: background-color var(--default-transition-duration, 300ms)
-		var(--default-transition-timing-function, ease);
+	transition:
+		background-color var(--default-transition-duration, 300ms)
+			var(--default-transition-timing-function, ease),
+		opacity var(--default-transition-duration, 300ms)
+			var(--default-transition-timing-function, ease);
 	-webkit-mask-image: linear-gradient(
 		to right,
 		black 0%,
@@ -224,7 +250,7 @@ html:not(.theme-ready) *::after {
 	mask-image: linear-gradient(to right, black 0%, black 50%, transparent 100%);
 }
 
-.hero-fade-right {
+.edge-fade-right {
 	-webkit-mask-image: linear-gradient(
 		to left,
 		black 0%,
@@ -232,6 +258,10 @@ html:not(.theme-ready) *::after {
 		transparent 100%
 	);
 	mask-image: linear-gradient(to left, black 0%, black 50%, transparent 100%);
+}
+
+.edge-fade[data-active='false'] {
+	opacity: 0;
 }
 
 /* The mobile menu uses a native <details>; hide the native marker. */
@@ -423,6 +453,13 @@ html:not(.theme-ready) *::after {
 	[data-experience-entry],
 	[data-education-entry] {
 		break-inside: avoid;
+	}
+
+	/* The hero carousel's controls and edge fades do nothing on paper. */
+	[data-arts-carousel-previous],
+	[data-arts-carousel-next],
+	[data-edge-fade] {
+		display: none !important;
 	}
 
 	h1,

@@ -10,6 +10,8 @@
 //
 // The same script fades Artworks in as they are scrolled to, touching only the
 // ones below the fold (see `bindReveal`).
+//
+// The Artworks are a grid of "stickers" wrapped in a paper panel.
 import type { ArtworkEntry } from '@/lib/arts';
 import { slugOfEntryId } from '@/lib/collection';
 import type { Translation } from '@/types/Translation';
@@ -236,7 +238,7 @@ const hasNavigation = arts.length > 1;
 	const CLOSE = '[data-arts-lightbox-close]';
 	const PREVIOUS = '[data-arts-lightbox-previous]';
 	const NEXT = '[data-arts-lightbox-next]';
-	const REVEAL_ITEM = '[data-art]';
+	const ART_ITEM = '[data-art]';
 	const IMAGE = '[data-arts-lightbox-image]';
 	const CAPTION = '[data-arts-lightbox-caption]';
 	const COUNTER = '[data-arts-lightbox-counter]';
@@ -433,7 +435,7 @@ const hasNavigation = arts.length > 1;
 		gallery.dataset.revealBound = 'true';
 
 		const pending = Array.from(
-			gallery.querySelectorAll<HTMLElement>(REVEAL_ITEM)
+			gallery.querySelectorAll<HTMLElement>(ART_ITEM)
 		).filter(item => item.getBoundingClientRect().top > window.innerHeight);
 		if (pending.length === 0) return;
 

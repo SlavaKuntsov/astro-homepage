@@ -1,4 +1,11 @@
 ---
+// The home page (ticket #12): the Site's CV, assembled from the content
+// collections — never hardcoded. A recruiter sees the hero carousel first, then
+// the hero (name, position, one-line pitch, avatar), the resume sections
+// (about, experience highlights, education, skills) and the contacts. The
+// carousel and every section are collection-driven, and the page loads with no
+// Flash (`e2e/theme.spec.ts`, `e2e/home.spec.ts`).
+import ArtsCarousel from '@/components/ArtsCarousel.astro';
 import ContactsSection from '@/components/ContactsSection.astro';
 import EducationSection from '@/components/EducationSection.astro';
 import ExperienceHighlights from '@/components/ExperienceHighlights.astro';
@@ -8,6 +15,7 @@ import SkillsSection from '@/components/SkillsSection.astro';
 import { SITE_DESCRIPTION, SITE_TITLE } from '@/consts';
 import { translations } from '@/i18n';
 import Layout from '@/layouts/Layout.astro';
+import { orderedArts } from '@/lib/arts';
 import { entriesForLocale } from '@/lib/collection';
 import { orderedEducation } from '@/lib/education';
 import type { Locale } from '@/lib/i18n';
@@ -25,6 +33,7 @@ const education = orderedEducation(
 	entriesForLocale(await getCollection('education'), lang)
 );
 const skills = await getCollection('skills');
+const arts = orderedArts(entriesForLocale(await getCollection('arts'), lang));
 ---
 
 <Layout
@@ -36,6 +45,7 @@ const skills = await getCollection('skills');
 	<div
 		class='mx-auto flex w-full max-w-prose flex-col items-start gap-7 sm:gap-8'
 	>
+		<ArtsCarousel arts={arts} t={t} />
 		<Heading t={t} />
 		<MainContent t={t} />
 		<ExperienceHighlights entries={experience} lang={lang} t={t} />

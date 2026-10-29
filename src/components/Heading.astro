@@ -1,6 +1,5 @@
 ---
 import type { Translation } from '@/types/Translation';
-import { Carousel } from './custom/carousel';
 
 interface Props {
 	t: Translation;
@@ -9,26 +8,12 @@ interface Props {
 const { t }: Props = Astro.props;
 ---
 
-<div class='relative w-full flex items-center justify-center min-h-72.5'>
-	<div
-		class='hero-fade absolute left-6 sm:left-24 top-0 h-full w-38 sm:w-28 pointer-events-none z-10'
-		data-hero-fade='left'
-		aria-hidden='true'
-	>
-	</div>
-	<div
-		class='hero-fade hero-fade-right absolute right-6 sm:right-24 top-0 h-full w-38 sm:w-28 pointer-events-none z-10'
-		data-hero-fade='right'
-		aria-hidden='true'
-	>
-	</div>
-	<Carousel client:load />
-</div>
 <div
 	class='transition-colors px-2 py-3 backdrop-blur-3xl bg-card/75 rounded-lg w-full'
 >
 	<p
 		class='mx-auto w-full text-lg text-center whitespace-pre-wrap wrap-break-word'
+		data-hero-pitch
 		set:html={t.index.heading.greeting}
 	/>
 </div>
@@ -41,10 +26,11 @@ const { t }: Props = Astro.props;
 		<h1 class='font-bold text-[2.5rem] leading-11 tracking-wide'>
 			{t.index.heading.name}
 		</h1>
-		<p class='text-xl'>{t.index.heading.position}</p>
+		<p class='text-xl' data-hero-position>{t.index.heading.position}</p>
 	</div>
 	<div
 		class='rounded-full min-w-36 max-w-36 min-h-36 max-h-36 bg-muted bg-[url(/images/ava2.jpg)] bg-contain bg-center bg-no-repeat border-[3px] border-card transition-colors'
+		data-avatar
 	>
 	</div>
 </div>
