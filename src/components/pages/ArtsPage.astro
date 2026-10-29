@@ -4,7 +4,6 @@
 // `arts/order.json` (ADR-0009); the Locale comes from the collection folder, so
 // the RU and EN files pair by slug.
 import ArtsGallery from '@/components/ArtsGallery.astro';
-import { SITE_DESCRIPTION, SITE_TITLE } from '@/consts';
 import { translations } from '@/i18n';
 import Layout from '@/layouts/Layout.astro';
 import { orderedArts } from '@/lib/arts';
@@ -22,7 +21,11 @@ const t = translations[lang];
 const arts = orderedArts(entriesForLocale(await getCollection('arts'), lang));
 ---
 
-<Layout title={SITE_TITLE} description={SITE_DESCRIPTION} lang={lang}>
+<Layout
+	title={t.meta.arts.title}
+	description={t.meta.arts.description}
+	lang={lang}
+>
 	<h1 class='text-3xl font-semibold'>{t.arts.heading}</h1>
 
 	<ArtsGallery arts={arts} t={t} />

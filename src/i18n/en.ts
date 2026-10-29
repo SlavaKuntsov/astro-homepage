@@ -15,6 +15,28 @@ const en: Translation = {
 	site: {
 		ownerName: 'Sviataslau Kuntsou',
 	},
+	meta: {
+		siteName: 'Sviataslau Kuntsou',
+		home: {
+			title: 'Sviataslau Kuntsou — Software Developer',
+			description:
+				"Sviataslau Kuntsou's personal site and resume: software development experience, selected projects, and contacts.",
+		},
+		experience: {
+			title: 'Experience — Sviataslau Kuntsou',
+			description:
+				"Sviataslau Kuntsou's professional experience: companies, roles, technologies, and key achievements.",
+		},
+		projects: {
+			title: 'Projects — Sviataslau Kuntsou',
+			description:
+				'Selected projects by Sviataslau Kuntsou: description, technology stack, and source links.',
+		},
+		arts: {
+			title: 'Arts — Sviataslau Kuntsou',
+			description: 'A gallery of artwork by Sviataslau Kuntsou.',
+		},
+	},
 	nav: {
 		home: 'Home',
 		experience: 'Experience',

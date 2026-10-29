@@ -3,6 +3,7 @@ import { defineConfig, fontProviders } from 'astro/config';
 import tailwindcss from '@tailwindcss/vite';
 import react from '@astrojs/react';
 import mdx from '@astrojs/mdx';
+import sitemap from '@astrojs/sitemap';
 import { fileURLToPath } from 'node:url';
 import { URL } from 'node:url';
 import { HOMEPAGE_URL } from './src/consts';
@@ -17,7 +18,20 @@ export default defineConfig({
 			},
 		},
 	},
-	integrations: [react(), mdx()],
+	integrations: [
+		react(),
+		mdx(),
+		// Emit `sitemap-index.xml` + `sitemap-0.xml`. The i18n option adds an
+		// `<xhtml:link rel="alternate">` set to each URL so crawlers pair the
+		// ru/en pages. The hreflang values are the same as the `<head>`'s
+		// alternates (`src/layouts/BaseHead.astro`), so the two always agree.
+		sitemap({
+			i18n: {
+				defaultLocale: 'ru',
+				locales: { ru: 'ru', en: 'en' },
+			},
+		}),
+	],
 	experimental: {
 		// Typography tokens are consumed through `--font-heading` / `--font-body`
 		// in `global.css`. Both families must carry `cyrillic` for the RU Locale;

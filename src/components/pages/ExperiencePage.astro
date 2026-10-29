@@ -1,6 +1,5 @@
 ---
 import ExperienceTimeline from '@/components/ExperienceTimeline.astro';
-import { SITE_DESCRIPTION, SITE_TITLE } from '@/consts';
 import { translations } from '@/i18n';
 import Layout from '@/layouts/Layout.astro';
 import { entriesForLocale } from '@/lib/collection';
@@ -20,7 +19,11 @@ const entries = orderedEntries(
 );
 ---
 
-<Layout title={SITE_TITLE} description={SITE_DESCRIPTION} lang={lang}>
+<Layout
+	title={t.meta.experience.title}
+	description={t.meta.experience.description}
+	lang={lang}
+>
 	<h1 class='text-3xl font-semibold'>{t.experience.heading}</h1>
 	<div class='mt-8'>
 		<ExperienceTimeline entries={entries} lang={lang} t={t} />
