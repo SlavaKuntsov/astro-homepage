@@ -1,8 +1,7 @@
 ---
-title: Piece 1
+title: Lovestruck cat
 image: /images/arts2/art1.png
 tags:
-  - character
+  - cat
+  - hearts
 ---
-
-<!-- Placeholder artwork: the content-migration ticket (#14) replaces it, including its title, tags, and image. -->

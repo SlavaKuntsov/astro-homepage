@@ -1,27 +1,43 @@
 ---
 company: HyperQuant
-companyUrl: https://hyperquant.net
-position: Junior Backend Developer
-start: 2024-03
-current: true
+position: C#/.NET Developer
+start: 2024-09
+end: 2025-09
 location: Minsk
-employmentType: Full-time
 industries:
   - Fintech
   - Blockchain
-summary: Building backend services for trading infrastructure on the .NET platform, with a focus on performance and reliability.
+summary: Built and maintained a pool of high-load fintech microservices integrating with cryptocurrency trading platforms.
 highlights:
-  - Design and grow the REST API used by client applications.
-  - Optimise database queries to cut response times.
-  - Take part in the team's two-week release cycle.
+  - Wrote performant API clients for exchanges' REST and WebSocket APIs, honouring rate limiting.
+  - Introduced multithreading and async data pipelines, caching, and memory optimisation in PostgreSQL, keeping raw tick data and logs in ClickHouse.
+  - Designed microservices on Clean Architecture with CQRS, queue-based inter-service communication, background jobs (Quartz), and retry policies.
+  - Moved historical-data collection jobs from .NET (Quartz) to Apache Airflow and configured restart chains.
+  - Took part in containerisation (Docker), CI/CD pipelines, integration and unit test coverage (xUnit, Moq), and documentation.
 environment:
-  - .NET
-  - C#
-  - PostgreSQL
+  - .NET Core
+  - EF Core
+  - CQRS
   - Docker
+  - CI/CD
+  - Clean Architecture
+  - Microservices
+  - Message Brokers
+  - PostgreSQL
+  - Redis
+  - Quartz
+  - React
+  - TypeScript
+  - TanStack Query
+  - TanStack Router
+  - Zustand
+  - Tailwind CSS
+  - shadcn/ui
+  - xUnit
+  - Moq
+  - Python
+  - Apache Airflow
   - Git
 ---
 
-<!-- Placeholder entry: the content-migration ticket (#14) replaces it with the Resume's real data. -->
-
-Backend development for a trading platform: order-processing services, integrations, and database work.
+A pool of high-load fintech microservices integrating with cryptocurrency trading platforms. The project focused on real-time data aggregation, processing large data volumes, and resilient interaction with external APIs.

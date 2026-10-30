@@ -4,4 +4,5 @@ skills:
   - Clean Architecture
   - CQRS
   - RabbitMQ
+  - Waterfall
 ---

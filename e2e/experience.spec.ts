@@ -60,6 +60,16 @@ test.describe('the RU timeline at /experience', () => {
 		expect(dates).toEqual(newestFirst);
 	});
 
+	test('shows how long each role lasted', async ({ page }) => {
+		await page.goto('/experience');
+
+		for (const entry of await entries(page).all()) {
+			await expect(entry).toContainText(
+				/\d+\s+(год|года|лет|месяц|месяца|месяцев)/
+			);
+		}
+	});
+
 	test('renders the environment of each entry', async ({ page }) => {
 		await page.goto('/experience');
 
@@ -145,6 +155,12 @@ test.describe('the experience page is discoverable', () => {
 		expect(
 			await page.locator('[data-experience-highlight]').count()
 		).toBeGreaterThanOrEqual(1);
+		// The block is a preview: when the Résumé has more roles than it shows,
+		// it must say so instead of reading as the whole career.
+		await expect(block.locator('[data-experience-more]')).toBeVisible();
+		await expect(block.locator('[data-experience-more]')).toContainText(
+			'и т.д.'
+		);
 		await expect(
 			block.getByRole('link', { name: 'Весь опыт' })
 		).toHaveAttribute('href', '/experience');

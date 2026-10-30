@@ -1,6 +1,7 @@
 ---
-title: Работа 5
+title: Расстроенный кот
 image: /images/arts2/art5.png
+tags:
+  - кот
+  - эмоции
 ---
-
-<!-- Placeholder artwork: the content-migration ticket (#14) replaces it, including its title, tags, and image. -->

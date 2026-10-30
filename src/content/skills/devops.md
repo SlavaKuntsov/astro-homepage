@@ -4,4 +4,6 @@ skills:
   - Git
   - Nginx
   - ELK Stack
+  - CI/CD
+  - TFS
 ---

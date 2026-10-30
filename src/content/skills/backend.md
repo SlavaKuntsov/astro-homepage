@@ -8,4 +8,6 @@ skills:
   - LINQ
   - Hangfire
   - SignalR
+  - Quartz
+  - Node.js
 ---

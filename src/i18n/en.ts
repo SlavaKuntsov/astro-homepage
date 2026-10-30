@@ -56,7 +56,8 @@ const en: Translation = {
 		main: {
 			h_about: 'About Me',
 			about:
-				'More than a year of experience in software development on the platform .NET, including creating web applications, desktop applications, and interacting with databases. I have skills in requirements analysis, web system design, object-oriented approach and database design. He worked in a team. He is motivated to study business tasks and effectively transform them into software solutions, developing applications that meet the criteria for time, scalability and performance.',
+				'Three-plus years in commercial software development, including designing web systems, building microservice architecture, and working with a range of databases. I am skilled in requirements analysis, object-oriented design, database design, and deep backend performance optimisation. I have worked in a team and have experience supporting frontend components and integrating systems. I am motivated to take on complex business problems and turn them into scalable software solutions, adapting quickly to new technology stacks and domains.',
+			languages: 'Languages: Russian — native, English — B1.',
 		},
 	},
 	projects: {
@@ -85,6 +86,7 @@ const en: Translation = {
 		present: 'Present',
 		highlightsHeading: 'Career highlights',
 		viewAll: 'View full experience',
+		more: 'etc.',
 		environment: 'Environment',
 		industries: 'Industries',
 	},

@@ -137,6 +137,72 @@ export function formatMonthYear(value: string, locale: Locale): string {
 	return `${MONTH_NAMES[locale][Number(month) - 1]} ${year}`;
 }
 
+/** Russian plural picker: 1 год, 2 года, 5 лет. */
+function pluralRu(
+	value: number,
+	one: string,
+	few: string,
+	many: string
+): string {
+	const mod100 = value % 100;
+	const mod10 = value % 10;
+
+	if (mod100 >= 11 && mod100 <= 14) return many;
+	if (mod10 === 1) return one;
+	if (mod10 >= 2 && mod10 <= 4) return few;
+	return many;
+}
+
+/** The unit words per Locale, so plural agreement lives in one place. */
+const DURATION_WORDS: Record<
+	Locale,
+	{ year: (value: number) => string; month: (value: number) => string }
+> = {
+	ru: {
+		year: value => pluralRu(value, 'год', 'года', 'лет'),
+		month: value => pluralRu(value, 'месяц', 'месяца', 'месяцев'),
+	},
+	en: {
+		year: value => (value === 1 ? 'year' : 'years'),
+		month: value => (value === 1 ? 'month' : 'months'),
+	},
+};
+
+/**
+ * How long a role lasted, in whole months, as the plain difference between the
+ * first and the last month — so September 2024 — September 2025 is "1 year",
+ * not the "1 year 1 month" that hh.ru's inclusive counting reports. An ongoing
+ * role (`current`) is measured up to `now`; a role in its first month is `0`.
+ */
+export function durationInMonths(
+	period: Pick<ExperienceFrontmatter, 'start' | 'end' | 'current'>,
+	now: Date = new Date()
+): number {
+	const [startYear, startMonth] = period.start.split('-').map(Number);
+	const [endYear, endMonth] =
+		period.current === true || period.end === undefined
+			? [now.getFullYear(), now.getMonth() + 1]
+			: period.end.split('-').map(Number);
+
+	return Math.max(0, (endYear - startYear) * 12 + (endMonth - startMonth));
+}
+
+/** Renders a whole-month count as "1 год 1 месяц" / "1 year 1 month". */
+export function formatDuration(months: number, locale: Locale): string {
+	if (months <= 0)
+		return locale === 'ru' ? 'менее месяца' : 'less than a month';
+
+	const words = DURATION_WORDS[locale];
+	const years = Math.floor(months / 12);
+	const rest = months % 12;
+	const parts: string[] = [];
+
+	if (years > 0) parts.push(`${years} ${words.year(years)}`);
+	if (rest > 0) parts.push(`${rest} ${words.month(rest)}`);
+
+	return parts.join(' ');
+}
+
 /** The roles' dates as a single label: `start — end` or `start — present`. */
 export function formatPeriod(
 	period: Pick<ExperienceFrontmatter, 'start' | 'end' | 'current'>,

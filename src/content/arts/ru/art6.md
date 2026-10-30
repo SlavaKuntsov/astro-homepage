@@ -1,6 +1,7 @@
 ---
-title: Работа 6
+title: Пиксельный кот
 image: /images/arts2/art6.png
+tags:
+  - кот
+  - пиксель-арт
 ---
-
-<!-- Placeholder artwork: the content-migration ticket (#14) replaces it, including its title, tags, and image. -->

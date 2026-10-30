@@ -1,6 +1,7 @@
 ---
-title: Работа 3
+title: Кот с ромашкой
 image: /images/arts2/art3.png
+tags:
+  - кот
+  - цветы
 ---
-
-<!-- Placeholder artwork: the content-migration ticket (#14) replaces it, including its title, tags, and image. -->

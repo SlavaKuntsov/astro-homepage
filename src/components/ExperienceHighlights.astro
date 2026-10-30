@@ -7,6 +7,8 @@ import { localizePath } from '@/lib/i18n';
 import type { Locale } from '@/lib/i18n';
 import { slugOfEntryId } from '@/lib/collection';
 import {
+	durationInMonths,
+	formatDuration,
 	formatPeriod,
 	recentEntries,
 	type ExperienceEntry,
@@ -24,7 +26,13 @@ interface Props {
 
 const { entries, lang, t, limit = 3 } = Astro.props;
 const highlights = recentEntries(entries, limit);
+// The block is a preview: when there are more roles than it shows, the list must
+// say so rather than read as the whole career (the "View full experience" link
+// below is the way through to the rest).
+const hasMore = entries.length > highlights.length;
 const href = localizePath('/experience', lang);
+// One build-time clock, so every role's duration is measured identically.
+const now = new Date();
 ---
 
 {
@@ -47,9 +55,22 @@ const href = localizePath('/experience', lang);
 						<p class='text-sm text-muted-foreground'>
 							{entry.data.company}
 							<span> · {formatPeriod(entry.data, lang, t.experience.present)}</span>
+							<span>
+								{' · '}
+								{formatDuration(durationInMonths(entry.data, now), lang)}
+							</span>
 						</p>
 					</li>
 				))}
+
+				{hasMore && (
+					<li
+						class='border-l-2 border-border pl-5 text-sm italic text-muted-foreground'
+						data-experience-more
+					>
+						… {t.experience.more}
+					</li>
+				)}
 			</ol>
 
 			<a

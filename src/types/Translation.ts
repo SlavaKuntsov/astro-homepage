@@ -55,6 +55,8 @@ export interface Translation {
 		main: {
 			h_about: string;
 			about: string;
+			/** The owner's natural-language proficiency, e.g. "Languages: …". */
+			languages: string;
 		};
 	};
 	projects: {
@@ -104,6 +106,8 @@ export interface Translation {
 		highlightsHeading: string;
 		/** Link from the highlights block to the full `/experience` page. */
 		viewAll: string;
+		/** Tail shown when the highlights block omits older roles, e.g. "и т.д.". */
+		more: string;
 		/** Accessible label for an entry's technology chips. */
 		environment: string;
 		/** Label for an entry's industries line. */

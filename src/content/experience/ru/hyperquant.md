@@ -1,27 +1,43 @@
 ---
 company: HyperQuant
-companyUrl: https://hyperquant.net
-position: Junior Backend Developer
-start: 2024-03
-current: true
+position: C#/.NET-разработчик
+start: 2024-09
+end: 2025-09
 location: Минск
-employmentType: Full-time
 industries:
   - Fintech
   - Blockchain
-summary: Разрабатываю backend-сервисы для торговой инфраструктуры на платформе .NET и работаю над их производительностью и надёжностью.
+summary: Разрабатывал и поддерживал пул высоконагруженных финтех-микросервисов для интеграции с криптовалютными торговыми платформами.
 highlights:
-  - Проектирую и развиваю REST API для клиентских приложений.
-  - Оптимизирую запросы к базе данных и сокращаю время отклика.
-  - Участвую в релизном цикле команды каждые две недели.
+  - Писал производительные API-клиенты к REST- и WebSocket-API бирж с учётом rate limiting.
+  - Внедрял многопоточность и асинхронность для потоков данных, кэширование и оптимизацию памяти в PostgreSQL, а сырые тиковые данные и логи хранил в ClickHouse.
+  - Проектировал микросервисы на Clean Architecture с CQRS, межсервисным взаимодействием через очереди, фоновыми задачами (Quartz) и retry-политиками.
+  - Переносил фоновые задачи по сбору исторических данных из .NET (Quartz) в Apache Airflow с настройкой цепочек перезапусков.
+  - Участвовал в контейнеризации (Docker), настройке CI/CD, покрытии кода интеграционными и юнит-тестами (xUnit, Moq) и ведении документации.
 environment:
-  - .NET
-  - C#
-  - PostgreSQL
+  - .NET Core
+  - EF Core
+  - CQRS
   - Docker
+  - CI/CD
+  - Clean Architecture
+  - Microservices
+  - Message Brokers
+  - PostgreSQL
+  - Redis
+  - Quartz
+  - React
+  - TypeScript
+  - TanStack Query
+  - TanStack Router
+  - Zustand
+  - Tailwind CSS
+  - shadcn/ui
+  - xUnit
+  - Moq
+  - Python
+  - Apache Airflow
   - Git
 ---
 
-<!-- Placeholder entry: the content-migration ticket (#14) replaces it with the Resume's real data. -->
-
-Backend-разработка торговой платформы: сервисы обработки заявок, интеграции и работа с базой данных.
+Пул высоконагруженных финтех-микросервисов для интеграции с криптовалютными торговыми платформами. Проект был сфокусирован на агрегации данных в реальном времени, обработке больших объёмов информации и обеспечении отказоустойчивого взаимодействия с внешними API.
