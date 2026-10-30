@@ -5,9 +5,11 @@
 // server-rendered from the collection so it never hardcodes an Artwork and
 // shows its first Artwork without JavaScript.
 //
-// The previous/next controls sit inside the Artwork's own edges and are stacked
-// above the edge fades (`z-20` over `z-10`), so a fade can never paint a
-// control away — the occlusion the old hero carousel suffered.
+// The edge fades sit over the Artwork's own left/right edges, so a sliding
+// Artwork dissolves into the page instead of hard-clipping. The previous/next
+// controls step outboard of the Artwork and are stacked above the fades
+// (`z-20` over `z-10`), so a fade can never paint a control away — the
+// occlusion the old hero carousel suffered.
 import type { ArtworkEntry } from '@/lib/arts';
 import type { Translation } from '@/types/Translation';
 
@@ -28,34 +30,35 @@ const controlClass =
 {
 	total > 0 && (
 		<div
-			class='relative flex min-h-72.5 w-full items-center justify-center'
+			class='relative flex min-h-80 w-full items-center justify-center'
 			data-arts-carousel
 		>
-			<!--
-				The fades blend the carousel into the page and sit outboard of the
-				Artwork, so they dim nothing that matters. They are desktop-only:
-				on a phone the Artwork fills the band, and a fade there would dim
-				the Artwork itself.
-			-->
 			<div
-				class='edge-fade pointer-events-none absolute inset-y-0 left-0 z-10 hidden w-24 sm:block'
-				data-edge-fade
-				data-arts-fade='left'
-				aria-hidden='true'
-			/>
-			<div
-				class='edge-fade edge-fade-right pointer-events-none absolute inset-y-0 right-0 z-10 hidden w-24 sm:block'
-				data-edge-fade
-				data-arts-fade='right'
-				aria-hidden='true'
-			/>
-
-			<div
-				class='relative w-full max-w-xs'
+				class='relative w-full sm:max-w-xs'
 				role='region'
 				aria-roledescription='carousel'
 				aria-label={t.arts.gallery}
 			>
+				<!--
+					The fades sit over the Artwork's own edges and blend it into the
+					page, so a sliding Artwork dissolves at the sides instead of
+					hard-clipping. They must reach past the Artwork's transparent
+					padding to the drawing itself, so they are generous — a phone's
+					band is wider than the Artwork box, hence the wider fade there.
+				-->
+				<div
+					class='edge-fade pointer-events-none absolute inset-y-0 -left-px z-10 w-32 sm:w-24'
+					data-edge-fade
+					data-arts-fade='left'
+					aria-hidden='true'
+				/>
+				<div
+					class='edge-fade edge-fade-right pointer-events-none absolute inset-y-0 -right-px z-10 w-32 sm:w-24'
+					data-edge-fade
+					data-arts-fade='right'
+					aria-hidden='true'
+				/>
+
 				<div
 					class='cursor-grab overflow-hidden rounded-2xl active:cursor-grabbing'
 					data-arts-viewport
@@ -67,12 +70,19 @@ const controlClass =
 					>
 						{arts.map((entry, index) => (
 							<div
-								class='w-full shrink-0'
+								class='w-full shrink-0 overflow-hidden'
 								role='group'
 								aria-roledescription='slide'
 								aria-label={`${index + 1} / ${total}`}
 								data-arts-slide
 							>
+								<!--
+									The Artwork PNGs carry ~20-30% transparent padding on
+									every side, so `object-contain` alone leaves the drawing
+									small and floating with a wide empty margin. Scaling crops
+									that padding (the slide clips the overflow) so the drawing
+									fills the frame and actually reaches the edge fades.
+								-->
 								<img
 									src={entry.data.image}
 									alt={entry.data.title}
@@ -80,7 +90,7 @@ const controlClass =
 									height='480'
 									loading='eager'
 									draggable='false'
-									class='h-[250px] w-full object-contain'
+									class='h-80 w-full object-contain sm:h-auto sm:aspect-square'
 								/>
 							</div>
 						))}
@@ -91,7 +101,7 @@ const controlClass =
 					<>
 						<button
 							type='button'
-							class={`absolute left-1 top-1/2 z-20 -translate-y-1/2 ${controlClass}`}
+							class={`absolute left-1 top-1/2 z-20 -translate-y-1/2 sm:-left-12 ${controlClass}`}
 							aria-label={t.arts.previous}
 							data-arts-carousel-previous
 						>
@@ -112,7 +122,7 @@ const controlClass =
 
 						<button
 							type='button'
-							class={`absolute right-1 top-1/2 z-20 -translate-y-1/2 ${controlClass}`}
+							class={`absolute right-1 top-1/2 z-20 -translate-y-1/2 sm:-right-12 ${controlClass}`}
 							aria-label={t.arts.next}
 							data-arts-carousel-next
 						>
