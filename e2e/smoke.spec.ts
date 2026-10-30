@@ -1,22 +1,22 @@
 import { expect, test } from './fixtures';
 
-test('the Site renders its default (RU) root route', async ({ page }) => {
+test('the Site renders its default (EN) root route', async ({ page }) => {
 	const response = await page.goto('/');
-
-	expect(response?.status()).toBe(200);
-	await expect(page.locator('html')).toHaveAttribute('lang', 'ru');
-	await expect(
-		page.getByRole('heading', { level: 1, name: 'Кунцов Святослав' })
-	).toBeVisible();
-});
-
-test('the EN root route renders in English', async ({ page }) => {
-	const response = await page.goto('/en/');
 
 	expect(response?.status()).toBe(200);
 	await expect(page.locator('html')).toHaveAttribute('lang', 'en');
 	await expect(
 		page.getByRole('heading', { level: 1, name: 'Sviataslau Kuntsou' })
+	).toBeVisible();
+});
+
+test('the RU root route renders in Russian', async ({ page }) => {
+	const response = await page.goto('/ru/');
+
+	expect(response?.status()).toBe(200);
+	await expect(page.locator('html')).toHaveAttribute('lang', 'ru');
+	await expect(
+		page.getByRole('heading', { level: 1, name: 'Кунцов Святослав' })
 	).toBeVisible();
 });
 

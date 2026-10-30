@@ -56,9 +56,9 @@ const swipe = async (page: Page, distance: number) => {
 	await page.mouse.up();
 };
 
-test.describe('the RU arts gallery at /arts', () => {
+test.describe('the RU arts gallery at /ru/arts', () => {
 	test('renders an H1 and one artwork per item', async ({ page }) => {
-		const response = await page.goto('/arts');
+		const response = await page.goto('/ru/arts');
 		expect(response?.status()).toBe(200);
 
 		await expect(
@@ -81,7 +81,7 @@ test.describe('the RU arts gallery at /arts', () => {
 
 	test('renders thumbnails that scale with the viewport', async ({ page }) => {
 		await page.setViewportSize({ width: 360, height: 740 });
-		await page.goto('/arts');
+		await page.goto('/ru/arts');
 
 		for (const img of await page.locator('[data-art-thumb]').all()) {
 			await expect(img).toHaveAttribute('loading', 'lazy');
@@ -109,7 +109,7 @@ test.describe('the RU arts gallery at /arts', () => {
 		// too short to scroll (the 1100 case) it used to stay faded for good.
 		for (const height of [400, 700, 900, 1100]) {
 			await page.setViewportSize({ width: 1280, height });
-			await page.goto('/arts');
+			await page.goto('/ru/arts');
 
 			// Asserted without retrying: a faded card must not pass by fading in.
 			const faded = await items(page).evaluateAll(nodes =>
@@ -123,7 +123,7 @@ test.describe('the RU arts gallery at /arts', () => {
 	});
 
 	test('shows the tags of an artwork that has them', async ({ page }) => {
-		await page.goto('/arts');
+		await page.goto('/ru/arts');
 
 		const tags = items(page).first().getByRole('list', { name: 'Теги' });
 		await expect(tags).toBeVisible();
@@ -133,7 +133,7 @@ test.describe('the RU arts gallery at /arts', () => {
 	test('opens the lightbox on click, showing the same image and title', async ({
 		page,
 	}) => {
-		await page.goto('/arts');
+		await page.goto('/ru/arts');
 
 		const item = items(page).first();
 		const title = await titleOf(item);
@@ -160,7 +160,7 @@ test.describe('the RU arts gallery at /arts', () => {
 	});
 
 	test('opens the lightbox from anywhere on the card', async ({ page }) => {
-		await page.goto('/arts');
+		await page.goto('/ru/arts');
 
 		// The tag chips sit below the title, outside the opener's own box, so
 		// only the opener's stretched overlay can make them open the Artwork.
@@ -181,7 +181,7 @@ test.describe('the RU arts gallery at /arts', () => {
 	});
 
 	test('opens the lightbox with the keyboard', async ({ page }) => {
-		await page.goto('/arts');
+		await page.goto('/ru/arts');
 
 		await firstOpener(page).focus();
 		await page.keyboard.press('Enter');
@@ -190,7 +190,7 @@ test.describe('the RU arts gallery at /arts', () => {
 	});
 
 	test('closes on Esc and returns focus to the thumbnail', async ({ page }) => {
-		await page.goto('/arts');
+		await page.goto('/ru/arts');
 
 		const opener = await openLightbox(page);
 		await page.keyboard.press('Escape');
@@ -200,7 +200,7 @@ test.describe('the RU arts gallery at /arts', () => {
 	});
 
 	test('closes on the close button and returns focus', async ({ page }) => {
-		await page.goto('/arts');
+		await page.goto('/ru/arts');
 
 		const opener = await openLightbox(page);
 		await closeButton(page).click();
@@ -210,7 +210,7 @@ test.describe('the RU arts gallery at /arts', () => {
 	});
 
 	test('closes when the backdrop is clicked', async ({ page }) => {
-		await page.goto('/arts');
+		await page.goto('/ru/arts');
 
 		await openLightbox(page);
 
@@ -222,7 +222,7 @@ test.describe('the RU arts gallery at /arts', () => {
 	});
 
 	test('keeps focus trapped inside the open lightbox', async ({ page }) => {
-		await page.goto('/arts');
+		await page.goto('/ru/arts');
 
 		await openLightbox(page);
 
@@ -242,7 +242,7 @@ test.describe('the RU arts gallery at /arts', () => {
 
 test.describe('stepping through the arts lightbox', () => {
 	test('shows the position of the shown artwork', async ({ page }) => {
-		await page.goto('/arts');
+		await page.goto('/ru/arts');
 
 		const total = await items(page).count();
 		expect(total).toBeGreaterThan(1);
@@ -252,7 +252,7 @@ test.describe('stepping through the arts lightbox', () => {
 	});
 
 	test('steps with the buttons, wrapping around', async ({ page }) => {
-		await page.goto('/arts');
+		await page.goto('/ru/arts');
 
 		const total = await items(page).count();
 		await openLightbox(page);
@@ -286,7 +286,7 @@ test.describe('stepping through the arts lightbox', () => {
 	});
 
 	test('steps with the arrow keys', async ({ page }) => {
-		await page.goto('/arts');
+		await page.goto('/ru/arts');
 
 		const total = await items(page).count();
 		await openLightbox(page);
@@ -301,7 +301,7 @@ test.describe('stepping through the arts lightbox', () => {
 	});
 
 	test('steps with a swipe without closing the lightbox', async ({ page }) => {
-		await page.goto('/arts');
+		await page.goto('/ru/arts');
 
 		const total = await items(page).count();
 		await openLightbox(page);
@@ -316,7 +316,7 @@ test.describe('stepping through the arts lightbox', () => {
 	});
 
 	test('leaves no selection highlight over the artwork', async ({ page }) => {
-		await page.goto('/arts');
+		await page.goto('/ru/arts');
 		await openLightbox(page);
 
 		// A drag in the lightbox is how a swipe starts, and it must never select
@@ -364,7 +364,7 @@ test.describe('stepping through the arts lightbox', () => {
 	});
 
 	test('labels the navigation in the page’s Locale', async ({ page }) => {
-		await page.goto('/arts');
+		await page.goto('/ru/arts');
 		await openLightbox(page);
 
 		await expect(previousButton(page)).toHaveAttribute(
@@ -376,7 +376,7 @@ test.describe('stepping through the arts lightbox', () => {
 			'Следующая работа'
 		);
 
-		await page.goto('/en/arts');
+		await page.goto('/arts');
 		await openLightbox(page);
 
 		await expect(previousButton(page)).toHaveAttribute(
@@ -390,9 +390,9 @@ test.describe('stepping through the arts lightbox', () => {
 	});
 });
 
-test.describe('the EN arts gallery at /en/arts', () => {
+test.describe('the EN arts gallery at /arts', () => {
 	test('renders the English heading and labels', async ({ page }) => {
-		const response = await page.goto('/en/arts');
+		const response = await page.goto('/arts');
 		expect(response?.status()).toBe(200);
 
 		await expect(
@@ -412,12 +412,12 @@ test.describe('the EN arts gallery at /en/arts', () => {
 });
 
 test('both Locales pair the same artwork slugs', async ({ page }) => {
-	await page.goto('/arts');
+	await page.goto('/ru/arts');
 	const ru = await items(page).evaluateAll(nodes =>
 		nodes.map(node => node.getAttribute('data-slug') ?? '')
 	);
 
-	await page.goto('/en/arts');
+	await page.goto('/arts');
 	const en = await items(page).evaluateAll(nodes =>
 		nodes.map(node => node.getAttribute('data-slug') ?? '')
 	);
@@ -436,10 +436,5 @@ test.describe('the arts page is discoverable', () => {
 
 		await page.goto('/arts');
 		await expect(link).toHaveAttribute('aria-current', 'page');
-	});
-
-	test('the legacy /ru/arts route redirects to /arts', async ({ page }) => {
-		await page.goto('/ru/arts');
-		await page.waitForURL(url => url.pathname.replace(/\/+$/, '') === '/arts');
 	});
 });

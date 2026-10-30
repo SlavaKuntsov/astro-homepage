@@ -29,7 +29,7 @@ Everything else is built around that constraint.
 
 - **No Flash** — `data-theme` and the Locale are set before first paint, never
   resolved in client JS after hydration.
-- **Two Locales, one site** — Russian by default at `/`, English under `/en/…`,
+- **Two Locales, one site** — English by default at `/`, Russian under `/ru/…`,
   with the language switch preserving the current page.
 - **Resume as typed content** — experience, education, skills, projects and art
   live in Astro **content collections**; mistyped frontmatter fails the build.
@@ -87,7 +87,7 @@ the Astro project files sit at the root next to the docs.
 
 ```
 src/
-  pages/          # routes (RU at the root, EN under pages/en/)
+  pages/          # routes (EN at the root, RU under pages/ru/)
   components/     # Astro components + small vanilla scripts
   content/        # the content collections (experience, education, projects, arts, skills)
   layouts/        # Layout, BaseHead
@@ -95,7 +95,7 @@ src/
   i18n/           # RU/EN translation tables
   styles/         # design tokens + global CSS
 docs/
-  adr/            # accepted decisions (0001–0010)
+  adr/            # accepted decisions (0001–0011)
   specs/          # portfolio-v2 spec
   agents/         # tracker, triage labels, domain notes
 GLOSSARY.md       # the shared language
@@ -124,7 +124,9 @@ See [`src/content.config.ts`](src/content.config.ts) and
 
 ## Deployment
 
-Deploys to **Vercel** with default settings — no custom build config. The deploy
-origin lives in exactly one place, `HOMEPAGE_URL` in
+Deploys to **Vercel** with default build settings. The only extra config is
+`vercel.json`, which keeps the retired `/en/*` URLs alive by redirecting them to
+their unprefixed equivalents at the edge (a static build cannot emit a wildcard
+redirect). The deploy origin lives in exactly one place, `HOMEPAGE_URL` in
 [`src/consts.ts`](src/consts.ts); canonical URLs, `og:url`, `og:image` and the
 sitemap all derive from it.

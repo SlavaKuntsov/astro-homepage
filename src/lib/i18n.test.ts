@@ -1,67 +1,67 @@
 import { describe, expect, it } from 'vitest';
 import { localeOf, localizePath } from '@/lib/i18n';
 
-// Locale routing (ADR-0005): the default Locale `ru` is served unprefixed and
-// `en` under `/en/`. Every server-rendered Locale decision — the switcher href,
+// Locale routing (ADR-0011): the default Locale `en` is served unprefixed and
+// `ru` under `/ru/`. Every server-rendered Locale decision — the switcher href,
 // the navigation hrefs — derives from these helpers, so one rule serves them
 // all.
 describe('localeOf', () => {
 	it('serves the root and unprefixed paths in the default Locale', () => {
-		expect(localeOf('/')).toBe('ru');
-		expect(localeOf('/projects')).toBe('ru');
-		expect(localeOf('/projects/x')).toBe('ru');
+		expect(localeOf('/')).toBe('en');
+		expect(localeOf('/projects')).toBe('en');
+		expect(localeOf('/projects/x')).toBe('en');
 	});
 
-	it('serves /en and everything below it in en', () => {
-		expect(localeOf('/en')).toBe('en');
-		expect(localeOf('/en/')).toBe('en');
-		expect(localeOf('/en/projects')).toBe('en');
-		expect(localeOf('/en/projects/x')).toBe('en');
+	it('serves /ru and everything below it in ru', () => {
+		expect(localeOf('/ru')).toBe('ru');
+		expect(localeOf('/ru/')).toBe('ru');
+		expect(localeOf('/ru/projects')).toBe('ru');
+		expect(localeOf('/ru/projects/x')).toBe('ru');
 	});
 
 	it('matches the prefix only on a path boundary', () => {
-		expect(localeOf('/enterprise')).toBe('ru');
-		expect(localeOf('/enough')).toBe('ru');
+		expect(localeOf('/russia')).toBe('en');
+		expect(localeOf('/enterprise')).toBe('en');
 	});
 });
 
 // The switcher maps the current path onto the other Locale; at the root that
-// is `/` ↔ `/en` (ADR-0005: RU lives at the unprefixed root).
+// is `/` ↔ `/ru` (ADR-0011: EN lives at the unprefixed root).
 describe('localizePath at the root', () => {
-	it('maps / onto the unprefixed root in ru', () => {
-		expect(localizePath('/', 'ru')).toBe('/');
+	it('maps / onto the unprefixed root in en', () => {
+		expect(localizePath('/', 'en')).toBe('/');
 	});
 
-	it('maps / onto /en in en', () => {
-		expect(localizePath('/', 'en')).toBe('/en');
+	it('maps / onto /ru in ru', () => {
+		expect(localizePath('/', 'ru')).toBe('/ru');
 	});
 
-	it('strips the prefix when /en comes back to ru', () => {
-		expect(localizePath('/en', 'ru')).toBe('/');
-		expect(localizePath('/en/', 'ru')).toBe('/');
+	it('strips the prefix when /ru comes back to en', () => {
+		expect(localizePath('/ru', 'en')).toBe('/');
+		expect(localizePath('/ru/', 'en')).toBe('/');
 	});
 });
 
 // The switcher keeps the visitor on the same page (spec user story 10): a
 // nested path maps onto its exact counterpart under the other Locale.
 describe('localizePath on nested paths', () => {
-	it('adds the prefix when a ru path moves to en', () => {
-		expect(localizePath('/projects/x', 'en')).toBe('/en/projects/x');
-		expect(localizePath('/projects', 'en')).toBe('/en/projects');
+	it('adds the prefix when an en path moves to ru', () => {
+		expect(localizePath('/projects/x', 'ru')).toBe('/ru/projects/x');
+		expect(localizePath('/projects', 'ru')).toBe('/ru/projects');
 	});
 
-	it('strips the prefix when an en path moves back to ru', () => {
-		expect(localizePath('/en/projects/x', 'ru')).toBe('/projects/x');
-		expect(localizePath('/en/projects', 'ru')).toBe('/projects');
+	it('strips the prefix when a ru path moves back to en', () => {
+		expect(localizePath('/ru/projects/x', 'en')).toBe('/projects/x');
+		expect(localizePath('/ru/projects', 'en')).toBe('/projects');
 	});
 
 	it('leaves a path alone when it is already in the target Locale', () => {
-		expect(localizePath('/projects/x', 'ru')).toBe('/projects/x');
-		expect(localizePath('/en/projects/x', 'en')).toBe('/en/projects/x');
+		expect(localizePath('/projects/x', 'en')).toBe('/projects/x');
+		expect(localizePath('/ru/projects/x', 'ru')).toBe('/ru/projects/x');
 	});
 
 	it('prefixes the whole path, never a fragment of the first segment', () => {
-		expect(localizePath('/enterprise', 'en')).toBe('/en/enterprise');
+		expect(localizePath('/enterprise', 'ru')).toBe('/ru/enterprise');
 	});
 });
 
@@ -75,9 +75,9 @@ describe('localizePath round-trips', () => {
 		'/projects/x',
 		'/projects/x/deep',
 		'/enterprise',
-		'/en',
-		'/en/projects',
-		'/en/projects/x',
+		'/ru',
+		'/ru/projects',
+		'/ru/projects/x',
 	];
 
 	for (const path of PATHS) {
@@ -90,8 +90,8 @@ describe('localizePath round-trips', () => {
 	}
 
 	it('round-trips a trailing-slash path to its normalized form', () => {
-		expect(localizePath(localizePath('/en/projects/', 'ru'), 'en')).toBe(
-			'/en/projects'
+		expect(localizePath(localizePath('/ru/projects/', 'en'), 'ru')).toBe(
+			'/ru/projects'
 		);
 	});
 });

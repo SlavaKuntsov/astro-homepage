@@ -11,11 +11,11 @@ describe('isActivePath', () => {
 	});
 
 	it('marks each Locale root link active only on its own root', () => {
-		expect(isActivePath('/en', '/en')).toBe(true);
-		expect(isActivePath('/en/projects', '/en')).toBe(false);
-		expect(isActivePath('/en/arts', '/en')).toBe(false);
-		expect(isActivePath('/en', '/')).toBe(false);
-		expect(isActivePath('/projects', '/en')).toBe(false);
+		expect(isActivePath('/ru', '/ru')).toBe(true);
+		expect(isActivePath('/ru/projects', '/ru')).toBe(false);
+		expect(isActivePath('/ru/arts', '/ru')).toBe(false);
+		expect(isActivePath('/ru', '/')).toBe(false);
+		expect(isActivePath('/projects', '/ru')).toBe(false);
 	});
 
 	it('ignores trailing slashes on both sides', () => {

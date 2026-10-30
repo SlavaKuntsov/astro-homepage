@@ -22,7 +22,7 @@ const groups = (page: Page) => page.locator('[data-skills-section] [data-skill-g
 
 test.describe('the RU home renders skills and contacts', () => {
 	test('groups the Resume skills into labelled chips', async ({ page }) => {
-		await page.goto('/');
+		await page.goto('/ru/');
 
 		const section = page.locator('[data-skills-section]');
 		await expect(section).toBeVisible();
@@ -63,7 +63,7 @@ test.describe('the RU home renders skills and contacts', () => {
 	test('renders every contact link with its correct target and icon', async ({
 		page,
 	}) => {
-		await page.goto('/');
+		await page.goto('/ru/');
 
 		const section = page.locator('[data-contacts-section]');
 		await expect(section).toBeVisible();
@@ -95,7 +95,7 @@ test.describe('the RU home renders skills and contacts', () => {
 	test('opens the web links in a new tab but keeps email in place', async ({
 		page,
 	}) => {
-		await page.goto('/');
+		await page.goto('/ru/');
 
 		await expect(contact(page, 'github')).toHaveAttribute('target', '_blank');
 		await expect(contact(page, 'telegram')).toHaveAttribute('target', '_blank');
@@ -106,7 +106,7 @@ test.describe('the RU home renders skills and contacts', () => {
 	test('offers the Download CV action pointing at the static PDF', async ({
 		page,
 	}) => {
-		await page.goto('/');
+		await page.goto('/ru/');
 
 		const download = page.locator('[data-cv-download]');
 		await expect(download).toHaveAttribute('href', '/resume.pdf');
@@ -118,7 +118,7 @@ test.describe('the EN home renders skills and contacts in English', () => {
 	test('localizes both section headings and the group labels', async ({
 		page,
 	}) => {
-		await page.goto('/en/');
+		await page.goto('/');
 
 		await expect(
 			page.getByRole('heading', { level: 2, name: 'Skills' })
@@ -134,7 +134,7 @@ test.describe('the EN home renders skills and contacts in English', () => {
 	});
 
 	test('localizes the contact labels and the CV action', async ({ page }) => {
-		await page.goto('/en/');
+		await page.goto('/');
 
 		await expect(contact(page, 'email')).toHaveAttribute(
 			'aria-label',

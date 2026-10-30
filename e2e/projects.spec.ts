@@ -22,9 +22,9 @@ const slugsOf = (page: Page) =>
 		nodes.map(node => node.getAttribute('data-slug') ?? '')
 	);
 
-test.describe('the RU projects index at /projects', () => {
+test.describe('the RU projects index at /ru/projects', () => {
 	test('renders an H1 and one card per project', async ({ page }) => {
-		const response = await page.goto('/projects');
+		const response = await page.goto('/ru/projects');
 		expect(response?.status()).toBe(200);
 
 		await expect(
@@ -44,7 +44,7 @@ test.describe('the RU projects index at /projects', () => {
 	test('leads with featured projects, then follows the manifest', async ({
 		page,
 	}) => {
-		await page.goto('/projects');
+		await page.goto('/ru/projects');
 
 		const featured = await cards(page).evaluateAll(nodes =>
 			nodes.map(node => node.getAttribute('data-featured') === 'true')
@@ -60,20 +60,20 @@ test.describe('the RU projects index at /projects', () => {
 	});
 
 	test('links every card to its detail page', async ({ page }) => {
-		await page.goto('/projects');
+		await page.goto('/ru/projects');
 
 		for (const slug of await slugsOf(page)) {
 			// The whole card is one link; its accessible name is the title.
 			const link = page
 				.locator(`[data-project][data-slug="${slug}"]`)
 				.getByRole('link');
-			await expect(link).toHaveAttribute('href', `/projects/${slug}`);
+			await expect(link).toHaveAttribute('href', `/ru/projects/${slug}`);
 			await expect(link).not.toBeEmpty();
 		}
 	});
 
 	test('opens the project when the card itself is clicked', async ({ page }) => {
-		await page.goto('/projects');
+		await page.goto('/ru/projects');
 
 		const card = cards(page).first();
 		const slug = await card.getAttribute('data-slug');
@@ -83,7 +83,7 @@ test.describe('the RU projects index at /projects', () => {
 		await card.locator('p').first().click();
 
 		await page.waitForURL(
-			url => url.pathname.replace(/\/+$/, '') === `/projects/${slug}`
+			url => url.pathname.replace(/\/+$/, '') === `/ru/projects/${slug}`
 		);
 		await expect(page.locator('[data-project-detail]')).toHaveAttribute(
 			'data-slug',
@@ -92,7 +92,7 @@ test.describe('the RU projects index at /projects', () => {
 	});
 
 	test('shows the tags of every project', async ({ page }) => {
-		await page.goto('/projects');
+		await page.goto('/ru/projects');
 
 		for (const card of await cards(page).all()) {
 			await expect(card.getByRole('list', { name: 'Теги' })).toBeVisible();
@@ -100,9 +100,9 @@ test.describe('the RU projects index at /projects', () => {
 	});
 });
 
-test.describe('the EN projects index at /en/projects', () => {
+test.describe('the EN projects index at /projects', () => {
 	test('renders the English heading and labels', async ({ page }) => {
-		const response = await page.goto('/en/projects');
+		const response = await page.goto('/projects');
 		expect(response?.status()).toBe(200);
 
 		await expect(
@@ -115,10 +115,10 @@ test.describe('the EN projects index at /en/projects', () => {
 });
 
 test('both Locales pair the same project slugs', async ({ page }) => {
-	await page.goto('/projects');
+	await page.goto('/ru/projects');
 	const ru = await slugsOf(page);
 
-	await page.goto('/en/projects');
+	await page.goto('/projects');
 	const en = await slugsOf(page);
 
 	expect(ru.length).toBeGreaterThanOrEqual(1);
@@ -129,7 +129,7 @@ test.describe('a project detail page', () => {
 	test('shows the title, description, markdown body, gallery, and links', async ({
 		page,
 	}) => {
-		const response = await page.goto('/projects/astro-homepage');
+		const response = await page.goto('/ru/projects/astro-homepage');
 		expect(response?.status()).toBe(200);
 
 		await expect(
@@ -168,17 +168,17 @@ test.describe('a project detail page', () => {
 	});
 
 	test('links back to the index', async ({ page }) => {
-		await page.goto('/projects/astro-homepage');
+		await page.goto('/ru/projects/astro-homepage');
 
 		await expect(
 			page.getByRole('link', { name: /Все проекты/ })
-		).toHaveAttribute('href', '/projects');
+		).toHaveAttribute('href', '/ru/projects');
 	});
 
 	test('renders a private project without a language breakdown', async ({
 		page,
 	}) => {
-		const response = await page.goto('/projects/private-crm');
+		const response = await page.goto('/ru/projects/private-crm');
 		expect(response?.status()).toBe(200);
 
 		const detail = page.locator('[data-project-detail]');
@@ -194,7 +194,7 @@ test.describe('a project detail page', () => {
 	test('shows the GitHub language breakdown when reached, and renders when it was not', async ({
 		page,
 	}) => {
-		const response = await page.goto('/projects/astro-homepage');
+		const response = await page.goto('/ru/projects/astro-homepage');
 		expect(response?.status()).toBe(200);
 
 		const breakdown = page.locator('[data-project-languages]');
@@ -209,17 +209,17 @@ test.describe('a project detail page', () => {
 test('the Locale switcher keeps the visitor on a project detail page', async ({
 	page,
 }) => {
-	await page.goto('/projects/astro-homepage');
+	await page.goto('/ru/projects/astro-homepage');
 
 	const switcher = page.locator('[data-locale-switcher]').first();
 	await expect(switcher).toHaveAttribute(
 		'href',
-		'/en/projects/astro-homepage'
+		'/projects/astro-homepage'
 	);
 
 	await switcher.click();
 	await page.waitForURL(
-		url => url.pathname.replace(/\/+$/, '') === '/en/projects/astro-homepage'
+		url => url.pathname.replace(/\/+$/, '') === '/projects/astro-homepage'
 	);
 	await expect(page.locator('html')).toHaveAttribute('lang', 'en');
 	await expect(

@@ -16,7 +16,7 @@ import { expect, test } from './fixtures';
 
 const LOCALES = [
 	{
-		path: '/',
+		path: '/ru/',
 		name: 'Кунцов Святослав',
 		position: 'Разработчик программного обеспечения',
 		experienceViewAll: 'Весь опыт',
@@ -24,7 +24,7 @@ const LOCALES = [
 		next: 'Следующая работа',
 	},
 	{
-		path: '/en/',
+		path: '/',
 		name: 'Sviataslau Kuntsou',
 		position: 'Software Developer',
 		experienceViewAll: 'View full experience',
@@ -236,20 +236,20 @@ test('the home page drops the featured-Projects and arts previews', async ({
 });
 
 test('the home page links to the full experience page', async ({ page }) => {
-	await page.goto('/');
+	await page.goto('/ru/');
 
 	await expect(
 		page
 			.locator('[data-experience-highlights]')
 			.getByRole('link', { name: 'Весь опыт' })
-	).toHaveAttribute('href', '/experience');
+	).toHaveAttribute('href', '/ru/experience');
 });
 
 test.describe('the home page without JavaScript', () => {
 	test.use({ javaScriptEnabled: false });
 
 	test('server-renders the carousel in the right Locale', async ({ page }) => {
-		await page.goto('/');
+		await page.goto('/ru/');
 
 		// The Locale is resolved on the server, not after hydration.
 		await expect(page.locator('html')).toHaveAttribute('lang', 'ru');

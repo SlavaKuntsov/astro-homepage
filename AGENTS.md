@@ -73,7 +73,7 @@ Fall back to grep/glob/read only when `.codegraph/` is absent.
   the `experience`, `projects`, and `arts` collections, validated by Zod.
   Mistyped frontmatter fails the build (ADR-0004). `skills` is the deliberate
   exception: locale-independent, one file per group (ADR-0008).
-- **RU is the default Locale** at `/`; English lives under `/en/` (ADR-0005).
+- **EN is the default Locale** at `/`; Russian lives under `/ru/` (ADR-0011).
 - **Design tokens** are centralised and light/dark is driven by `data-theme`;
   typography is Comfortaa (headings) + Inter (body).
 

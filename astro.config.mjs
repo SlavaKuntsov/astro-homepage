@@ -26,7 +26,7 @@ export default defineConfig({
 		// sitemap schema cannot carry.
 		sitemap({
 			i18n: {
-				defaultLocale: 'ru',
+				defaultLocale: 'en',
 				locales: { ru: 'ru', en: 'en' },
 			},
 		}),
@@ -54,23 +54,22 @@ export default defineConfig({
 			},
 		],
 	},
-	// RU is the default Locale at the unprefixed root, EN under `/en/…`
-	// (ADR-0005). The prefix rule itself lives in `src/lib/i18n.ts`.
+	// EN is the default Locale at the unprefixed root, RU under `/ru/…`
+	// (ADR-0011). The prefix rule itself lives in `src/lib/i18n.ts`.
 	i18n: {
 		locales: ['ru', 'en'],
-		defaultLocale: 'ru',
+		defaultLocale: 'en',
 		routing: { prefixDefaultLocale: false },
 	},
-	// Old Site URLs keep working (spec user story 30): the previous Site served
-	// the default Locale under `/ru/*`, so each of its three routes redirects to
-	// the unprefixed equivalent. `/works` became `/projects` in ticket #9, so
-	// both the legacy `/ru/works` and the retired `/works` land there. That
-	// legacy URL set is frozen, and a static build cannot emit a `/ru/*`
-	// wildcard, so this map is complete.
+	// Old Site URLs keep working (spec user story 30). Two legacy shapes are in
+	// play. The original Site served EN at the unprefixed root and RU under
+	// `/ru/*`, so those routes are the Site's own routes again and need no
+	// redirect. The interim ADR-0005 build flipped that (RU at `/`, EN under
+	// `/en/*`); a static build cannot emit a wildcard redirect, so that
+	// catch-all lives in `vercel.json` at the edge instead. Here only the
+	// `works → projects` rename (ticket #9) survives, in both Locales.
 	redirects: {
-		'/ru': '/',
-		'/ru/works': '/projects',
-		'/ru/arts': '/arts',
 		'/works': '/projects',
+		'/ru/works': '/ru/projects',
 	},
 });

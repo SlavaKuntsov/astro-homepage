@@ -8,10 +8,11 @@ interface Props {
 	entry: CollectionEntry<'projects'>;
 }
 
-// RU is the default Locale at the unprefixed root (ADR-0005): one page per
-// Project slug authored under `projects/ru/`.
+// EN is the default Locale at the unprefixed root (ADR-0011): one page per
+// Project slug authored under `projects/en/`, paired with its RU counterpart
+// by slug.
 export async function getStaticPaths() {
-	const entries = entriesForLocale(await getCollection('projects'), 'ru');
+	const entries = entriesForLocale(await getCollection('projects'), 'en');
 
 	return entries.map(entry => ({
 		params: { slug: slugOfEntryId(entry.id) },
@@ -22,4 +23,4 @@ export async function getStaticPaths() {
 const { entry } = Astro.props as Props;
 ---
 
-<ProjectPage entry={entry} lang='ru' />
+<ProjectPage entry={entry} lang='en' />

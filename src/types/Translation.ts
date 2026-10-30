@@ -17,7 +17,7 @@ export interface Translation {
 		switchTheme: string;
 		switchToDarkTheme: string;
 		switchToLightTheme: string;
-		/** Names the Locale this page's switcher leads to (ADR-0005). */
+		/** Names the Locale this page's switcher leads to (ADR-0011). */
 		switchLocale: string;
 	};
 	site: {
