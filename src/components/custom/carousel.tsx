@@ -29,7 +29,7 @@ export function Carousel() {
 						<div
 							className='min-h-[250px] bg-transparent flex items-center justify-center w-full bg-center bg-cover shadow-none'
 							style={{
-								backgroundImage: `url(/images/arts2/art${index + 1}.png)`,
+								backgroundImage: `url(/images/arts/art${index + 1}.png)`,
 							}}
 							aria-label={`Art ${index + 1}`}
 							role='img'

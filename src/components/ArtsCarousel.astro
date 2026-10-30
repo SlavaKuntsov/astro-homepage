@@ -10,6 +10,7 @@
 // controls step outboard of the Artwork and are stacked above the fades
 // (`z-20` over `z-10`), so a fade can never paint a control away — the
 // occlusion the old hero carousel suffered.
+import { Picture } from 'astro:assets';
 import type { ArtworkEntry } from '@/lib/arts';
 import type { Translation } from '@/types/Translation';
 
@@ -78,18 +79,23 @@ const controlClass =
 							>
 								<!--
 									The Artwork PNGs carry ~20-30% transparent padding on
-									every side, so `object-contain` alone leaves the drawing
-									small and floating with a wide empty margin. Scaling crops
-									that padding (the slide clips the overflow) so the drawing
-									fills the frame and actually reaches the edge fades.
+									every side, so `object-contain` leaves the drawing small
+									inside a wide empty margin; the generous edge fades are
+									what reach past that padding to dissolve the drawing.
+
+									`Picture` emits an AVIF/WebP set per Artwork at build, so
+									the hero downloads a few KB per Artwork instead of the
+									350px source PNG. Only the first Artwork is eager — the
+									rest load lazily, so first paint fetches one, not six.
 								-->
-								<img
+								<Picture
 									src={entry.data.image}
 									alt={entry.data.title}
-									width='480'
-									height='480'
-									loading='eager'
+									formats={['avif', 'webp']}
+									quality='high'
+									loading={index === 0 ? 'eager' : 'lazy'}
 									draggable='false'
+									pictureAttributes={{ class: 'contents' }}
 									class='h-80 w-full object-contain sm:h-auto sm:aspect-square'
 								/>
 							</div>

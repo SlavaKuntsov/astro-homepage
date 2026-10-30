@@ -1,6 +1,6 @@
 ---
 title: Pixel cat
-image: /images/arts2/art6.png
+image: ../../../assets/arts/art6.png
 tags:
   - cat
   - pixel art

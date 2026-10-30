@@ -140,13 +140,17 @@ test.describe('the RU arts gallery at /arts', () => {
 
 		const opener = await openLightbox(page);
 
+		// The lightbox shows the same Artwork the grid loaded — compare the
+		// browser's chosen source (`currentSrc`), not the `<img src>` fallback:
+		// `<Picture>` emits an AVIF/WebP set with a PNG fallback, so the two
+		// attributes differ.
 		const thumbSrc = await opener
 			.locator('img')
-			.evaluate(
-				img => new URL(img.getAttribute('src') ?? '', location.href).href
-			);
+			.evaluate(img => (img as HTMLImageElement).currentSrc);
 		expect(
-			await lightboxImage(page).evaluate(img => (img as HTMLImageElement).src)
+			await lightboxImage(page).evaluate(
+				img => (img as HTMLImageElement).currentSrc
+			)
 		).toBe(thumbSrc);
 
 		await expect(lightboxCaption(page)).toHaveText(title);
@@ -257,13 +261,17 @@ test.describe('stepping through the arts lightbox', () => {
 		await expect(lightboxCaption(page)).toHaveText(await titleAt(page, 1));
 		await expect(counter(page)).toHaveText(`2 / ${total}`);
 
-		// The image follows the caption.
+		// The image follows the caption. Compare the browser's chosen source
+		// (`currentSrc`), not the `<img src>` fallback: `<Picture>` emits an
+		// AVIF/WebP set with a PNG fallback, so the two attributes differ.
 		const nextThumb = await items(page)
 			.nth(1)
 			.locator('img')
-			.evaluate(img => new URL(img.getAttribute('src') ?? '', location.href).href);
+			.evaluate(img => (img as HTMLImageElement).currentSrc);
 		expect(
-			await lightboxImage(page).evaluate(img => (img as HTMLImageElement).src)
+			await lightboxImage(page).evaluate(
+				img => (img as HTMLImageElement).currentSrc
+			)
 		).toBe(nextThumb);
 
 		await previousButton(page).click();

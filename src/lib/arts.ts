@@ -9,21 +9,40 @@
  * `arts/order.json` (ADR-0009).
  */
 
+import type { ImageMetadata } from 'astro';
 import { z } from 'astro/zod';
 import artworkOrder from '@/content/arts/order.json';
 import { slugOfEntryId } from './collection';
 import { rankOf } from './order';
 
-/** One Artwork's typed frontmatter. */
-export const artworkSchema = z.object({
-	title: z.string().min(1),
-	image: z.string().min(1),
-	tags: z.array(z.string().min(1)).optional(),
-	link: z.string().url().optional(),
-});
+/**
+ * The `arts` schema. `image` is the loader's content-image helper
+ * (`schema: ({ image }) => …`): it resolves an Artwork's relative path to typed
+ * `ImageMetadata` at build — failing the build when the file is missing — so the
+ * carousel and gallery can pass that object to `<Picture>`, which emits an
+ * optimized AVIF/WebP set per Artwork (ADR-0002: Astro-native). It is generic
+ * over the helper's schema so the resolved field keeps its type, and a unit test
+ * can pass a stub where the loader's helper — a Vite-plugin closure — is absent.
+ */
+export function artworkSchema<T extends z.ZodTypeAny>(image: () => T) {
+	return z.object({
+		title: z.string().min(1),
+		image: image(),
+		tags: z.array(z.string().min(1)).optional(),
+		link: z.string().url().optional(),
+	});
+}
 
-/** The validated frontmatter of one Artwork. */
-export type ArtworkFrontmatter = z.infer<typeof artworkSchema>;
+/**
+ * The validated frontmatter of one Artwork. `image` is the `ImageMetadata` the
+ * loader's helper resolves — not a URL string.
+ */
+export interface ArtworkFrontmatter {
+	title: string;
+	image: ImageMetadata;
+	tags?: string[];
+	link?: string;
+}
 
 /** The minimal shape the helper needs; content-layer entries satisfy it. */
 export interface ArtworkEntry {

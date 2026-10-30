@@ -1,6 +1,6 @@
 ---
 title: Lying cat
-image: /images/arts2/art4.png
+image: ../../../assets/arts/art4.png
 tags:
   - cat
   - sketch
