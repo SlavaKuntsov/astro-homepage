@@ -8,10 +8,10 @@ interface Props {
 	entry: CollectionEntry<'projects'>;
 }
 
-// EN lives under `/en/…` (ADR-0005): one page per Project slug authored under
-// `projects/en/`, paired with its RU counterpart by slug.
+// RU lives under `/ru/…` (ADR-0011): one page per Project slug authored under
+// `projects/ru/`, paired with its EN counterpart by slug.
 export async function getStaticPaths() {
-	const entries = entriesForLocale(await getCollection('projects'), 'en');
+	const entries = entriesForLocale(await getCollection('projects'), 'ru');
 
 	return entries.map(entry => ({
 		params: { slug: slugOfEntryId(entry.id) },
@@ -22,4 +22,4 @@ export async function getStaticPaths() {
 const { entry } = Astro.props as Props;
 ---
 
-<ProjectPage entry={entry} lang='en' />
+<ProjectPage entry={entry} lang='ru' />

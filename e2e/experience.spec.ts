@@ -6,7 +6,7 @@ import { expect, test } from './fixtures';
  * the rendered-page seam, so it asserts structure and ordering rather than the
  * placeholder content the content-migration ticket (#14) replaces:
  *
- * - `/experience` and `/en/experience` render a timeline from the collection;
+ * - `/ru/experience` and `/experience` render a timeline from the collection;
  * - entries are newest-first, every entry shows its role, period, and stack;
  * - both Locales pair the same slugs.
  *
@@ -28,9 +28,9 @@ const startDates = (page: Page) =>
 		)
 	);
 
-test.describe('the RU timeline at /experience', () => {
+test.describe('the RU timeline at /ru/experience', () => {
 	test('renders an H1 and one role per entry', async ({ page }) => {
-		const response = await page.goto('/experience');
+		const response = await page.goto('/ru/experience');
 		expect(response?.status()).toBe(200);
 
 		await expect(
@@ -51,7 +51,7 @@ test.describe('the RU timeline at /experience', () => {
 	});
 
 	test('orders entries newest-first', async ({ page }) => {
-		await page.goto('/experience');
+		await page.goto('/ru/experience');
 
 		const dates = await startDates(page);
 		expect(dates.length).toBeGreaterThanOrEqual(2);
@@ -61,7 +61,7 @@ test.describe('the RU timeline at /experience', () => {
 	});
 
 	test('shows how long each role lasted', async ({ page }) => {
-		await page.goto('/experience');
+		await page.goto('/ru/experience');
 
 		for (const entry of await entries(page).all()) {
 			await expect(entry).toContainText(
@@ -71,7 +71,7 @@ test.describe('the RU timeline at /experience', () => {
 	});
 
 	test('renders the environment of each entry', async ({ page }) => {
-		await page.goto('/experience');
+		await page.goto('/ru/experience');
 
 		await expect(
 			page.getByRole('list', { name: 'Окружение' }).first()
@@ -79,7 +79,7 @@ test.describe('the RU timeline at /experience', () => {
 	});
 
 	test('links the company when a company URL is present', async ({ page }) => {
-		await page.goto('/experience');
+		await page.goto('/ru/experience');
 
 		const linked = await entries(page).evaluateAll(nodes =>
 			nodes
@@ -96,11 +96,11 @@ test.describe('the RU timeline at /experience', () => {
 	});
 });
 
-test.describe('the EN timeline at /en/experience', () => {
+test.describe('the EN timeline at /experience', () => {
 	test('renders the English heading and environment label', async ({
 		page,
 	}) => {
-		const response = await page.goto('/en/experience');
+		const response = await page.goto('/experience');
 		expect(response?.status()).toBe(200);
 
 		await expect(
@@ -113,10 +113,10 @@ test.describe('the EN timeline at /en/experience', () => {
 });
 
 test('both Locales pair the same slugs', async ({ page }) => {
-	await page.goto('/experience');
+	await page.goto('/ru/experience');
 	const ru = await slugsOf(page);
 
-	await page.goto('/en/experience');
+	await page.goto('/experience');
 	const en = await slugsOf(page);
 
 	expect(ru.length).toBeGreaterThanOrEqual(1);
@@ -126,14 +126,14 @@ test('both Locales pair the same slugs', async ({ page }) => {
 test('the Locale switcher keeps the visitor on the experience page', async ({
 	page,
 }) => {
-	await page.goto('/experience');
+	await page.goto('/ru/experience');
 
 	const switcher = page.locator('[data-locale-switcher]').first();
-	await expect(switcher).toHaveAttribute('href', '/en/experience');
+	await expect(switcher).toHaveAttribute('href', '/experience');
 
 	await switcher.click();
 	await page.waitForURL(
-		url => url.pathname.replace(/\/+$/, '') === '/en/experience'
+		url => url.pathname.replace(/\/+$/, '') === '/experience'
 	);
 	await expect(page.locator('html')).toHaveAttribute('lang', 'en');
 });
@@ -141,13 +141,13 @@ test('the Locale switcher keeps the visitor on the experience page', async ({
 // `/experience` must not be an orphan: it is linked from the nav on every page
 // and previewed by the highlights block on the home page.
 test.describe('the experience page is discoverable', () => {
-	test('the RU home shows the highlights block and links to /experience', async ({
+	test('the RU home shows the highlights block and links to /ru/experience', async ({
 		page,
 	}) => {
-		await page.goto('/');
+		await page.goto('/ru/');
 
 		await expect(
-			page.locator('header nav a[href="/experience"]').first()
+			page.locator('header nav a[href="/ru/experience"]').first()
 		).toBeVisible();
 
 		const block = page.locator('[data-experience-highlights]');
@@ -163,16 +163,16 @@ test.describe('the experience page is discoverable', () => {
 		);
 		await expect(
 			block.getByRole('link', { name: 'Весь опыт' })
-		).toHaveAttribute('href', '/experience');
+		).toHaveAttribute('href', '/ru/experience');
 	});
 
-	test('the EN home shows the highlights block and links to /en/experience', async ({
+	test('the EN home shows the highlights block and links to /experience', async ({
 		page,
 	}) => {
-		await page.goto('/en/');
+		await page.goto('/');
 
 		await expect(
-			page.locator('header nav a[href="/en/experience"]').first()
+			page.locator('header nav a[href="/experience"]').first()
 		).toBeVisible();
 
 		const block = page.locator('[data-experience-highlights]');
@@ -181,14 +181,14 @@ test.describe('the experience page is discoverable', () => {
 		).toBeVisible();
 		await expect(
 			block.getByRole('link', { name: 'View full experience' })
-		).toHaveAttribute('href', '/en/experience');
+		).toHaveAttribute('href', '/experience');
 	});
 
-	test('the nav marks /experience as the current page', async ({ page }) => {
-		await page.goto('/experience');
+	test('the nav marks /ru/experience as the current page', async ({ page }) => {
+		await page.goto('/ru/experience');
 
 		await expect(
-			page.locator('header nav a[href="/experience"]').first()
+			page.locator('header nav a[href="/ru/experience"]').first()
 		).toHaveAttribute('aria-current', 'page');
 	});
 });

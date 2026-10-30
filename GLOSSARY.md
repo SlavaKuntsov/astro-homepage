@@ -8,7 +8,7 @@ terms exactly. If a term here conflicts with a term in code, the code is wrong.
 **Site** — this repository's RU/EN portfolio & resume website, deployed on
 Vercel. _Avoid_: homepage (ambiguous with the Astro starter page).
 
-**Locale** — one of exactly two language variants: `ru` (default) and `en`.
+**Locale** — one of exactly two language variants: `en` (default) and `ru`.
 _Avoid_: language, lang-code.
 
 **Resume** — the source PDF authored outside the repo

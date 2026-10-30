@@ -12,10 +12,10 @@ const ROUTES = [
 	'/projects',
 	'/arts',
 	'/experience',
-	'/en/',
-	'/en/projects',
-	'/en/arts',
-	'/en/experience',
+	'/ru/',
+	'/ru/projects',
+	'/ru/arts',
+	'/ru/experience',
 ];
 
 test.describe('the shared layout renders on every page', () => {
@@ -58,7 +58,7 @@ test('the header and footer survive a View Transition', async ({ page }) => {
 test('cross-Locale navigation replaces the persisted chrome', async ({
 	page,
 }) => {
-	await page.goto('/');
+	await page.goto('/ru');
 
 	await page.evaluate(() => {
 		(window as unknown as { __clientNavigation: boolean }).__clientNavigation =
@@ -69,7 +69,9 @@ test('cross-Locale navigation replaces the persisted chrome', async ({
 	// The server-rendered switcher is a same-origin link the ClientRouter
 	// intercepts, so the swap happens client-side.
 	await page.locator('[data-locale-switcher]').first().click();
-	await page.waitForURL(url => url.pathname.replace(/\/+$/, '') === '/en');
+	await page.waitForURL(
+		url => (url.pathname.replace(/\/+$/, '') || '/') === '/'
+	);
 
 	// The window survives a client-side navigation, so this also proves the
 	// router (not a full reload) performed the swap.
@@ -95,7 +97,7 @@ test('cross-Locale navigation replaces the persisted chrome', async ({
 });
 
 test.describe('fonts', () => {
-	for (const path of ['/', '/en/']) {
+	for (const path of ['/', '/ru/']) {
 		test(`${path} preloads only its woff2 subsets and applies the families`, async ({
 			page,
 		}) => {
@@ -254,14 +256,16 @@ test('the active navigation link follows client-side navigation', async ({
 	await expect(home).not.toHaveAttribute('aria-current', 'page');
 });
 
-test('the EN root link is active only on the EN root', async ({ page }) => {
-	await page.goto('/en/projects');
+test('the default-Locale root link is active only on the root', async ({
+	page,
+}) => {
+	await page.goto('/projects');
 
 	const primaryNav = page.getByRole('navigation').first();
-	const home = primaryNav.locator('a[href="/en"]');
-	const projects = primaryNav.locator('a[href="/en/projects"]');
+	const home = primaryNav.locator('a[href="/"]');
+	const projects = primaryNav.locator('a[href="/projects"]');
 
 	await expect(projects).toHaveAttribute('aria-current', 'page');
-	// The localized root is not a section: it must not light up on `/en/projects`.
+	// The root is not a section: it must not light up on `/projects`.
 	await expect(home).not.toHaveAttribute('aria-current', 'page');
 });

@@ -41,16 +41,16 @@ function directoryUrl(path: string): string {
 
 /**
  * The `hreflang` alternates for a page: each Locale's counterpart path plus an
- * `x-default` pointing at the default Locale (ADR-0005). The `pathname` is the
+ * `x-default` pointing at the default Locale (ADR-0011). The `pathname` is the
  * current page's path, so the pair is always the same page in both Locales, and
  * each href equals that page's own canonical URL.
  */
 export function localeAlternates(pathname: string): LocaleAlternate[] {
-	const ru = directoryUrl(localizePath(pathname, 'ru'));
+	const en = directoryUrl(localizePath(pathname, 'en'));
 
 	return [
-		{ hreflang: 'ru', path: ru },
-		{ hreflang: 'en', path: directoryUrl(localizePath(pathname, 'en')) },
-		{ hreflang: X_DEFAULT, path: ru },
+		{ hreflang: 'ru', path: directoryUrl(localizePath(pathname, 'ru')) },
+		{ hreflang: 'en', path: en },
+		{ hreflang: X_DEFAULT, path: en },
 	];
 }

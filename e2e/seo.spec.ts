@@ -2,7 +2,7 @@ import type { Page } from '@playwright/test';
 import { expect, test } from './fixtures';
 
 /**
- * Per-page, per-Locale metadata (ticket #13, spec user story 23, ADR-0005).
+ * Per-page, per-Locale metadata (ticket #13, spec user story 23, ADR-0011).
  * This is the rendered-page seam: it asserts what a crawler or a link preview
  * reads — the title, description, an absolute canonical URL, the ru/en hreflang
  * alternates, and the Open Graph/Twitter tags. The path↔Locale mapping those
@@ -15,11 +15,11 @@ const ORIGIN = 'https://slava-homepage.vercel.app';
 interface ExpectedPage {
 	/** The route to visit. */
 	path: string;
-	/** The Locale the route renders in (ADR-0005). */
+	/** The Locale the route renders in (ADR-0011). */
 	locale: 'ru' | 'en';
-	/** The RU counterpart path (used for the hreflang `ru`/`x-default` links). */
+	/** The RU counterpart path (used for the hreflang `ru` link). */
 	ruPath: string;
-	/** The EN counterpart path (used for the hreflang `en` link). */
+	/** The EN counterpart path (used for the hreflang `en`/`x-default` links). */
 	enPath: string;
 	title: string;
 	description: string;
@@ -32,93 +32,93 @@ const SITE_NAME = { ru: 'Кунцов Святослав', en: 'Sviataslau Kunts
 const PAGES: ExpectedPage[] = [
 	{
 		path: '/',
-		locale: 'ru',
-		ruPath: '/',
-		enPath: '/en',
-		title: 'Кунцов Святослав — Разработчик ПО',
-		description:
-			'Персональный сайт и резюме Кунцова Святослава: опыт разработки программного обеспечения, избранные проекты и контакты.',
-	},
-	{
-		path: '/en/',
 		locale: 'en',
-		ruPath: '/',
-		enPath: '/en',
+		ruPath: '/ru',
+		enPath: '/',
 		title: 'Sviataslau Kuntsou — Software Developer',
 		description:
 			"Sviataslau Kuntsou's personal site and resume: software development experience, selected projects, and contacts.",
 	},
 	{
-		path: '/experience',
+		path: '/ru/',
 		locale: 'ru',
-		ruPath: '/experience',
-		enPath: '/en/experience',
-		title: 'Опыт работы — Кунцов Святослав',
+		ruPath: '/ru',
+		enPath: '/',
+		title: 'Кунцов Святослав — Разработчик ПО',
 		description:
-			'Профессиональный опыт Кунцова Святослава: компании, роли, технологии и ключевые достижения.',
+			'Персональный сайт и резюме Кунцова Святослава: опыт разработки программного обеспечения, избранные проекты и контакты.',
 	},
 	{
-		path: '/en/experience',
+		path: '/experience',
 		locale: 'en',
-		ruPath: '/experience',
-		enPath: '/en/experience',
+		ruPath: '/ru/experience',
+		enPath: '/experience',
 		title: 'Experience — Sviataslau Kuntsou',
 		description:
 			"Sviataslau Kuntsou's professional experience: companies, roles, technologies, and key achievements.",
 	},
 	{
-		path: '/projects',
+		path: '/ru/experience',
 		locale: 'ru',
-		ruPath: '/projects',
-		enPath: '/en/projects',
-		title: 'Проекты — Кунцов Святослав',
+		ruPath: '/ru/experience',
+		enPath: '/experience',
+		title: 'Опыт работы — Кунцов Святослав',
 		description:
-			'Избранные проекты Кунцова Святослава: описание, стек технологий и ссылки на исходный код.',
+			'Профессиональный опыт Кунцова Святослава: компании, роли, технологии и ключевые достижения.',
 	},
 	{
-		path: '/en/projects',
+		path: '/projects',
 		locale: 'en',
-		ruPath: '/projects',
-		enPath: '/en/projects',
+		ruPath: '/ru/projects',
+		enPath: '/projects',
 		title: 'Projects — Sviataslau Kuntsou',
 		description:
 			'Selected projects by Sviataslau Kuntsou: description, technology stack, and source links.',
 	},
 	{
-		path: '/arts',
+		path: '/ru/projects',
 		locale: 'ru',
-		ruPath: '/arts',
-		enPath: '/en/arts',
-		title: 'Арты — Кунцов Святослав',
-		description: 'Галерея художественных работ Кунцова Святослава.',
+		ruPath: '/ru/projects',
+		enPath: '/projects',
+		title: 'Проекты — Кунцов Святослав',
+		description:
+			'Избранные проекты Кунцова Святослава: описание, стек технологий и ссылки на исходный код.',
 	},
 	{
-		path: '/en/arts',
+		path: '/arts',
 		locale: 'en',
-		ruPath: '/arts',
-		enPath: '/en/arts',
+		ruPath: '/ru/arts',
+		enPath: '/arts',
 		title: 'Arts — Sviataslau Kuntsou',
 		description: 'A gallery of artwork by Sviataslau Kuntsou.',
+	},
+	{
+		path: '/ru/arts',
+		locale: 'ru',
+		ruPath: '/ru/arts',
+		enPath: '/arts',
+		title: 'Арты — Кунцов Святослав',
+		description: 'Галерея художественных работ Кунцова Святослава.',
 	},
 	// A Project detail page (deterministic description: authored `summary`).
 	{
 		path: '/projects/private-crm',
-		locale: 'ru',
-		ruPath: '/projects/private-crm',
-		enPath: '/en/projects/private-crm',
-		title: 'CRM для логистики — Кунцов Святослав',
-		description:
-			'Внутренняя система для диспетчеров: заявки, маршруты и расчёты.',
-		ogType: 'article',
-	},
-	{
-		path: '/en/projects/private-crm',
 		locale: 'en',
-		ruPath: '/projects/private-crm',
-		enPath: '/en/projects/private-crm',
+		ruPath: '/ru/projects/private-crm',
+		enPath: '/projects/private-crm',
 		title: 'Logistics CRM — Sviataslau Kuntsou',
 		description:
 			'An internal system for dispatchers covering orders, routes, and billing.',
+		ogType: 'article',
+	},
+	{
+		path: '/ru/projects/private-crm',
+		locale: 'ru',
+		ruPath: '/ru/projects/private-crm',
+		enPath: '/projects/private-crm',
+		title: 'CRM для логистики — Кунцов Святослав',
+		description:
+			'Внутренняя система для диспетчеров: заявки, маршруты и расчёты.',
 		ogType: 'article',
 	},
 ];
@@ -162,7 +162,7 @@ test.describe('per-page metadata', () => {
 					.getAttribute('href');
 			expect(pathOf(await alternate('ru'))).toBe(expected.ruPath);
 			expect(pathOf(await alternate('en'))).toBe(expected.enPath);
-			expect(pathOf(await alternate('x-default'))).toBe(expected.ruPath);
+			expect(pathOf(await alternate('x-default'))).toBe(expected.enPath);
 
 			// Open Graph.
 			expect(await meta(page, 'meta[property="og:type"]')).toBe(
@@ -211,8 +211,9 @@ test.describe('per-page metadata', () => {
 		await expect(page.locator('link[rel="canonical"]')).toHaveCount(1);
 	});
 
-	// The alternates name the counterpart pages' canonical URLs, so on a RU page
-	// the `ru`/`x-default` alternate is byte-for-byte this page's canonical.
+	// The alternates name the counterpart pages' canonical URLs, so on the
+	// default-Locale (EN) page the `en`/`x-default` alternate is byte-for-byte
+	// this page's canonical.
 	test('the default-Locale alternate equals the page canonical', async ({
 		page,
 	}) => {
@@ -245,7 +246,8 @@ test.describe('per-page metadata', () => {
 /**
  * The crawler surface: a sitemap index, its chunk, and robots.txt, all built
  * from the one real origin; plus the favicon every page links. Redirects
- * (`/ru/*`, `/works`) are not canonical pages and must stay out of the sitemap.
+ * (`/works`, `/ru/works`) are not canonical pages and must stay out of the
+ * sitemap.
  */
 test.describe('the crawler surface', () => {
 	test('serves a sitemap index that points at a sitemap chunk', async ({
@@ -264,16 +266,16 @@ test.describe('the crawler surface', () => {
 		expect(response.status()).toBe(200);
 
 		const body = await response.text();
-		// Sitemap URLs carry Astro's directory-format trailing slash.
+		// Sitemap URLs carry Astro's directory-format trailing slash. EN is the
+		// default Locale at the root, RU under `/ru/`.
 		expect(body).toContain(`<loc>${ORIGIN}/projects/</loc>`);
-		expect(body).toContain(`<loc>${ORIGIN}/en/projects/</loc>`);
+		expect(body).toContain(`<loc>${ORIGIN}/ru/projects/</loc>`);
 		// Each URL names its ru/en counterpart with the same hreflang values the
 		// page `<head>` emits.
-		expect(body).toContain(`hreflang="en" href="${ORIGIN}/en/projects/"`);
-		expect(body).toContain(`hreflang="ru" href="${ORIGIN}/projects/"`);
+		expect(body).toContain(`hreflang="en" href="${ORIGIN}/projects/"`);
+		expect(body).toContain(`hreflang="ru" href="${ORIGIN}/ru/projects/"`);
 
 		// Redirects are not canonical pages.
-		expect(body).not.toContain('/ru/');
 		expect(body).not.toContain(`${ORIGIN}/works/`);
 	});
 

@@ -13,7 +13,7 @@ import { expect, test } from './fixtures';
 
 test.describe('the RU home renders education', () => {
 	test('shows the degree from content', async ({ page }) => {
-		await page.goto('/');
+		await page.goto('/ru/');
 
 		const section = page.locator('[data-education-section]');
 		await expect(section).toBeVisible();
@@ -35,7 +35,7 @@ test.describe('the RU home renders education', () => {
 
 test.describe('the EN home renders education', () => {
 	test('localizes the heading and the institution', async ({ page }) => {
-		await page.goto('/en/');
+		await page.goto('/');
 
 		const section = page.locator('[data-education-section]');
 		await expect(

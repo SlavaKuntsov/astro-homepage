@@ -1,6 +1,6 @@
 # ADR-0005: i18n URL scheme — RU default, no prefix
 
-- **Status:** Accepted
+- **Status:** Superseded by [ADR-0011](0011-en-default-locale.md)
 - **Date:** 2026-10-23
 
 ## Context
