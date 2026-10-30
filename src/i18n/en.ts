@@ -49,7 +49,7 @@ const en: Translation = {
 	},
 	index: {
 		heading: {
-			greeting: `Hello, I'm a <i class="font-[550]">junior backend developer</i> from Belarus.`,
+			greeting: `Hello, I'm a <i class="font-[550]">middle backend developer</i> from Belarus.`,
 			name: 'Sviataslau Kuntsou',
 			position: 'Software Developer',
 		},
