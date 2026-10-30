@@ -1,6 +1,6 @@
 ---
 title: Upset cat
-image: /images/arts2/art5.png
+image: /images/arts/art5.png
 tags:
   - cat
   - feelings

@@ -15,7 +15,7 @@ import {
 // on — `arts/order.json` (ADR-0009), not a frontmatter field.
 const validArtwork: ArtworkFrontmatter = {
 	title: 'Untitled',
-	image: '/images/arts2/art1.png',
+	image: '/images/arts/art1.png',
 };
 
 const withArt = (

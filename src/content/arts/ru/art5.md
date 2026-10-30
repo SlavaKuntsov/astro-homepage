@@ -1,6 +1,6 @@
 ---
 title: Расстроенный кот
-image: /images/arts2/art5.png
+image: /images/arts/art5.png
 tags:
   - кот
   - эмоции

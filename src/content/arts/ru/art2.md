@@ -1,6 +1,6 @@
 ---
 title: Плачущий кот
-image: /images/arts2/art2.png
+image: /images/arts/art2.png
 tags:
   - кот
   - слёзы
