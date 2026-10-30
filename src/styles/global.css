@@ -1,5 +1,4 @@
 @import 'tailwindcss';
-@import 'tw-animate-css';
 
 /* `data-theme` is the canonical Theme hook (ADR-0003), not a `.dark` class. */
 @custom-variant dark (&:where([data-theme='dark'], [data-theme='dark'] *));

@@ -1,7 +1,6 @@
 // astro.config.mjs
 import { defineConfig, fontProviders } from 'astro/config';
 import tailwindcss from '@tailwindcss/vite';
-import react from '@astrojs/react';
 import mdx from '@astrojs/mdx';
 import sitemap from '@astrojs/sitemap';
 import { fileURLToPath } from 'node:url';
@@ -19,7 +18,6 @@ export default defineConfig({
 		},
 	},
 	integrations: [
-		react(),
 		mdx(),
 		// Emit `sitemap-index.xml` + `sitemap-0.xml`. The i18n option adds an
 		// `<xhtml:link rel="alternate">` set to each URL so crawlers pair the
