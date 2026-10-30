@@ -12,6 +12,7 @@
 // ones below the fold (see `bindReveal`).
 //
 // The Artworks are a grid of "stickers" wrapped in a paper panel.
+import { Picture } from 'astro:assets';
 import type { ArtworkEntry } from '@/lib/arts';
 import { slugOfEntryId } from '@/lib/collection';
 import type { Translation } from '@/types/Translation';
@@ -55,17 +56,18 @@ const hasNavigation = arts.length > 1;
 							style={`--tilt: ${tiltFor(index)}deg`}
 						>
 							<a
-								href={data.image}
+								href={data.image.src}
 								class='art-opener group flex flex-col gap-3 rounded-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink focus-visible:ring-offset-2 focus-visible:ring-offset-paper'
 								data-art-open
 							>
 								<span class='overflow-hidden rounded-xl'>
-									<img
+									<Picture
 										src={data.image}
 										alt=''
-										width='480'
-										height='480'
+										formats={['avif', 'webp']}
+										quality='high'
 										loading='lazy'
+										pictureAttributes={{ class: 'contents' }}
 										class='aspect-square w-full object-contain transition-transform duration-300 group-hover:scale-[1.04]'
 										data-art-thumb
 									/>

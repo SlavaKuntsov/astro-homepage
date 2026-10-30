@@ -42,11 +42,13 @@ const projects = defineCollection({
 });
 
 // ADR-0004: one markdown file per Locale under `arts/{ru,en}/<slug>.md`. The
-// schema (`src/lib/arts.ts`) fails the build on bad frontmatter; the gallery
-// (ticket #10) renders the Artworks in `arts/order.json` order (ADR-0009).
+// schema (`src/lib/arts.ts`) fails the build on bad frontmatter and resolves the
+// Artwork's image to typed metadata through the loader's `image()` helper, so
+// `<Picture>` can optimize it; the gallery (ticket #10) renders the Artworks in
+// `arts/order.json` order (ADR-0009).
 const arts = defineCollection({
 	loader: glob({ pattern: '**/*.md', base: './src/content/arts' }),
-	schema: artworkSchema,
+	schema: ({ image }) => artworkSchema(image),
 });
 
 export const collections = { experience, education, skills, projects, arts };

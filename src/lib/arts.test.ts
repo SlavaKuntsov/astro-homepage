@@ -1,36 +1,46 @@
 import { readdirSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
+import { z } from 'astro/zod';
 import { describe, expect, it } from 'vitest';
 import artworkOrder from '@/content/arts/order.json';
-import {
-	artworkSchema,
-	orderedArts,
-	type ArtworkEntry,
-	type ArtworkFrontmatter,
-} from '@/lib/arts';
+import { artworkSchema, orderedArts, type ArtworkEntry } from '@/lib/arts';
 
 // The `arts` collection's frontmatter is enforced at build (ADR-0004): a
 // mistyped field, or a missing required one, must fail. These tests pin the
 // rules the markdown files rely on, plus the display order the gallery depends
 // on — `arts/order.json` (ADR-0009), not a frontmatter field.
-const validArtwork: ArtworkFrontmatter = {
+//
+// The loader's content-image helper is a Vite-plugin closure that resolves a
+// path against the filesystem, so the schema is built here with a stub. These
+// tests pin the rules that do not depend on it — a required, non-empty `image`,
+// with the title, tags, and link rules — while the real helper and the image
+// files themselves are exercised by the build and `e2e/arts.spec.ts`.
+const schema = artworkSchema(() => z.string().min(1));
+
+type ArtworkInput = z.input<typeof schema>;
+
+const validArtwork: ArtworkInput = {
 	title: 'Untitled',
-	image: '/images/arts/art1.png',
+	image: '../../../assets/arts/art1.png',
 };
 
-const withArt = (
-	id: string,
-	overrides: Partial<ArtworkFrontmatter> = {}
-): ArtworkEntry => ({ id, data: { ...validArtwork, ...overrides } });
+/** A sortable entry; the helper reads only the id, so the payload is minimal. */
+const withArt = (id: string): ArtworkEntry => ({
+	id,
+	data: {
+		title: 'Untitled',
+		image: { src: 'art.png', width: 350, height: 350, format: 'png' },
+	},
+});
 
 describe('artwork schema', () => {
 	it('accepts a minimal artwork', () => {
-		expect(artworkSchema.safeParse(validArtwork).success).toBe(true);
+		expect(schema.safeParse(validArtwork).success).toBe(true);
 	});
 
 	it('accepts tags and an external link', () => {
 		expect(
-			artworkSchema.safeParse({
+			schema.safeParse({
 				...validArtwork,
 				tags: ['character', 'ink'],
 				link: 'https://example.com/post/1',
@@ -42,28 +52,28 @@ describe('artwork schema', () => {
 		const { title, ...noTitle } = validArtwork;
 		const { image, ...noImage } = validArtwork;
 
-		expect(artworkSchema.safeParse(noTitle).success).toBe(false);
-		expect(artworkSchema.safeParse(noImage).success).toBe(false);
+		expect(schema.safeParse(noTitle).success).toBe(false);
+		expect(schema.safeParse(noImage).success).toBe(false);
 	});
 
 	it('rejects an empty title or image', () => {
 		expect(
-			artworkSchema.safeParse({ ...validArtwork, title: '' }).success
+			schema.safeParse({ ...validArtwork, title: '' }).success
 		).toBe(false);
 		expect(
-			artworkSchema.safeParse({ ...validArtwork, image: '' }).success
+			schema.safeParse({ ...validArtwork, image: '' }).success
 		).toBe(false);
 	});
 
 	it('rejects an empty tag', () => {
 		expect(
-			artworkSchema.safeParse({ ...validArtwork, tags: ['ok', ''] }).success
+			schema.safeParse({ ...validArtwork, tags: ['ok', ''] }).success
 		).toBe(false);
 	});
 
 	it('rejects a link that is not a URL', () => {
 		expect(
-			artworkSchema.safeParse({ ...validArtwork, link: 'nope' }).success
+			schema.safeParse({ ...validArtwork, link: 'nope' }).success
 		).toBe(false);
 	});
 });

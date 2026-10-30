@@ -1,6 +1,6 @@
 ---
 title: Влюблённый кот
-image: /images/arts/art1.png
+image: ../../../assets/arts/art1.png
 tags:
   - кот
   - сердечки

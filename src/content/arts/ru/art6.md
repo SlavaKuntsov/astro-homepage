@@ -1,6 +1,6 @@
 ---
 title: Пиксельный кот
-image: /images/arts/art6.png
+image: ../../../assets/arts/art6.png
 tags:
   - кот
   - пиксель-арт
