@@ -41,9 +41,7 @@ const arts = orderedArts(entriesForLocale(await getCollection('arts'), lang));
 	lang={lang}
 	preloadItalic
 >
-	<div
-		class='mx-auto flex w-full max-w-prose flex-col items-start gap-7 sm:gap-8'
-	>
+	<div class='flex w-full flex-col items-start gap-7 sm:gap-8'>
 		<ArtsCarousel arts={arts} t={t} />
 		<Heading t={t} />
 		<MainContent t={t} />

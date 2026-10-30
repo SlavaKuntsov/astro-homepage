@@ -33,6 +33,117 @@ test.describe('the shared layout renders on every page', () => {
 	}
 });
 
+/**
+ * The shell geometry (ticket #23): the chrome band — the Header and Footer
+ * content — is the same capped width on every page and Locale, strictly wider
+ * than the one content column at `<main>` but narrower than the viewport. Both
+ * widths are design tokens, so the numbers asserted here are their rendered
+ * border-box values (56rem = 896px, 48rem = 768px); the standard gutter lives
+ * inside them.
+ */
+test.describe('the shell geometry', () => {
+	test.use({ viewport: { width: 1280, height: 900 } });
+
+	const CHROME_BAND = 896;
+	const CONTENT_COLUMN = 768;
+
+	for (const path of ['/', '/ru/']) {
+		test(`${path} frames the content column with equal, capped chrome bands`, async ({
+			page,
+		}) => {
+			await page.goto(path);
+
+			const geometry = await page.evaluate(() => {
+				const widthOf = (selector: string) => {
+					const element = document.querySelector(selector);
+					if (!element) throw new Error(`Missing ${selector}`);
+					return element.getBoundingClientRect().width;
+				};
+
+				return {
+					header: widthOf('header [data-chrome-band]'),
+					footer: widthOf('footer [data-chrome-band]'),
+					content: widthOf('[data-content-column]'),
+					viewport: window.innerWidth,
+				};
+			});
+
+			// One capped band: equal top and bottom, narrower than the viewport.
+			expect(geometry.header).toBeCloseTo(CHROME_BAND, 0);
+			expect(geometry.footer).toBeCloseTo(CHROME_BAND, 0);
+			expect(geometry.header).toBe(geometry.footer);
+			expect(geometry.header).toBeLessThan(geometry.viewport);
+
+			// The content column is narrower still, and sits inside the band.
+			expect(geometry.content).toBeCloseTo(CONTENT_COLUMN, 0);
+			expect(geometry.content).toBeLessThan(geometry.header);
+		});
+	}
+
+	test('the section headings align with the content column', async ({
+		page,
+	}) => {
+		for (const path of ['/projects', '/arts', '/ru/projects', '/ru/arts']) {
+			await page.goto(path);
+
+			const { heading, columnContent } = await page.evaluate(() => {
+				const column = document.querySelector('[data-content-column]');
+				const h1 = document.querySelector('main h1');
+				if (!column || !h1)
+					throw new Error('Missing the column or its heading');
+
+				// The column's padding box is where its content starts; the
+				// heading must share that left edge (as the home content does).
+				const paddingLeft = parseFloat(getComputedStyle(column).paddingLeft);
+
+				return {
+					heading: h1.getBoundingClientRect().left,
+					columnContent: column.getBoundingClientRect().left + paddingLeft,
+				};
+			});
+
+			expect(heading).toBeCloseTo(columnContent, 0);
+		}
+	});
+
+	test.describe('below the cap', () => {
+		test.use({ viewport: { width: 390, height: 844 } });
+
+		test('every band fills the viewport with the standard gutter', async ({
+			page,
+		}) => {
+			await page.goto('/');
+
+			const geometry = await page.evaluate(() => {
+				const widthOf = (selector: string) => {
+					const element = document.querySelector(selector);
+					if (!element) throw new Error(`Missing ${selector}`);
+					return element.getBoundingClientRect().width;
+				};
+				const column = document.querySelector('[data-content-column]');
+				if (!column) throw new Error('Missing [data-content-column]');
+				const style = getComputedStyle(column);
+
+				return {
+					header: widthOf('header [data-chrome-band]'),
+					footer: widthOf('footer [data-chrome-band]'),
+					content: widthOf('[data-content-column]'),
+					viewport: window.innerWidth,
+					gutter:
+						parseFloat(style.paddingLeft) + parseFloat(style.paddingRight),
+				};
+			});
+
+			// No cap is reached at this width: every band spans the viewport and
+			// the gutter is still applied inside it.
+			expect(geometry.header).toBeCloseTo(geometry.viewport, 0);
+			expect(geometry.footer).toBeCloseTo(geometry.viewport, 0);
+			expect(geometry.content).toBeCloseTo(geometry.viewport, 0);
+			expect(geometry.gutter).toBeGreaterThan(0);
+		});
+	});
+});
+
 test('the header and footer survive a View Transition', async ({ page }) => {
 	await page.goto('/');
 

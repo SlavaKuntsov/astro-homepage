@@ -25,7 +25,7 @@ html:not(.theme-ready) *::after {
 /*
  * Design tokens — the single source of truth for colors, radii, spacing, and
  * container widths. Components use the semantic utilities (`bg-background`,
- * `text-muted-foreground`, `rounded-lg`, `px-gutter`, `max-w-content`), never
+ * `text-muted-foreground`, `rounded-lg`, `px-gutter`, `max-w-chrome`), never
  * raw palette values, so light/dark is driven only by `data-theme`.
  */
 @theme {
@@ -91,8 +91,14 @@ html:not(.theme-ready) *::after {
 	/* Layout rhythm. */
 	--spacing-gutter: clamp(1rem, 4vw, 2rem);
 	--spacing-section: clamp(2.5rem, 7vw, 5rem);
-	--container-content: 72rem;
-	--container-prose: 48rem;
+	/*
+	 * The chrome band — the Header and Footer content share it. It is slightly
+	 * wider than the content column, so the shell frames the page instead of
+	 * stretching across the viewport.
+	 */
+	--container-chrome: 56rem;
+	/* The one content column every page's body sits in (declared at `<main>`). */
+	--container-column: 48rem;
 }
 
 :root {
