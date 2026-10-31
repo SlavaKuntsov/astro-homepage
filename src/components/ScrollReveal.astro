@@ -1,0 +1,126 @@
+---
+// The Site-wide scroll reveal (ticket #28), a prefactor: the motion that used to
+// live inside the Arts gallery is now one opt-in capability. Any container
+// marked `data-reveal` hands its direct children to this script, which hides
+// only the ones below the fold at load and fades them in as they are scrolled
+// to. It renders nothing; the whole behaviour is the bundled script below.
+//
+// The contract, in full:
+//   - only items below the fold at load are ever hidden, so anything on screen
+//     is painted at full strength on the first frame (never a Flash of missing
+//     content);
+//   - the stagger follows the rows the browser actually rendered — the items
+//     sharing a top edge — so it serves a 2-, 3-, or 4-column grid and a
+//     single-column list alike, with no hardcoded column count;
+//   - durations, easing, stagger, and distance come from the motion tokens in
+//     `global.css`; the script only supplies each item's column;
+//   - with `prefers-reduced-motion: reduce`, or without JavaScript, nothing is
+//     hidden (the hidden state is applied here and gated behind
+//     `prefers-reduced-motion: no-preference`).
+---
+
+<script>
+	/** A container opting into the reveal; its direct children are the items. */
+	const REVEAL = '[data-reveal]';
+
+	/** Rows are told apart by their top edge, with this much slack for rounding. */
+	const ROW_TOLERANCE = 1;
+
+	const reduceMotion = () =>
+		window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+	/**
+	 * Groups items into the rows the browser actually rendered — items sharing
+	 * a top edge — and returns each item's left-to-right column within its row.
+	 * Measured before anything is hidden, so the geometry is the real layout.
+	 */
+	const columnsOf = (items: HTMLElement[]): Map<HTMLElement, number> => {
+		const rows: HTMLElement[][] = [];
+		const tops: number[] = [];
+
+		for (const item of items) {
+			const top = Math.round(item.getBoundingClientRect().top);
+			let row = tops.findIndex(
+				candidate => Math.abs(candidate - top) <= ROW_TOLERANCE
+			);
+			if (row === -1) {
+				row = rows.length;
+				tops.push(top);
+				rows.push([]);
+			}
+			rows[row].push(item);
+		}
+
+		const columns = new Map<HTMLElement, number>();
+		for (const row of rows) {
+			row.sort(
+				(a, b) =>
+					a.getBoundingClientRect().left - b.getBoundingClientRect().left
+			);
+			row.forEach((item, column) => columns.set(item, column));
+		}
+
+		return columns;
+	};
+
+	const bindReveal = () => {
+		// Reduced motion is a no-op, not a faster animation: leave the DOM alone
+		// so nothing is ever hidden or moved.
+		if (reduceMotion()) return;
+
+		const containers = Array.from(
+			document.querySelectorAll<HTMLElement>(REVEAL)
+		).filter(container => !container.dataset.revealBound);
+		if (containers.length === 0) return;
+
+		const pending: HTMLElement[] = [];
+
+		for (const container of containers) {
+			// Mark bound first, so a re-run cannot create a second observer for
+			// the same container (no duplicate observers or listeners).
+			container.dataset.revealBound = 'true';
+
+			const items = Array.from(container.children).filter(
+				(child): child is HTMLElement => child instanceof HTMLElement
+			);
+			const belowFold = items.filter(
+				item => item.getBoundingClientRect().top > window.innerHeight
+			);
+			if (belowFold.length === 0) continue;
+
+			const columns = columnsOf(items);
+			for (const item of belowFold) {
+				item.style.setProperty(
+					'--reveal-column',
+					String(columns.get(item) ?? 0)
+				);
+				item.dataset.revealState = 'pending';
+				pending.push(item);
+			}
+		}
+
+		if (pending.length === 0) return;
+
+		// The bottom margin starts the fade just before an item crosses the fold,
+		// so it is never on screen at zero opacity.
+		const observer = new IntersectionObserver(
+			entries => {
+				for (const entry of entries) {
+					if (!entry.isIntersecting) continue;
+
+					(entry.target as HTMLElement).dataset.revealState = 'shown';
+					observer.unobserve(entry.target);
+				}
+			},
+			{ rootMargin: '0px 0px 15% 0px' }
+		);
+
+		for (const item of pending) observer.observe(item);
+	};
+
+	// Containers are page content, so a client-side navigation replaces them:
+	// bind the (new) ones each page load instead of holding a reference. The
+	// bound marker makes a re-run harmless.
+	document.addEventListener('astro:page-load', bindReveal);
+	bindReveal();
+</script>
