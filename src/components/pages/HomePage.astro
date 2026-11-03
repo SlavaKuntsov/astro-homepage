@@ -33,6 +33,12 @@ const education = orderedEducation(
 );
 const skills = await getCollection('skills');
 const arts = orderedArts(entriesForLocale(await getCollection('arts'), lang));
+
+/**
+ * One page column, used by the hero group and by the reveal container below it,
+ * so the two cannot drift apart in gap or alignment when either changes.
+ */
+const column = 'flex w-full flex-col items-start gap-7 sm:gap-8';
 ---
 
 <Layout
@@ -41,13 +47,23 @@ const arts = orderedArts(entriesForLocale(await getCollection('arts'), lang));
 	lang={lang}
 	preloadItalic
 >
-	<div class='flex w-full flex-col items-start gap-7 sm:gap-8'>
+	<div class={column}>
 		<ArtsCarousel arts={arts} t={t} />
 		<Heading t={t} />
-		<MainContent t={t} />
-		<ExperienceHighlights entries={experience} lang={lang} t={t} />
-		<EducationSection entries={education} t={t} />
-		<SkillsSection entries={skills} t={t} />
-		<ContactsSection t={t} />
+
+		<!--
+			The content sections opt into the Site-wide scroll reveal (ticket #30).
+			The hero above is deliberately outside this container: the carousel,
+			greeting, name, and avatar must be fully painted and unmoved on the
+			first frame, because a faded or shifted hero reads as a first-load
+			defect of the same family as the Flash.
+		-->
+		<div class={column} data-reveal>
+			<MainContent t={t} />
+			<ExperienceHighlights entries={experience} lang={lang} t={t} />
+			<EducationSection entries={education} t={t} />
+			<SkillsSection entries={skills} t={t} />
+			<ContactsSection t={t} />
+		</div>
 	</div>
 </Layout>

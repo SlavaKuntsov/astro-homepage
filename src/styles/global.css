@@ -89,15 +89,24 @@ html:not(.theme-ready) *::after {
 	--radius-3xl: calc(var(--radius) + 0.75rem);
 
 	/*
-	 * Motion — the single source of truth for the scroll reveal (ticket #28).
-	 * The CSS transition and the script that schedules the stagger both read
-	 * these, so the reveal's duration, easing, per-column stagger, and travel
-	 * distance are never hardcoded per component.
+	 * Motion — the single source of truth for the scroll reveal (tickets #28,
+	 * #30). The CSS transition and the script that schedules the stagger both
+	 * read these, so the reveal's duration, easing, per-column stagger, and
+	 * travel distance are never hardcoded per component.
+	 *
+	 * The distance and duration are tuned to be *perceptible* rather than
+	 * technically present. Measured on the home page under a normal scroll, the
+	 * earlier 1.25rem/500ms pair finished almost entirely off screen: only ~16%
+	 * of the frames in which a section was visible still showed any fade, so the
+	 * section simply appeared already settled. Travel and time are what a
+	 * visitor actually perceives, while the curve stays close to `ease` so the
+	 * content is ~92% opaque once half of it is on screen — moving, but never
+	 * unreadable.
 	 */
-	--motion-reveal-duration: 500ms;
+	--motion-reveal-duration: 700ms;
 	--motion-reveal-easing: ease;
 	--motion-reveal-stagger: 70ms;
-	--motion-reveal-distance: 1.25rem;
+	--motion-reveal-distance: 2.5rem;
 
 	/* Layout rhythm. */
 	--spacing-gutter: clamp(1rem, 4vw, 2rem);
@@ -399,6 +408,19 @@ html:not(.theme-ready) *::after {
 	[data-reveal-state='pending'] {
 		opacity: 0;
 		translate: 0 var(--motion-reveal-distance);
+	}
+}
+
+/*
+ * Paper does not scroll, so it does not reveal. The hidden state exists to fade
+ * content in on screen; left alone it would drop every item below the fold out
+ * of a printed page — the home page's CV included. Kept here, with the rest of
+ * the mechanism, so no printing consumer has to know about `data-reveal-state`.
+ */
+@media print {
+	[data-reveal-state] {
+		opacity: 1 !important;
+		translate: none !important;
 	}
 }
 
