@@ -102,7 +102,9 @@
 		if (pending.length === 0) return;
 
 		// The bottom margin starts the fade just before an item crosses the fold,
-		// so it is never on screen at zero opacity.
+		// so it is never on screen at zero opacity. Measured: with the trigger
+		// line inside the viewport instead, an item is already ~175px visible while
+		// still fully transparent — the very defect this margin exists to prevent.
 		const observer = new IntersectionObserver(
 			entries => {
 				for (const entry of entries) {
