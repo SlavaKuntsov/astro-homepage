@@ -402,6 +402,19 @@ html:not(.theme-ready) *::after {
 	}
 }
 
+/*
+ * Paper does not scroll, so it does not reveal. The hidden state exists to fade
+ * content in on screen; left alone it would drop every item below the fold out
+ * of a printed page — the home page's CV included. Kept here, with the rest of
+ * the mechanism, so no printing consumer has to know about `data-reveal-state`.
+ */
+@media print {
+	[data-reveal-state] {
+		opacity: 1 !important;
+		translate: none !important;
+	}
+}
+
 /* ── Print: the CV (ticket #11) ─────────────────────────────────────────────
  *
  * Printing any page produces a clean document: the site chrome and the actions
