@@ -88,6 +88,17 @@ html:not(.theme-ready) *::after {
 	--radius-2xl: calc(var(--radius) + 0.5rem);
 	--radius-3xl: calc(var(--radius) + 0.75rem);
 
+	/*
+	 * Motion — the single source of truth for the scroll reveal (ticket #28).
+	 * The CSS transition and the script that schedules the stagger both read
+	 * these, so the reveal's duration, easing, per-column stagger, and travel
+	 * distance are never hardcoded per component.
+	 */
+	--motion-reveal-duration: 500ms;
+	--motion-reveal-easing: ease;
+	--motion-reveal-stagger: 70ms;
+	--motion-reveal-distance: 1.25rem;
+
 	/* Layout rhythm. */
 	--spacing-gutter: clamp(1rem, 4vw, 2rem);
 	--spacing-section: clamp(2.5rem, 7vw, 5rem);
@@ -359,25 +370,35 @@ html:not(.theme-ready) *::after {
 		);
 }
 
-/*
- * Scroll reveal, opt-in from the script: an Artwork below the fold at load is
- * hidden and fades in as it is scrolled to. Only below-the-fold items are ever
- * hidden — an Artwork already on screen must be painted at full strength on the
- * first frame. A `view()` timeline cannot promise that: it freezes a
- * partly-visible Artwork mid-fade, and on a page too short to scroll that is
- * where it stays. Without JavaScript nothing is hidden at all.
+/* ── Scroll reveal (ticket #28) ────────────────────────────────────────────
+ *
+ * A Site-wide, opt-in capability. A container marked `data-reveal` hands its
+ * direct children to the shared `ScrollReveal` script, which hides only the
+ * ones below the fold at load and fades them in as they are scrolled to. Only
+ * below-the-fold items are ever hidden — anything already on screen must be
+ * painted at full strength on the first frame. A `view()` timeline cannot
+ * promise that: it freezes a partly-visible item mid-fade, and on a page too
+ * short to scroll that is where it stays. The hidden state lives behind
+ * `prefers-reduced-motion: no-preference`, and the state is applied by the
+ * script, so with reduced motion — or without JavaScript — nothing is hidden.
+ *
+ * Timing comes entirely from the motion tokens; the script only supplies each
+ * item's column within its rendered row (`--reveal-column`), so the stagger
+ * follows the layout the browser actually painted, not a hardcoded count.
  */
-.art-item[data-reveal] {
+[data-reveal-state] {
 	transition:
-		opacity 500ms ease,
-		translate 500ms ease;
-	transition-delay: var(--reveal-delay, 0ms);
+		opacity var(--motion-reveal-duration) var(--motion-reveal-easing),
+		translate var(--motion-reveal-duration) var(--motion-reveal-easing);
+	transition-delay: calc(
+		var(--reveal-column, 0) * var(--motion-reveal-stagger)
+	);
 }
 
 @media (prefers-reduced-motion: no-preference) {
-	.art-item[data-reveal='pending'] {
+	[data-reveal-state='pending'] {
 		opacity: 0;
-		translate: 0 1.25rem;
+		translate: 0 var(--motion-reveal-distance);
 	}
 }
 

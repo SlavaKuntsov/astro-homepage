@@ -1,6 +1,7 @@
 ---
 import Footer from '@/components/Footer.astro';
 import Header from '@/components/Header.astro';
+import ScrollReveal from '@/components/ScrollReveal.astro';
 import { translations } from '@/i18n';
 import type { Locale } from '@/lib/i18n';
 import '@/styles/global.css';
@@ -49,5 +50,7 @@ const t = translations[lang];
 		</main>
 
 		<Footer t={t} persistKey={`site-footer-${lang}`} />
+
+		<ScrollReveal />
 	</body>
 </html>
