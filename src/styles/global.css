@@ -413,6 +413,21 @@ html:not(.theme-ready) *::after {
 }
 
 /*
+ * A single-column list gets no layout-derived stagger — every item is its own
+ * row, so its column is always 0. The Experience timeline opts into a gentle
+ * cascade down the page instead: each entry's content waits `--reveal-step`
+ * (its authored order) stagger steps after the entry above it. The delay still
+ * comes from the shared token, so the cascade cannot drift from the reveal's
+ * own timing; the rail and dots sit outside the reveal item and stay still.
+ */
+[data-experience-entry] [data-reveal-state] {
+	transition-delay: calc(
+		(var(--reveal-column, 0) + var(--reveal-step, 0)) *
+			var(--motion-reveal-stagger)
+	);
+}
+
+/*
  * Paper does not scroll, so it does not reveal. The hidden state exists to fade
  * content in on screen; left alone it would drop every item below the fold out
  * of a printed page — the home page's CV included. Kept here, with the rest of
