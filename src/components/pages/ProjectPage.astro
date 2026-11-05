@@ -95,6 +95,7 @@ if (data.links?.other)
 					class='flex flex-col gap-3'
 					aria-label={t.projects.gallery}
 					data-project-gallery
+					data-reveal
 				>
 					{images.map(image => (
 						<img
@@ -129,7 +130,11 @@ if (data.links?.other)
 						{t.projects.languages}
 					</h2>
 
-					<ul class='flex flex-col gap-3'>
+					<ul
+						class='flex flex-col gap-3'
+						data-reveal
+						data-reveal-effect='grow'
+					>
 						{meta.languages.map(({ name, percent }) => (
 							<li class='flex flex-col gap-1' data-project-language>
 								<div class='flex items-baseline justify-between gap-3 text-sm'>
@@ -139,10 +144,12 @@ if (data.links?.other)
 								<span
 									class='h-1.5 w-full overflow-hidden rounded-full bg-muted'
 									aria-hidden='true'
+									data-language-track
 								>
 									<span
 										class='block h-full rounded-full bg-primary'
-										style={`width: ${percent}%`}
+										data-language-bar
+										style={`--language-percent: ${percent}%`}
 									/>
 								</span>
 							</li>
