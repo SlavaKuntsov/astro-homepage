@@ -90,9 +90,10 @@ html:not(.theme-ready) *::after {
 
 	/*
 	 * Motion — the single source of truth for the scroll reveal (tickets #28,
-	 * #30). The CSS transition and the script that schedules the stagger both
-	 * read these, so the reveal's duration, easing, per-column stagger, and
-	 * travel distance are never hardcoded per component.
+	 * #30) and the language-bar growth (#31). The CSS transition and the script
+	 * that schedules the stagger both read these, so the reveal's duration,
+	 * easing, per-column stagger, and travel distance are never hardcoded per
+	 * component.
 	 *
 	 * The distance and duration are tuned to be *perceptible* rather than
 	 * technically present. Measured on the home page under a normal scroll, the
@@ -421,6 +422,56 @@ html:not(.theme-ready) *::after {
 	[data-reveal-state] {
 		opacity: 1 !important;
 		translate: none !important;
+	}
+}
+
+/* ── Language breakdown: bars grow into view (ticket #31) ───────────────────
+ *
+ * The Enrichment language breakdown is a measurement, so its bars grow from
+ * zero to the authored percentage when the breakdown is scrolled to. It rides
+ * the same opt-in mechanism as the scroll reveal (`data-reveal`), which hides
+ * only the rows below the fold at load and toggles `data-reveal-state`;
+ * `data-reveal-effect='grow'` swaps the fade-and-rise for a width animation on
+ * the bar itself. A breakdown already on screen is at full width on the first
+ * frame, one scrolled to fills in, and with reduced motion — or without
+ * JavaScript — the bars are simply at full width. The row never fades or moves,
+ * so the label and the percentage stay readable throughout.
+ *
+ * The width comes from the authored `--language-percent` (set per bar in the
+ * markup) and the timing from the motion tokens, so no value is hardcoded here.
+ */
+[data-reveal-effect='grow'] [data-reveal-state] {
+	transition: none;
+}
+
+[data-reveal-effect='grow'] [data-language-bar] {
+	width: var(--language-percent);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+	/* The grow variant cancels the rise defaults: the row stays put and opaque
+	 * while only its bar animates. */
+	[data-reveal-effect='grow'] [data-reveal-state='pending'] {
+		opacity: 1;
+		translate: none;
+	}
+
+	[data-reveal-effect='grow'] [data-reveal-state] [data-language-bar] {
+		transition: width var(--motion-reveal-duration) var(--motion-reveal-easing);
+		transition-delay: calc(
+			var(--reveal-column, 0) * var(--motion-reveal-stagger)
+		);
+	}
+
+	[data-reveal-effect='grow'] [data-reveal-state='pending'] [data-language-bar] {
+		width: 0;
+	}
+}
+
+/* Paper does not scroll, so a bar left pending must still print at its share. */
+@media print {
+	[data-reveal-effect='grow'] [data-reveal-state='pending'] [data-language-bar] {
+		width: var(--language-percent) !important;
 	}
 }
 
