@@ -109,6 +109,24 @@ html:not(.theme-ready) *::after {
 	--motion-reveal-stagger: 70ms;
 	--motion-reveal-distance: 2.5rem;
 
+	/*
+	 * The Arts lightbox's own motion (ticket #35): opening lifts and fades the
+	 * dialog in with its backdrop, closing reverses it and only then releases
+	 * the page, and stepping between Artworks crossfades the image. The open and
+	 * close animations share one duration; the step crossfade has its own
+	 * shorter token, so the two never drift apart without being deliberately
+	 * faster.
+	 */
+	--motion-lightbox-duration: 220ms;
+	/*
+	 * Stepping is deliberately snappier than opening: the dialog's entrance is
+	 * a scene change, but browsing Artworks should feel like flipping through
+	 * them. A shorter crossfade keeps the picture change crisp.
+	 */
+	--motion-lightbox-step-duration: 120ms;
+	--motion-lightbox-easing: ease-out;
+	--motion-lightbox-scale: 0.96;
+
 	/* Layout rhythm. */
 	--spacing-gutter: clamp(1rem, 4vw, 2rem);
 	--spacing-section: clamp(2.5rem, 7vw, 5rem);
@@ -386,6 +404,96 @@ html:not(.theme-ready) *::after {
 			color-mix(in oklab, var(--border) 55%, transparent) 0 1px,
 			transparent 1px 1.5rem
 		);
+}
+
+/* ── Arts lightbox: open, close, and step motion (ticket #35) ───────────────
+ *
+ * The dialog is a native `<dialog>`, so it is display:none while closed; an
+ * animation applied as it opens therefore plays from its first shown frame.
+ * The script marks the element `data-lightbox-state='opening'` before
+ * `showModal()` and `'closing'` before it defers `close()` until the exit
+ * finishes — so the page stays inert for exactly as long as the dialog is
+ * still on screen, and focus can return to the opener once the animation ends.
+ * The backdrop shares the same timing, so the scrim never lingers or vanishes
+ * ahead of the dialog. Stepping crossfades the `<img>` itself from the script,
+ * using the shorter step token so switching Artworks stays crisp.
+ */
+@keyframes arts-lightbox-enter {
+	from {
+		opacity: 0;
+		scale: var(--motion-lightbox-scale);
+	}
+	to {
+		opacity: 1;
+		scale: 1;
+	}
+}
+
+/*
+ * The exit starts from the frame that is actually on screen — the script
+ * freezes the dialog's current opacity, scale, and backdrop opacity into these
+ * variables — so closing mid-enter continues the reverse instead of snapping
+ * back to full size and fading from there.
+ */
+@keyframes arts-lightbox-exit {
+	from {
+		opacity: var(--lightbox-from-opacity, 1);
+		scale: var(--lightbox-from-scale, 1);
+	}
+	to {
+		opacity: 0;
+		scale: var(--motion-lightbox-scale);
+	}
+}
+
+@keyframes arts-lightbox-backdrop-enter {
+	from {
+		opacity: 0;
+	}
+	to {
+		opacity: 1;
+	}
+}
+
+@keyframes arts-lightbox-backdrop-exit {
+	from {
+		opacity: var(--lightbox-backdrop-from-opacity, 1);
+	}
+	to {
+		opacity: 0;
+	}
+}
+
+[data-arts-lightbox][data-lightbox-state='opening'] {
+	animation: arts-lightbox-enter var(--motion-lightbox-duration)
+		var(--motion-lightbox-easing);
+}
+
+[data-arts-lightbox][data-lightbox-state='opening']::backdrop {
+	animation: arts-lightbox-backdrop-enter var(--motion-lightbox-duration)
+		var(--motion-lightbox-easing);
+}
+
+[data-arts-lightbox][data-lightbox-state='closing'] {
+	animation: arts-lightbox-exit var(--motion-lightbox-duration)
+		var(--motion-lightbox-easing) forwards;
+}
+
+[data-arts-lightbox][data-lightbox-state='closing']::backdrop {
+	animation: arts-lightbox-backdrop-exit var(--motion-lightbox-duration)
+		var(--motion-lightbox-easing) forwards;
+}
+
+/*
+ * With reduced motion every transition is instant. The script also skips the
+ * classes entirely and closes synchronously, so no animation frames — not even
+ * the global 0.01ms ones — stand between the action and its result.
+ */
+@media (prefers-reduced-motion: reduce) {
+	[data-arts-lightbox][data-lightbox-state],
+	[data-arts-lightbox][data-lightbox-state]::backdrop {
+		animation: none;
+	}
 }
 
 /* ── Scroll reveal (ticket #28) ────────────────────────────────────────────
