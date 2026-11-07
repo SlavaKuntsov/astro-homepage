@@ -391,19 +391,55 @@ html:not(.theme-ready) *::after {
 	inset: 0;
 }
 
-/* A faint "graph paper" wash behind the grid, mixed from the border token. */
+/*
+ * A faint "graph paper" wash behind the grid. The lines are a static mask over
+ * a solid token color, not a `color-mix()` gradient: a gradient whose color
+ * comes from a Theme token is re-rastered on every frame of the body's
+ * background transition, and on `/arts` that per-frame cost is the Theme
+ * switch's stutter (ticket #43). A solid background-color transitions in
+ * lockstep with the body, and the mask's geometry never changes — the same
+ * lesson `.edge-fade` above encodes.
+ *
+ * The wash is a pseudo-element rather than the panel's own background, because
+ * a mask on the panel would clip its children too. `isolation: isolate` keeps
+ * the `z-index: -1` layer inside the panel's stacking context, so it paints
+ * above the page background and below the cards.
+ */
 .paper-grid {
-	background-image:
-		repeating-linear-gradient(
-			to right,
-			color-mix(in oklab, var(--border) 55%, transparent) 0 1px,
-			transparent 1px 1.5rem
-		),
-		repeating-linear-gradient(
-			to bottom,
-			color-mix(in oklab, var(--border) 55%, transparent) 0 1px,
-			transparent 1px 1.5rem
-		);
+	position: relative;
+	isolation: isolate;
+}
+
+.paper-grid::before {
+	content: '';
+	position: absolute;
+	inset: 0;
+	z-index: -1;
+	border-radius: inherit;
+	background-color: var(--border);
+	opacity: 0.55;
+	transition:
+		background-color var(--default-transition-duration, 300ms)
+			var(--default-transition-timing-function, ease);
+	-webkit-mask-image:
+		repeating-linear-gradient(to right, #000 0 1px, transparent 1px 1.5rem),
+		repeating-linear-gradient(to bottom, #000 0 1px, transparent 1px 1.5rem);
+	mask-image:
+		repeating-linear-gradient(to right, #000 0 1px, transparent 1px 1.5rem),
+		repeating-linear-gradient(to bottom, #000 0 1px, transparent 1px 1.5rem);
+}
+
+/*
+ * While a Theme switch is in flight the gallery promotes each Artwork card to
+ * its own compositor layer, so the animating page background does not drag the
+ * cards into every frame's re-raster. The promotion is deliberately transient
+ * — `will-change` on six cards for the page's whole life would hold six layers
+ * for a 300 ms win — so the script sets `data-theme-switching` only for the
+ * switch and removes it on the background's `transitionend` (with a bounded
+ * timeout fallback). Outside the switch the cards composite exactly as before.
+ */
+.paper-grid[data-theme-switching='true'] .art-sticker {
+	will-change: transform;
 }
 
 /* ── Arts lightbox: open, close, and step motion (ticket #35) ───────────────
