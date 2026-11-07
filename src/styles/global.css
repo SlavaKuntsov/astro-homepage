@@ -125,6 +125,18 @@ html:not(.theme-ready) *::after {
 :root {
 	--radius: 0.75rem;
 
+	/*
+	 * The shared "lift" of a hoverable card: an Artwork sticker and a Project
+	 * card rise by the same distance and swap between the same two shadows, so
+	 * the two surfaces cannot drift apart. The shadows are black alpha in both
+	 * Themes, like the surfaces they fall on.
+	 */
+	--lift-distance: -0.35rem;
+	--lift-shadow:
+		0 1px 2px rgb(0 0 0 / 0.06), 0 10px 24px -14px rgb(0 0 0 / 0.35);
+	--lift-shadow-hover:
+		0 2px 4px rgb(0 0 0 / 0.08), 0 20px 34px -18px rgb(0 0 0 / 0.45);
+
 	/* The warm "orange-75" wash the Site originally opened on. */
 	--background: #fff5e8;
 	--foreground: #241f1a;
@@ -335,9 +347,7 @@ html:not(.theme-ready) *::after {
 	position: relative;
 	background-color: var(--paper);
 	rotate: var(--tilt, 0deg);
-	box-shadow:
-		0 1px 2px rgb(0 0 0 / 0.06),
-		0 10px 24px -14px rgb(0 0 0 / 0.35);
+	box-shadow: var(--lift-shadow);
 	transition:
 		rotate 300ms ease,
 		translate 300ms ease,
@@ -346,10 +356,8 @@ html:not(.theme-ready) *::after {
 .art-sticker:hover,
 .art-sticker:focus-within {
 	rotate: 0deg;
-	translate: 0 -0.35rem;
-	box-shadow:
-		0 2px 4px rgb(0 0 0 / 0.08),
-		0 20px 34px -18px rgb(0 0 0 / 0.45);
+	translate: 0 var(--lift-distance);
+	box-shadow: var(--lift-shadow-hover);
 }
 
 /*
@@ -487,6 +495,73 @@ html:not(.theme-ready) *::after {
 @media print {
 	[data-reveal-effect='grow'] [data-reveal-state='pending'] [data-language-bar] {
 		width: var(--language-percent) !important;
+	}
+}
+
+/* ── Projects index: cards lift on hover or focus (ticket #34) ──────────────
+ *
+ * A Project card joins the Site-wide reveal on the index (the `<li>` is the
+ * reveal item), and its inner card — the element carrying the border, radius,
+ * and shadow — lifts, deepens its shadow, and zooms its cover on hover or
+ * keyboard focus, the same tactile feel as an Artwork sticker (the shared
+ * `--lift-*` tokens above). The lift is a `translate` on that inner element,
+ * not on the reveal item, so it composes with the reveal's own `translate`
+ * instead of fighting over one property.
+ *
+ * The focus ring lives on the card rather than the reveal item for the same
+ * reason the lift does: on the `<li>` the rising opaque card would cover the
+ * ring's top band. The card's own shadow rules out a `ring` (which is a
+ * box-shadow), so the ring is an `outline` — independent of the shadow, and it
+ * travels with the lift.
+ *
+ * With `prefers-reduced-motion: reduce` the lift and the zoom are removed
+ * outright — not merely sped up — and the shared reveal is already a no-op, so
+ * every card is static and fully visible. The shadow still deepens, as hover
+ * feedback that is not motion. Nothing here changes the layout: the lift is a
+ * transform and the zoom is clipped by the card's `overflow-hidden`.
+ */
+.project-card {
+	box-shadow: var(--lift-shadow);
+	transition:
+		translate var(--default-transition-duration, 300ms)
+			var(--default-transition-timing-function, ease),
+		box-shadow var(--default-transition-duration, 300ms)
+			var(--default-transition-timing-function, ease),
+		border-color var(--default-transition-duration, 300ms)
+			var(--default-transition-timing-function, ease);
+}
+
+.project-card:hover,
+.project-card:focus-within {
+	translate: 0 var(--lift-distance);
+	box-shadow: var(--lift-shadow-hover);
+}
+
+.project-card:has(:focus-visible) {
+	outline: 2px solid var(--ring);
+	outline-offset: 2px;
+}
+
+.project-card [data-project-cover] {
+	transition: scale var(--default-transition-duration, 300ms)
+		var(--default-transition-timing-function, ease);
+}
+
+.project-card:hover [data-project-cover],
+.project-card:focus-within [data-project-cover] {
+	scale: 1.04;
+}
+
+@media (prefers-reduced-motion: reduce) {
+	/* The lift and the zoom go; the shadow deepening stays as hover feedback. */
+	.project-card:hover,
+	.project-card:focus-within {
+		translate: none;
+	}
+
+	.project-card:hover [data-project-cover],
+	.project-card:focus-within [data-project-cover] {
+		scale: none;
 	}
 }
 
