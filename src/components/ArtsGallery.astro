@@ -242,6 +242,7 @@ const hasNavigation = arts.length > 1;
 	const PREVIOUS = '[data-arts-lightbox-previous]';
 	const NEXT = '[data-arts-lightbox-next]';
 	const IMAGE = '[data-arts-lightbox-image]';
+	const STAGE = '[data-arts-lightbox-stage]';
 	const CAPTION = '[data-arts-lightbox-caption]';
 	const COUNTER = '[data-arts-lightbox-counter]';
 	const FOCUSABLE =
@@ -251,13 +252,169 @@ const hasNavigation = arts.length > 1;
 	const SWIPE_THRESHOLD = 40;
 	/** A click that moved further than this was a drag, so it is not a click. */
 	const DRAG_SLOP = 8;
+	/** Slack past the animation's own end before the fallback timer fires. */
+	const SETTLE_GRACE = 50;
 
 	/** The thumbnail that opened the lightbox, to focus when it closes. */
 	let opener: HTMLElement | null = null;
 	/** The position of the shown Artwork within the gallery. */
 	let index = 0;
+	/** True while the exit animation runs and `close()` is deferred. */
+	let closing = false;
+	/** Fallback timers, so a missed `animationend` can never wedge the dialog. */
+	let openTimer: ReturnType<typeof setTimeout> | null = null;
+	let closeTimer: ReturnType<typeof setTimeout> | null = null;
+	/**
+	 * The outgoing Artwork of a running crossfade. It is a snapshot layer over
+	 * the canonical image, so the single `[data-arts-lightbox-image]` element —
+	 * and everything that locates it — keeps its meaning.
+	 */
+	let outgoing: HTMLImageElement | null = null;
+	let stepAnimations: Animation[] = [];
+	/** Invalidates a crossfade that a newer step has superseded. */
+	let stepToken = 0;
 
 	const dialogEl = () => document.querySelector<HTMLDialogElement>(DIALOG);
+
+	/** Every transition is instant under `prefers-reduced-motion: reduce`. */
+	const prefersReducedMotion = () =>
+		window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+	/** Parses a CSS time (`220ms`, `0.22s`) into milliseconds. */
+	const timeInMs = (value: string) => {
+		const text = value.trim();
+		const amount = Number.parseFloat(text);
+		if (!Number.isFinite(amount) || amount <= 0) return 0;
+
+		return text.endsWith('ms') || !text.endsWith('s') ? amount : amount * 1000;
+	};
+
+	/** The lightbox motion token in milliseconds; 0 when motion is reduced. */
+	const motionDuration = (dialog: HTMLDialogElement) => {
+		if (prefersReducedMotion()) return 0;
+
+		const value = timeInMs(
+			getComputedStyle(dialog).getPropertyValue('--motion-lightbox-duration')
+		);
+
+		return value > 0 ? value : 220;
+	};
+
+	const easingOf = (dialog: HTMLDialogElement) =>
+		getComputedStyle(dialog)
+			.getPropertyValue('--motion-lightbox-easing')
+			.trim() || 'ease-out';
+
+	/** Stops a running crossfade and discards its snapshot layer. */
+	const clearStep = () => {
+		stepToken++;
+		for (const animation of stepAnimations) animation.cancel();
+		stepAnimations = [];
+		outgoing?.remove();
+		outgoing = null;
+	};
+
+	/** Abandons any opening/closing animation and its fallback timer. */
+	const settle = (dialog: HTMLDialogElement) => {
+		if (openTimer !== null) clearTimeout(openTimer);
+		if (closeTimer !== null) clearTimeout(closeTimer);
+		openTimer = null;
+		closeTimer = null;
+		closing = false;
+		delete dialog.dataset.lightboxState;
+		for (const property of [
+			'--lightbox-from-opacity',
+			'--lightbox-from-scale',
+			'--lightbox-backdrop-from-opacity'
+		]) {
+			dialog.style.removeProperty(property);
+		}
+	};
+
+	/**
+	 * Crossfades the canonical image from its current Artwork to `src` while
+	 * keeping the old bitmap as an absolutely positioned snapshot. The new
+	 * source is assigned synchronously — caption, counter, and `currentSrc` are
+	 * in step the moment a step happens — and the fade waits for the new bitmap
+	 * to decode, so a slow image never flashes blank.
+	 */
+	const crossfade = (
+		dialog: HTMLDialogElement,
+		image: HTMLImageElement,
+		src: string
+	) => {
+		const duration = motionDuration(dialog);
+		const previous = image.currentSrc || image.src;
+
+		if (duration === 0 || previous === '' || previous === src) {
+			clearStep();
+			image.src = src;
+			return;
+		}
+
+		clearStep();
+		const token = stepToken;
+		const stage = dialog.querySelector<HTMLElement>(STAGE);
+		const rect = image.getBoundingClientRect();
+		const stageRect = stage?.getBoundingClientRect();
+
+		const ghost = document.createElement('img');
+		ghost.alt = '';
+		ghost.draggable = false;
+		ghost.setAttribute('aria-hidden', 'true');
+		ghost.className = image.className;
+		ghost.src = previous;
+		ghost.style.position = 'absolute';
+		ghost.style.pointerEvents = 'none';
+		ghost.style.margin = '0';
+		if (stageRect) {
+			ghost.style.left = `${rect.left - stageRect.left}px`;
+			ghost.style.top = `${rect.top - stageRect.top}px`;
+			ghost.style.width = `${rect.width}px`;
+			ghost.style.height = `${rect.height}px`;
+			ghost.style.maxWidth = 'none';
+			ghost.style.maxHeight = 'none';
+		}
+		// Under the canonical image and its controls: the snapshot is a bitmap,
+		// not a new top layer that would bury the arrows and close button.
+		stage?.prepend(ghost);
+		outgoing = ghost;
+
+		image.src = src;
+
+		const easing = easingOf(dialog);
+		const start = () => {
+			if (token !== stepToken) return;
+
+			stepAnimations = [
+				ghost.animate([{ opacity: 1 }, { opacity: 0 }], {
+					duration,
+					easing,
+					fill: 'both'
+				}),
+				image.animate([{ opacity: 0 }, { opacity: 1 }], {
+					duration,
+					easing,
+					fill: 'both'
+				})
+			];
+
+			Promise.allSettled(stepAnimations.map(animation => animation.finished))
+				.then(() => {
+					if (token !== stepToken) return;
+					for (const animation of stepAnimations) animation.cancel();
+					stepAnimations = [];
+					outgoing?.remove();
+					outgoing = null;
+				});
+		};
+
+		// The browser keeps the snapshot visible while the new bitmap decodes.
+		image
+			.decode()
+			.catch(() => undefined)
+			.then(start);
+	};
 
 	/** The gallery's openers, in display order — the lightbox's running order. */
 	const openers = () =>
@@ -267,8 +424,11 @@ const hasNavigation = arts.length > 1;
 	const isModified = (event: MouseEvent) =>
 		event.metaKey || event.ctrlKey || event.shiftKey || event.altKey;
 
-	/** Paints one Artwork into the open lightbox: image, caption, counter. */
-	const show = (trigger: HTMLElement) => {
+	/**
+	 * Paints one Artwork into the open lightbox: image, caption, counter. The
+	 * caption and counter change immediately; only the image crossfades.
+	 */
+	const show = (trigger: HTMLElement, crossfadeImage = false) => {
 		const dialog = dialogEl();
 		if (!dialog) return;
 
@@ -279,8 +439,15 @@ const hasNavigation = arts.length > 1;
 		const image = dialog.querySelector<HTMLImageElement>(IMAGE);
 		const caption = dialog.querySelector<HTMLElement>(CAPTION);
 		const counter = dialog.querySelector<HTMLElement>(COUNTER);
+		const src = thumb ? thumb.currentSrc || thumb.src : '';
 
-		if (image && thumb) image.src = thumb.currentSrc || thumb.src;
+		if (image && src) {
+			if (crossfadeImage) crossfade(dialog, image, src);
+			else {
+				clearStep();
+				image.src = src;
+			}
+		}
 		if (caption) {
 			caption.textContent = trigger.querySelector(TITLE)?.textContent ?? '';
 		}
@@ -289,19 +456,100 @@ const hasNavigation = arts.length > 1;
 
 	/** Moves `delta` Artworks, wrapping around; leaves focus where it is. */
 	const step = (delta: number) => {
+		// While the exit runs the dialog is only still on screen to animate out;
+		// stepping behind it would be a change the visitor never sees.
+		if (closing) return;
+
 		const list = openers();
 		if (list.length < 2) return;
 
 		index = (index + delta + list.length) % list.length;
-		show(list[index]);
+		show(list[index], true);
+	};
+
+	/**
+	 * Ends the close: releases the page exactly once, then lets the `close`
+	 * handler restore focus. Idempotent, so the animation and its fallback
+	 * timer may both reach it safely.
+	 */
+	const finishClose = () => {
+		const dialog = dialogEl();
+		if (!dialog) return;
+
+		if (closeTimer !== null) clearTimeout(closeTimer);
+		if (openTimer !== null) clearTimeout(openTimer);
+		closeTimer = null;
+		openTimer = null;
+		closing = false;
+
+		// Close while the exit state is still applied, so the dialog never
+		// paints one frame back at full strength.
+		if (dialog.open) dialog.close();
+		delete dialog.dataset.lightboxState;
+	};
+
+	/** Starts the exit animation and defers `close()` until it settles. */
+	const beginClose = () => {
+		const dialog = dialogEl();
+		if (!dialog || !dialog.open || closing) return;
+
+		clearStep();
+		const duration = motionDuration(dialog);
+		if (duration === 0) {
+			finishClose();
+			return;
+		}
+
+		closing = true;
+
+		// Freeze the current frame, so closing mid-enter reverses from where the
+		// visitor actually is rather than snapping to full size first.
+		const style = getComputedStyle(dialog);
+		dialog.style.setProperty('--lightbox-from-opacity', style.opacity);
+		dialog.style.setProperty(
+			'--lightbox-from-scale',
+			style.scale === 'none' ? '1' : style.scale
+		);
+		dialog.style.setProperty(
+			'--lightbox-backdrop-from-opacity',
+			getComputedStyle(dialog, '::backdrop').opacity
+		);
+
+		dialog.dataset.lightboxState = 'closing';
+		closeTimer = setTimeout(finishClose, duration + SETTLE_GRACE);
 	};
 
 	const open = (trigger: HTMLElement) => {
 		const dialog = dialogEl();
 		if (!dialog) return;
 
+		// Reopening during the exit keeps the same modal open: cancel the exit
+		// instead of calling `showModal()` on an already-open dialog.
+		if (dialog.open) {
+			settle(dialog);
+			show(trigger);
+			opener = trigger;
+			dialog.querySelector<HTMLElement>(CLOSE)?.focus();
+			return;
+		}
+
+		clearStep();
+		settle(dialog);
 		show(trigger);
 		opener = trigger;
+
+		const duration = motionDuration(dialog);
+		if (duration > 0) {
+			dialog.dataset.lightboxState = 'opening';
+			// The animation's own `animationend` usually clears this first.
+			openTimer = setTimeout(() => {
+				openTimer = null;
+				if (dialog.dataset.lightboxState === 'opening') {
+					delete dialog.dataset.lightboxState;
+				}
+			}, duration + SETTLE_GRACE);
+		}
+
 		dialog.showModal();
 		dialog.querySelector<HTMLElement>(CLOSE)?.focus();
 	};
@@ -350,7 +598,7 @@ const hasNavigation = arts.length > 1;
 			if (dragged) return;
 
 			if (target?.closest(CLOSE) || event.target === dialog) {
-				dialog.close();
+				beginClose();
 			} else if (target?.closest(NEXT)) {
 				step(1);
 			} else if (target?.closest(PREVIOUS)) {
@@ -390,9 +638,34 @@ const hasNavigation = arts.length > 1;
 			(event.shiftKey ? last : first).focus();
 		});
 
-		// Esc is handled by the dialog itself; either way, return the keyboard
-		// user to the thumbnail they opened.
+		// Esc is handled by the dialog itself, but its native close is immediate;
+		// intercept the cancel so the dialog can animate out first.
+		dialog.addEventListener('cancel', event => {
+			event.preventDefault();
+			beginClose();
+		});
+
+		// `animationend` also bubbles from the crossfade images and fires for the
+		// `::backdrop`; only the dialog's own exit completes the close.
+		dialog.addEventListener('animationend', event => {
+			if (event.target !== dialog || event.pseudoElement !== '') return;
+			if (dialog.dataset.lightboxState === 'closing') {
+				finishClose();
+			} else if (dialog.dataset.lightboxState === 'opening') {
+				if (openTimer !== null) clearTimeout(openTimer);
+				openTimer = null;
+				delete dialog.dataset.lightboxState;
+			}
+		});
+
+		// Either a finished exit or a close from elsewhere lands here: settle the
+		// state and return the keyboard user to the thumbnail they opened. A
+		// `close` queued just before a rapid reopen must not steal the new
+		// session's focus or null its opener.
 		dialog.addEventListener('close', () => {
+			if (dialog.open) return;
+			settle(dialog);
+			clearStep();
 			opener?.focus();
 			opener = null;
 		});

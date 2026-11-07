@@ -411,6 +411,22 @@ test.describe('the EN arts gallery at /arts', () => {
 	});
 });
 
+test.describe('without JavaScript', () => {
+	test.use({ javaScriptEnabled: false });
+
+	test('the opener still links to the Artwork image', async ({ page }) => {
+		await page.goto('/ru/arts');
+
+		// The lightbox is an enhancement: with no script the opener is a plain
+		// link to the image, so the Artwork stays viewable.
+		await expect(firstOpener(page)).toHaveAttribute(
+			'href',
+			/\.(avif|webp|png|jpe?g)$/i
+		);
+		await expect(firstOpener(page).locator('img')).toBeVisible();
+	});
+});
+
 test('both Locales pair the same artwork slugs', async ({ page }) => {
 	await page.goto('/ru/arts');
 	const ru = await items(page).evaluateAll(nodes =>
