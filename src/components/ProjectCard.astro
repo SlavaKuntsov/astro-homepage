@@ -5,6 +5,14 @@
 // so a click anywhere opens the Project. A card's tags are the repo's topics
 // (the manual `stack` is the fallback) and a public Project whose repo was
 // reached at build also shows its stars and primary language.
+//
+// The `<li>` is the item the index's scroll reveal (ticket #34) fades and lifts;
+// the inner card carries the border, radius, shadow, and focus ring and is what
+// lifts and zooms its cover on hover or keyboard focus — the same tactile feel
+// as an Artwork sticker. Keeping the two on separate elements lets the reveal's
+// `translate` and the lift's `translate` compose instead of fighting over one
+// property, and keeps the focus ring travelling with the lifted card instead of
+// being covered by it.
 import StackChips from '@/components/StackChips.astro';
 import { slugOfEntryId } from '@/lib/collection';
 import type { ProjectMetadata } from '@/lib/enrichment';
@@ -29,62 +37,67 @@ const cover = coverImage(data);
 ---
 
 <li
-	class='group flex flex-col overflow-hidden rounded-2xl border border-border bg-card transition-colors hover:border-primary has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-primary'
+	class='group flex'
 	data-project
 	data-slug={slug}
 	data-visibility={data.visibility}
 	data-featured={data.featured === true}
 	data-github-repo={data.githubRepo}
 >
-	<a
-		href={href}
-		aria-labelledby={`project-${slug}`}
-		class='flex flex-1 flex-col focus-visible:outline-none'
+	<div
+		class='project-card flex flex-1 flex-col overflow-hidden rounded-2xl border border-border bg-card hover:border-primary'
+		data-project-card
 	>
-		{cover && (
-			<img
-				src={cover}
-				alt=''
-				width='640'
-				height='360'
-				loading='lazy'
-				class='aspect-video w-full object-cover'
-				data-project-cover
-			/>
-		)}
-
-		<div class='flex flex-1 flex-col gap-4 p-5'>
-			<h2
-				id={`project-${slug}`}
-				class='font-heading text-xl font-semibold text-foreground transition-colors group-hover:text-primary'
-			>
-				{data.title}
-			</h2>
-
-			{meta.description !== '' && (
-				<p class='text-base text-muted-foreground'>{meta.description}</p>
+		<a
+			href={href}
+			aria-labelledby={`project-${slug}`}
+			class='flex flex-1 flex-col focus-visible:outline-none'
+		>
+			{cover && (
+				<img
+					src={cover}
+					alt=''
+					width='640'
+					height='360'
+					loading='lazy'
+					class='aspect-video w-full object-cover'
+					data-project-cover
+				/>
 			)}
 
-			<StackChips items={meta.tags} label={t.projects.tags} />
+			<div class='flex flex-1 flex-col gap-4 p-5'>
+				<h2
+					id={`project-${slug}`}
+					class='font-heading text-xl font-semibold text-foreground transition-colors group-hover:text-primary'
+				>
+					{data.title}
+				</h2>
 
-			{(meta.stars !== null || meta.language !== null) && (
-				<p class='flex flex-wrap items-center gap-3 text-sm text-muted-foreground'>
-					{meta.stars !== null && (
-						<span data-project-stars>
-							<span aria-hidden='true'>★ </span>
-							<span class='sr-only'>{t.projects.stars}: </span>
-							{meta.stars}
-						</span>
-					)}
-					{meta.language !== null && (
-						<span data-project-language>{meta.language}</span>
-					)}
-				</p>
-			)}
+				{meta.description !== '' && (
+					<p class='text-base text-muted-foreground'>{meta.description}</p>
+				)}
 
-			<span class='mt-auto w-fit font-medium text-primary underline decoration-primary/40 underline-offset-4 transition-colors group-hover:decoration-primary'>
-				{t.projects.viewProject}
-			</span>
-		</div>
-	</a>
+				<StackChips items={meta.tags} label={t.projects.tags} />
+
+				{(meta.stars !== null || meta.language !== null) && (
+					<p class='flex flex-wrap items-center gap-3 text-sm text-muted-foreground'>
+						{meta.stars !== null && (
+							<span data-project-stars>
+								<span aria-hidden='true'>★ </span>
+								<span class='sr-only'>{t.projects.stars}: </span>
+								{meta.stars}
+							</span>
+						)}
+						{meta.language !== null && (
+							<span data-project-language>{meta.language}</span>
+						)}
+					</p>
+				)}
+
+				<span class='mt-auto w-fit font-medium text-primary underline decoration-primary/40 underline-offset-4 transition-colors group-hover:decoration-primary'>
+					{t.projects.viewProject}
+				</span>
+			</div>
+		</a>
+	</div>
 </li>
