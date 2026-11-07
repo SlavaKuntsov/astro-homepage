@@ -31,7 +31,10 @@ const titleAt = (page: Page, index: number) =>
 /** Slows the lightbox motion so its middle can be observed deterministically. */
 const slowMotion = (page: Page, ms = 800) =>
 	page.addStyleTag({
-		content: `:root { --motion-lightbox-duration: ${ms}ms; }`
+		content: `:root {
+			--motion-lightbox-duration: ${ms}ms;
+			--motion-lightbox-step-duration: ${ms}ms;
+		}`
 	});
 
 /** The dialog's painted opacity, scale, and the backdrop's opacity. */

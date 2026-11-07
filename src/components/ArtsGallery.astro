@@ -300,6 +300,19 @@ const hasNavigation = arts.length > 1;
 		return value > 0 ? value : 220;
 	};
 
+	/** The step crossfade's own (shorter) token; falls back to the open one. */
+	const stepDuration = (dialog: HTMLDialogElement) => {
+		if (prefersReducedMotion()) return 0;
+
+		const value = timeInMs(
+			getComputedStyle(dialog).getPropertyValue(
+				'--motion-lightbox-step-duration'
+			)
+		);
+
+		return value > 0 ? value : motionDuration(dialog);
+	};
+
 	const easingOf = (dialog: HTMLDialogElement) =>
 		getComputedStyle(dialog)
 			.getPropertyValue('--motion-lightbox-easing')
@@ -343,7 +356,7 @@ const hasNavigation = arts.length > 1;
 		image: HTMLImageElement,
 		src: string
 	) => {
-		const duration = motionDuration(dialog);
+		const duration = stepDuration(dialog);
 		const previous = image.currentSrc || image.src;
 
 		if (duration === 0 || previous === '' || previous === src) {

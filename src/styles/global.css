@@ -112,11 +112,18 @@ html:not(.theme-ready) *::after {
 	/*
 	 * The Arts lightbox's own motion (ticket #35): opening lifts and fades the
 	 * dialog in with its backdrop, closing reverses it and only then releases
-	 * the page, and stepping between Artworks crossfades the image. The same
-	 * duration drives the CSS open/close animations and the script's step
-	 * crossfade, so the two cannot drift apart.
+	 * the page, and stepping between Artworks crossfades the image. The open and
+	 * close animations share one duration; the step crossfade has its own
+	 * shorter token, so the two never drift apart without being deliberately
+	 * faster.
 	 */
 	--motion-lightbox-duration: 220ms;
+	/*
+	 * Stepping is deliberately snappier than opening: the dialog's entrance is
+	 * a scene change, but browsing Artworks should feel like flipping through
+	 * them. A shorter crossfade keeps the picture change crisp.
+	 */
+	--motion-lightbox-step-duration: 120ms;
 	--motion-lightbox-easing: ease-out;
 	--motion-lightbox-scale: 0.96;
 
@@ -409,7 +416,7 @@ html:not(.theme-ready) *::after {
  * still on screen, and focus can return to the opener once the animation ends.
  * The backdrop shares the same timing, so the scrim never lingers or vanishes
  * ahead of the dialog. Stepping crossfades the `<img>` itself from the script,
- * using the same duration token.
+ * using the shorter step token so switching Artworks stays crisp.
  */
 @keyframes arts-lightbox-enter {
 	from {
