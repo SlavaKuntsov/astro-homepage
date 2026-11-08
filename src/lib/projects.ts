@@ -1,9 +1,14 @@
 /**
  * The `projects` content collection (GLOSSARY: *Project*): the typed
  * frontmatter for a showcased piece of work, plus the pure helpers that turn
- * raw entries into display-ready data. A Project pairs manual fields (title,
- * summary, images, links, stack) with optional build-time *Enrichment* from a
- * public GitHub repo (`src/lib/enrichment.ts`); manual fields always win.
+ * raw entries into display-ready data.
+ *
+ * A Project's Locale-independent fields — cover, gallery, stack, links,
+ * visibility, featured, and GitHub repo — live once in `projects/shared.json`,
+ * keyed by the slug both Locale files share, so a Project cannot drift between
+ * Locales (ADR-0004). The per-Locale markdown keeps only `title`, `summary`, and
+ * the body; `mergeProject` folds a localized entry with its shared record into
+ * the shape the Site renders and *Enrichment* reads.
  *
  * The Locale and slug are read from the entry id (`{ru,en}/<slug>`) via
  * `collection.ts`, so the two locale files pair by filename. Display order is
@@ -12,6 +17,7 @@
 
 import { z } from 'astro/zod';
 import projectOrder from '@/content/projects/order.json';
+import sharedProjectData from '@/content/projects/shared.json';
 import { slugOfEntryId } from './collection';
 import { rankOf } from './order';
 
@@ -20,13 +26,12 @@ const repoSlug = z
 	.string()
 	.regex(/^[\w.-]+\/[\w.-]+$/, 'expected an `owner/repo` pair');
 
-/** One Project's typed frontmatter. */
-export const projectSchema = z
+/**
+ * The fields every Locale shares, authored once per slug in `shared.json`.
+ * A Project that names a private visibility cannot also name a repo.
+ */
+export const sharedProjectSchema = z
 	.object({
-		title: z.string().min(1),
-		// Optional on purpose: an unauthored (or `null`) summary lets *Enrichment*
-		// supply the repo's description instead (see `mergeProjectMetadata`).
-		summary: z.string().min(1).nullish(),
 		cover: z.string().min(1).optional(),
 		images: z.array(z.string().min(1)).optional(),
 		stack: z.array(z.string().min(1)).optional(),
@@ -41,6 +46,7 @@ export const projectSchema = z
 		featured: z.boolean().optional(),
 		githubRepo: repoSlug.optional(),
 	})
+	.strict()
 	.superRefine((project, ctx) => {
 		// Enrichment only reads public repos, so naming one on a private Project
 		// is a contradiction: fail at build rather than at the fetch.
@@ -53,13 +59,74 @@ export const projectSchema = z
 		}
 	});
 
-/** The validated frontmatter of one Project. */
-export type ProjectFrontmatter = z.infer<typeof projectSchema>;
+/** One Project's Locale-independent fields, as stored in `shared.json`. */
+export type ProjectSharedFrontmatter = z.infer<typeof sharedProjectSchema>;
 
-/** The minimal shape the helpers need; content-layer entries satisfy it. */
+/**
+ * One Project's per-Locale frontmatter: only the fields that actually differ
+ * between Locales, plus the markdown body. Shared fields are rejected here so a
+ * duplicated `cover` or `stack` fails the build instead of drifting.
+ */
+export const projectSchema = z
+	.object({
+		title: z.string().min(1),
+		// Optional on purpose: an unauthored (or `null`) summary lets *Enrichment*
+		// supply the repo's description instead (see `mergeProjectMetadata`).
+		summary: z.string().min(1).nullish(),
+	})
+	.strict();
+
+/** The validated per-Locale frontmatter of one Project. */
+export type ProjectLocalizedFrontmatter = z.infer<typeof projectSchema>;
+
+/** A localized Project's data merged with its shared record: what pages render. */
+export type ProjectData = ProjectLocalizedFrontmatter &
+	ProjectSharedFrontmatter;
+
+/** The slug-keyed shared records, validated once at build. */
+export const sharedProjects = z
+	.record(z.string().min(1), sharedProjectSchema)
+	.parse(sharedProjectData);
+
+/** The minimal shape a localized content entry has before merging. */
+export interface LocalizedProjectEntry {
+	id: string;
+	data: ProjectLocalizedFrontmatter;
+}
+
+/** The minimal merged shape the helpers need; rendered entries satisfy it. */
 export interface ProjectEntry {
 	id: string;
-	data: ProjectFrontmatter;
+	data: ProjectData;
+}
+
+/** A localized entry with its shared fields filled in by `mergeProject`. */
+export type MergedProjectEntry<
+	T extends LocalizedProjectEntry = LocalizedProjectEntry,
+> = T & ProjectEntry;
+
+/**
+ * Fold a localized Project together with its shared record. The shared record
+ * supplies everything except `title` and `summary`, which the localized entry
+ * keeps; a slug with no shared record throws so a half-authored Project fails
+ * the build instead of rendering undefined fields.
+ */
+export function mergeProject<T extends LocalizedProjectEntry>(
+	entry: T,
+	sharedBySlug: Readonly<
+		Record<string, ProjectSharedFrontmatter>
+	> = sharedProjects
+): MergedProjectEntry<T> {
+	const slug = slugOfEntryId(entry.id);
+	const shared = sharedBySlug[slug];
+
+	if (shared === undefined) {
+		throw new Error(
+			`project "${slug}" has no record in \`projects/shared.json\``
+		);
+	}
+
+	return { ...entry, data: { ...shared, ...entry.data } };
 }
 
 /**
@@ -86,7 +153,7 @@ export function orderedProjects<T extends ProjectEntry>(
 
 /** The image shown on an index card: the cover, else the first gallery image. */
 export function coverImage(
-	data: Pick<ProjectFrontmatter, 'cover' | 'images'>
+	data: Pick<ProjectSharedFrontmatter, 'cover' | 'images'>
 ): string | null {
 	return data.cover ?? data.images?.[0] ?? null;
 }
@@ -96,7 +163,7 @@ export function coverImage(
  * image when no gallery was authored.
  */
 export function galleryImages(
-	data: Pick<ProjectFrontmatter, 'cover' | 'images'>
+	data: Pick<ProjectSharedFrontmatter, 'cover' | 'images'>
 ): string[] {
 	if (data.images !== undefined && data.images.length > 0) return data.images;
 	return data.cover === undefined ? [] : [data.cover];

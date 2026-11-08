@@ -13,7 +13,7 @@ import Layout from '@/layouts/Layout.astro';
 import { entriesForLocale } from '@/lib/collection';
 import { enrichProjects } from '@/lib/enrichment';
 import type { Locale } from '@/lib/i18n';
-import { orderedProjects } from '@/lib/projects';
+import { mergeProject, orderedProjects } from '@/lib/projects';
 import { getCollection } from 'astro:content';
 
 interface Props {
@@ -24,7 +24,9 @@ interface Props {
 const { lang } = Astro.props;
 const t = translations[lang];
 const entries = orderedProjects(
-	entriesForLocale(await getCollection('projects'), lang)
+	entriesForLocale(await getCollection('projects'), lang).map(entry =>
+		mergeProject(entry)
+	)
 );
 const projects = await enrichProjects(entries);
 ---

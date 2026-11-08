@@ -126,7 +126,7 @@ A refactored, Astro-native version of the Site that:
 The theme contract encoded as a shape (from the grilling session):
 
 ```ts
-type Theme = 'light' | 'dark';           // persisted at localStorage["theme"]
+type Theme = 'light' | 'dark'; // persisted at localStorage["theme"]
 // DOM contract: <html data-theme="light"|"dark" style="color-scheme: ...">
 // Pre-paint order: (1) read localStorage, (2) else matchMedia prefers-color-scheme,
 // (3) default "light".
@@ -141,12 +141,15 @@ type Theme = 'light' | 'dark';           // persisted at localStorage["theme"]
 - `education/{ru,en}/<slug>.md` — frontmatter: `institution`, `institutionUrl?`,
   `level`, `faculty?`, `field?`, `start` (YYYY), `end?` or `current: boolean`,
   `location?`. Dated by year (ADR-0010).
-- `projects/{ru,en}/<slug>.md` — frontmatter: `title`, `summary?`, `cover?`,
-  `images?: string[]`, `stack?`, `links?: { live?, github?, other? }`,
-  `visibility: 'public' | 'private'`, `featured?: boolean`, optional
-  `githubRepo?: string` (owner/repo) to trigger enrichment. `summary` and
-  `stack` may be omitted (or `summary: null`) so enrichment supplies the
-  description and the tags.
+- `projects/{ru,en}/<slug>.md` — frontmatter: `title`, `summary?`. The
+  locale-independent fields live once per slug in `projects/shared.json`
+  (`cover?`, `images?: string[]`, `stack?`,
+  `links?: { live?, github?, other? }`, `visibility: 'public' | 'private'`,
+  `featured?: boolean`, optional `githubRepo?: string` (owner/repo) to trigger
+  enrichment), so a Project cannot drift between Locales; `mergeProject` folds a
+  localized entry with its shared record for rendering. `summary` and `stack`
+  may be omitted (or `summary: null`) so enrichment supplies the description and
+  the tags.
 - `arts/{ru,en}/<slug>.md` — frontmatter: `title`, `image`, `tags?: string[]`,
   `link?`.
 - `skills/<group-id>.md` — the one locale-independent collection (ADR-0008):

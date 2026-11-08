@@ -32,10 +32,12 @@ const skills = defineCollection({
 	schema: skillGroupSchema,
 });
 
-// ADR-0004: one markdown file per Locale under `projects/{ru,en}/<slug>.md`.
-// The schema (`src/lib/projects.ts`) fails the build on bad frontmatter and on
-// a `githubRepo` that contradicts `visibility`; a public Project may then be
-// enriched from GitHub at build time (`src/lib/enrichment.ts`).
+// ADR-0004: one markdown file per Locale under `projects/{ru,en}/<slug>.md`
+// holding only the localized `title`/`summary`; the Locale-independent fields
+// live once per slug in `projects/shared.json`. Both schemas
+// (`src/lib/projects.ts`) fail the build on bad data and on a `githubRepo` that
+// contradicts `visibility`; a public Project may then be enriched from GitHub at
+// build time (`src/lib/enrichment.ts`).
 const projects = defineCollection({
 	loader: glob({ pattern: '**/*.md', base: './src/content/projects' }),
 	schema: projectSchema,
