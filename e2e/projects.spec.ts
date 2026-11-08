@@ -34,10 +34,12 @@ test.describe('the RU projects index at /ru/projects', () => {
 		const all = cards(page);
 		expect(await all.count()).toBeGreaterThanOrEqual(1);
 
+		// Every card always carries its title and the "View project" affordance.
+		// Its description and tags may come from live Enrichment, which is
+		// optional, so they are asserted only when the build reached GitHub.
 		for (const card of await all.all()) {
 			await expect(card.getByRole('heading', { level: 2 })).not.toBeEmpty();
-			await expect(card.locator('p').first()).not.toBeEmpty();
-			await expect(card.locator('li').first()).not.toBeEmpty();
+			await expect(card.getByText('Смотреть проект')).toBeVisible();
 		}
 	});
 
@@ -78,9 +80,9 @@ test.describe('the RU projects index at /ru/projects', () => {
 		const card = cards(page).first();
 		const slug = await card.getAttribute('data-slug');
 
-		// Click the description — not the title or the "View project" affordance:
-		// the whole card is one link, so anywhere opens the Project.
-		await card.locator('p').first().click();
+		// The whole card is one link, so clicking the title opens the Project
+		// (a description may be absent when Enrichment was not reached).
+		await card.getByRole('heading', { level: 2 }).click();
 
 		await page.waitForURL(
 			url => url.pathname.replace(/\/+$/, '') === `/ru/projects/${slug}`
@@ -91,11 +93,18 @@ test.describe('the RU projects index at /ru/projects', () => {
 		);
 	});
 
-	test('shows the tags of every project', async ({ page }) => {
+	// Tags are the repo's topics, else the manual `stack`. Both can come from
+	// live Enrichment, so a build that did not reach GitHub may show none; when
+	// a card does render tags they must be a non-empty list.
+	test('shows tags when the repo or stack provides them', async ({ page }) => {
 		await page.goto('/ru/projects');
 
 		for (const card of await cards(page).all()) {
-			await expect(card.getByRole('list', { name: 'Теги' })).toBeVisible();
+			const tags = card.getByRole('list', { name: 'Теги' });
+			if ((await tags.count()) === 0) continue;
+
+			await expect(tags).toBeVisible();
+			expect(await tags.locator('li').count()).toBeGreaterThan(0);
 		}
 	});
 });
@@ -126,7 +135,7 @@ test('both Locales pair the same project slugs', async ({ page }) => {
 });
 
 test.describe('a project detail page', () => {
-	test('shows the title, description, markdown body, gallery, and links', async ({
+	test('shows the title, markdown body, gallery, and links', async ({
 		page,
 	}) => {
 		const response = await page.goto('/ru/projects/astro-homepage');
@@ -139,14 +148,18 @@ test.describe('a project detail page', () => {
 		const detail = page.locator('[data-project-detail]');
 		await expect(detail).toHaveAttribute('data-slug', 'astro-homepage');
 
-		// The header description is the manual `summary`, else the repo's own
-		// description — the latter comes from the live GitHub API at build, so
-		// only its presence is asserted here. Which source wins is pinned by
-		// the merge unit tests (`src/lib/enrichment.test.ts`).
-		await expect(detail.locator('header p').first()).not.toBeEmpty();
-
-		// The header tags: the repo's topics when reached, else the manual stack.
-		await expect(detail.getByRole('list', { name: 'Теги' })).toBeVisible();
+		// The header description and tags can come from live Enrichment (this
+		// Project authors neither a summary nor a stack), so a build that did not
+		// reach GitHub simply omits them. Which source wins is pinned by the merge
+		// unit tests (`src/lib/enrichment.test.ts`); here we only guard presence.
+		const description = detail.locator('header p').first();
+		if ((await description.count()) > 0) {
+			await expect(description).not.toBeEmpty();
+		}
+		const tags = detail.getByRole('list', { name: 'Теги' });
+		if ((await tags.count()) > 0) {
+			await expect(tags).toBeVisible();
+		}
 
 		// The long-form markdown body (ADR-0004), not just the frontmatter.
 		await expect(detail.locator('[data-project-body] p').first()).not.toBeEmpty();
@@ -175,18 +188,6 @@ test.describe('a project detail page', () => {
 		).toHaveAttribute('href', '/ru/projects');
 	});
 
-	test('renders a private project without a language breakdown', async ({
-		page,
-	}) => {
-		const response = await page.goto('/ru/projects/private-crm');
-		expect(response?.status()).toBe(200);
-
-		const detail = page.locator('[data-project-detail]');
-		await expect(detail).toHaveAttribute('data-visibility', 'private');
-		await expect(detail.locator('[data-project-body] p').first()).not.toBeEmpty();
-		await expect(detail.locator('[data-project-languages]')).toHaveCount(0);
-	});
-
 	// Enrichment is optional and hits the real GitHub API at build. When it was
 	// reached the language breakdown must be well formed; when it failed the page
 	// must still render — the acceptance criterion is "degrade gracefully, never
@@ -202,6 +203,31 @@ test.describe('a project detail page', () => {
 			const rows = breakdown.locator('[data-project-language]');
 			expect(await rows.count()).toBeGreaterThanOrEqual(1);
 			await expect(rows.first()).toContainText(/\d+(\.\d+)?%/);
+		}
+	});
+});
+
+// The published toggle (ticket #53): `private-crm` keeps its content in the
+// repo but is authored `published: false`, so it leaves both indexes and its
+// detail route is not generated in either Locale.
+test.describe('the published toggle', () => {
+	test('an unpublished Project is absent from both indexes', async ({ page }) => {
+		for (const path of ['/projects', '/ru/projects']) {
+			const response = await page.goto(path);
+			expect(response?.status()).toBe(200);
+
+			await expect(
+				page.locator('[data-project][data-slug="private-crm"]')
+			).toHaveCount(0);
+		}
+	});
+
+	test('an unpublished Project has no detail route in either Locale', async ({
+		page,
+	}) => {
+		for (const path of ['/projects/private-crm', '/ru/projects/private-crm']) {
+			const response = await page.goto(path);
+			expect(response?.status()).toBe(404);
 		}
 	});
 });

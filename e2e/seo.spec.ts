@@ -22,7 +22,12 @@ interface ExpectedPage {
 	/** The EN counterpart path (used for the hreflang `en`/`x-default` links). */
 	enPath: string;
 	title: string;
-	description: string;
+	/**
+	 * The expected description. Omitted for a Project detail page whose
+	 * description comes from live Enrichment: then only its presence and
+	 * consistency across the description tags is asserted.
+	 */
+	description?: string;
 	/** The page's `og:type`; defaults to `website`. */
 	ogType?: 'website' | 'article';
 }
@@ -100,25 +105,23 @@ const PAGES: ExpectedPage[] = [
 		title: 'Арты — Кунцов Святослав',
 		description: 'Галерея художественных работ Кунцова Святослава.',
 	},
-	// A Project detail page (deterministic description: authored `summary`).
+	// A Project detail page. Its description comes from live Enrichment (the
+	// Project authors no summary), so only presence and consistency is asserted.
+	// `private-crm` is `published: false` (ticket #53) and so has no route.
 	{
-		path: '/projects/private-crm',
+		path: '/projects/astro-homepage',
 		locale: 'en',
-		ruPath: '/ru/projects/private-crm',
-		enPath: '/projects/private-crm',
-		title: 'Logistics CRM — Sviataslau Kuntsou',
-		description:
-			'An internal system for dispatchers covering orders, routes, and billing.',
+		ruPath: '/ru/projects/astro-homepage',
+		enPath: '/projects/astro-homepage',
+		title: 'Portfolio Site — Sviataslau Kuntsou',
 		ogType: 'article',
 	},
 	{
-		path: '/ru/projects/private-crm',
+		path: '/ru/projects/astro-homepage',
 		locale: 'ru',
-		ruPath: '/ru/projects/private-crm',
-		enPath: '/projects/private-crm',
-		title: 'CRM для логистики — Кунцов Святослав',
-		description:
-			'Внутренняя система для диспетчеров: заявки, маршруты и расчёты.',
+		ruPath: '/ru/projects/astro-homepage',
+		enPath: '/projects/astro-homepage',
+		title: 'Сайт-портфолио — Кунцов Святослав',
 		ogType: 'article',
 	},
 ];
@@ -144,9 +147,11 @@ test.describe('per-page metadata', () => {
 
 			// Primary tags.
 			await expect(page).toHaveTitle(expected.title);
-			expect(await meta(page, 'meta[name="description"]')).toBe(
-				expected.description
-			);
+			const description = await meta(page, 'meta[name="description"]');
+			expect(description).toBeTruthy();
+			if (expected.description !== undefined) {
+				expect(description).toBe(expected.description);
+			}
 
 			// Canonical: absolute, on the real origin, and this page's path.
 			const canonical = await page
@@ -175,7 +180,7 @@ test.describe('per-page metadata', () => {
 				expected.title
 			);
 			expect(await meta(page, 'meta[property="og:description"]')).toBe(
-				expected.description
+				description
 			);
 			expect(pathOf(await meta(page, 'meta[property="og:url"]'))).toBe(
 				expected.path.replace(/\/+$/, '') || '/'
@@ -197,7 +202,7 @@ test.describe('per-page metadata', () => {
 				expected.title
 			);
 			expect(await meta(page, 'meta[name="twitter:description"]')).toBe(
-				expected.description
+				description
 			);
 			expect(
 				new URL((await meta(page, 'meta[name="twitter:image"]')) as string)
