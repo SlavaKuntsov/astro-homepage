@@ -4,7 +4,8 @@
  * raw entries into display-ready data.
  *
  * A Project's Locale-independent fields — cover, gallery, stack, links,
- * visibility, featured, and GitHub repo — live once in `projects/shared.json`,
+ * visibility, featured, published, and GitHub repo — live once in
+ * `projects/shared.json`,
  * keyed by the slug both Locale files share, so a Project cannot drift between
  * Locales (ADR-0004). The per-Locale markdown keeps only `title`, `summary`, and
  * the body; `mergeProject` folds a localized entry with its shared record into
@@ -44,6 +45,10 @@ export const sharedProjectSchema = z
 			.optional(),
 		visibility: z.enum(['public', 'private']),
 		featured: z.boolean().optional(),
+		// A display toggle, not a visibility one: `false` keeps the Project in the
+		// repo but takes it off the Site. Defaults to `true` so existing records
+		// need no change.
+		published: z.boolean().default(true),
 		githubRepo: repoSlug.optional(),
 	})
 	.strict()
@@ -59,8 +64,12 @@ export const sharedProjectSchema = z
 		}
 	});
 
-/** One Project's Locale-independent fields, as stored in `shared.json`. */
-export type ProjectSharedFrontmatter = z.infer<typeof sharedProjectSchema>;
+/**
+ * One Project's Locale-independent fields, as authored in `shared.json`.
+ * This is the schema's input type, so `published` is optional: omitting it is
+ * valid and the parsed record gets the `true` default.
+ */
+export type ProjectSharedFrontmatter = z.input<typeof sharedProjectSchema>;
 
 /**
  * One Project's per-Locale frontmatter: only the fields that actually differ
@@ -127,6 +136,18 @@ export function mergeProject<T extends LocalizedProjectEntry>(
 	}
 
 	return { ...entry, data: { ...shared, ...entry.data } };
+}
+
+/**
+ * The Projects the Site shows: those not explicitly unpublished. `published`
+ * defaults to `true`, so a Project is hidden only by authoring
+ * `published: false` in its shared record. Returns a new array; the input is
+ * left untouched.
+ */
+export function publishedProjects<T extends ProjectEntry>(
+	entries: readonly T[]
+): T[] {
+	return entries.filter(entry => entry.data.published !== false);
 }
 
 /**

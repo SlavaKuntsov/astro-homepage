@@ -3,7 +3,11 @@ import type { CollectionEntry } from 'astro:content';
 import { getCollection } from 'astro:content';
 import ProjectPage from '@/components/pages/ProjectPage.astro';
 import { entriesForLocale, slugOfEntryId } from '@/lib/collection';
-import { mergeProject, type MergedProjectEntry } from '@/lib/projects';
+import {
+	mergeProject,
+	publishedProjects,
+	type MergedProjectEntry,
+} from '@/lib/projects';
 
 interface Props {
 	entry: MergedProjectEntry<CollectionEntry<'projects'>>;
@@ -11,13 +15,18 @@ interface Props {
 
 // RU lives under `/ru/…` (ADR-0011): one page per Project slug authored under
 // `projects/ru/`, paired with its EN counterpart by slug. Each localized entry
-// is merged with its shared record (ADR-0004) before rendering.
+// is merged with its shared record (ADR-0004) before rendering, and unpublished
+// Projects get no route at all.
 export async function getStaticPaths() {
-	const entries = entriesForLocale(await getCollection('projects'), 'ru');
+	const entries = publishedProjects(
+		entriesForLocale(await getCollection('projects'), 'ru').map(entry =>
+			mergeProject(entry)
+		)
+	);
 
 	return entries.map(entry => ({
 		params: { slug: slugOfEntryId(entry.id) },
-		props: { entry: mergeProject(entry) },
+		props: { entry },
 	}));
 }
 
