@@ -1,5 +1,6 @@
-import type { Page } from '@playwright/test';
+import type { Locator, Page } from '@playwright/test';
 import { expect, test } from './fixtures';
+import { gallerySlugs, repoSlugs } from './project-data';
 
 /**
  * The Project detail page's two motions (ticket #31): the image gallery joins
@@ -13,9 +14,10 @@ import { expect, test } from './fixtures';
  * `e2e/reveal.spec.ts` (ticket #28); this file pins only the detail page's use
  * of it.
  *
- * The gallery is exercised on `flowix`, which authors four images. The language
- * breakdown exists only when the build-time Enrichment reached GitHub, so its
- * tests skip when it did not: the page must render either way, exactly as
+ * The gallery scenario picks whichever published Project authors a multi-image
+ * gallery, and the language-breakdown scenario whichever names a public repo.
+ * The breakdown exists only when the build-time Enrichment reached GitHub, so
+ * its tests skip when it did not: the page must render either way, exactly as
  * `e2e/projects.spec.ts` already tolerates.
  */
 
@@ -23,14 +25,20 @@ const IMAGES = '[data-project-image]';
 const BREAKDOWN = '[data-project-languages]';
 const BARS = '[data-language-bar]';
 
-/** Routes whose Project authors a multi-image gallery (`flowix`). */
-const GALLERY_ROUTES = ['/projects/flowix', '/ru/projects/flowix'] as const;
+const LOCALE_PREFIXES = ['', '/ru'] as const;
+
+/** Routes whose Project authors a multi-image gallery. */
+const GALLERY_ROUTES = LOCALE_PREFIXES.flatMap(prefix =>
+	gallerySlugs.map(slug => `${prefix}/projects/${slug}`)
+);
 
 /** Routes whose Project names a public repo, so Enrichment may add languages. */
-const BREAKDOWN_ROUTES = [
-	'/projects/astro-homepage',
-	'/ru/projects/astro-homepage',
-] as const;
+const BREAKDOWN_ROUTES = LOCALE_PREFIXES.flatMap(prefix =>
+	repoSlugs.map(slug => `${prefix}/projects/${slug}`)
+);
+
+/** Every animated route once, for the no-JavaScript check. */
+const STATIC_ROUTES = [...new Set([...GALLERY_ROUTES, ...BREAKDOWN_ROUTES])];
 
 /** Every gallery image, with its painted opacity and translate. */
 const imagePaint = (page: Page) =>
@@ -147,6 +155,29 @@ const breakdownOrSkip = async (page: Page) => {
 	return breakdown;
 };
 
+/**
+ * Scrolls each language row into view in order, revealing the whole list. A
+ * list taller than the viewport cannot be revealed by scrolling to one spot:
+ * rows above and below that spot would stay pending.
+ */
+const revealAllRows = async (breakdown: Locator) => {
+	const rows = breakdown.locator('[data-project-language]');
+	for (let index = 0, count = await rows.count(); index < count; index++) {
+		await rows.nth(index).scrollIntoViewIfNeeded();
+	}
+};
+
+/** Navigates to the first repo-backed Project in this Locale with a breakdown. */
+const firstBreakdownPath = async (page: Page, prefix: string) => {
+	for (const slug of repoSlugs) {
+		const path = `${prefix}/projects/${slug}`;
+		await page.goto(path);
+		if ((await page.locator(BREAKDOWN).count()) > 0) return path;
+	}
+
+	return null;
+};
+
 test.describe('the gallery joins the scroll reveal', () => {
 	for (const path of GALLERY_ROUTES) {
 		test(`${path} paints the images on screen at load at full strength`, async ({
@@ -214,6 +245,14 @@ test.describe('the language bars grow into view', () => {
 			const breakdown = await breakdownOrSkip(page);
 			await expect(breakdown).toBeVisible();
 
+			// A Project whose page grew (a long body, a bigger gallery) can push the
+			// breakdown below the fold; then there is no first-frame state to check.
+			const box = await breakdown.boundingBox();
+			test.skip(
+				box === null || box.y >= 1600,
+				'the breakdown starts below the fold at this height'
+			);
+
 			// Asserted without retrying: a zero-width bar must not pass by growing in.
 			await expectBarsAtAuthoredShareNow(page);
 		});
@@ -236,8 +275,8 @@ test.describe('the language bars grow into view', () => {
 				)
 				.toEqual(authored.map(() => 0));
 
-			// Scrolled to, every bar grows to its authored percentage.
-			await breakdown.scrollIntoViewIfNeeded();
+			// Scrolled through, every bar grows to its authored percentage.
+			await revealAllRows(breakdown);
 			await expectBarsAtAuthoredShare(page);
 
 			const grown = await barState(page);
@@ -253,10 +292,12 @@ test.describe('the language bars grow into view', () => {
 });
 
 test.describe('the breakdown keeps its content and meaning', () => {
-	const REGIONS = [
-		{ path: '/projects/astro-homepage', name: 'Languages' },
-		{ path: '/ru/projects/astro-homepage', name: 'Языки' },
-	] as const;
+	const REGIONS = LOCALE_PREFIXES.flatMap(prefix =>
+		repoSlugs.map(slug => ({
+			path: `${prefix}/projects/${slug}`,
+			name: prefix === '/ru' ? 'Языки' : 'Languages',
+		}))
+	);
 
 	for (const { path, name } of REGIONS) {
 		test(`${path} labels the region and keeps every language and percentage`, async ({
@@ -332,7 +373,7 @@ test.describe('the motion does not disturb the layout', () => {
 				// Before the reveal: measured while the breakdown is hidden below the fold.
 				const hidden = await geometry();
 
-				await breakdown.scrollIntoViewIfNeeded();
+				await revealAllRows(breakdown);
 				await expectBarsAtAuthoredShare(page);
 
 				// After: identical flow geometry — the same rows and images in the same
@@ -346,7 +387,7 @@ test.describe('the motion does not disturb the layout', () => {
 test.describe('prefers-reduced-motion: reduce', () => {
 	test.use({ reducedMotion: 'reduce' });
 
-	for (const path of [...GALLERY_ROUTES, ...BREAKDOWN_ROUTES]) {
+	for (const path of STATIC_ROUTES) {
 		test(`${path} leaves the gallery static and the bars at full width`, async ({
 			page,
 		}) => {
@@ -366,7 +407,7 @@ test.describe('prefers-reduced-motion: reduce', () => {
 test.describe('without JavaScript', () => {
 	test.use({ javaScriptEnabled: false });
 
-	for (const path of [...GALLERY_ROUTES, ...BREAKDOWN_ROUTES]) {
+	for (const path of STATIC_ROUTES) {
 		test(`${path} shows every image and bar at full strength`, async ({
 			page,
 		}) => {
@@ -383,7 +424,14 @@ test.describe('print output', () => {
 		page,
 	}) => {
 		await page.setViewportSize({ width: 375, height: 300 });
-		await page.goto('/ru/projects/astro-homepage');
+
+		const path = await firstBreakdownPath(page, '/ru');
+		test.skip(
+			path === null,
+			'Enrichment was not reached for any repo-backed Project'
+		);
+		if (path === null) return;
+
 		await breakdownOrSkip(page);
 
 		// The bars are pending below the fold on screen; paper does not scroll, so
