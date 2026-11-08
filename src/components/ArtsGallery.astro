@@ -11,6 +11,16 @@
 // The grid opts into the Site-wide scroll reveal (`ScrollReveal`) with
 // `data-reveal`; the shared mechanism fades the below-the-fold Artworks in.
 //
+// The gallery sits in the paint region the page background animates through a
+// Theme switch, so it is re-rastered on every frame of the curve. To keep the
+// switch smooth (ticket #43) the script watches `<html data-theme>` and, for
+// the switch's duration only, marks the panel `data-theme-switching`, which
+// promotes the Artwork cards to their own compositor layers. The state is
+// transient — released on the background's `transitionend`, with a bounded
+// timeout fallback — and is never applied under reduced motion, so the
+// gallery's compositing is unchanged at rest and the Theme still switches
+// without JavaScript.
+//
 // The Artworks are a grid of "stickers" wrapped in a paper panel.
 import { Picture } from 'astro:assets';
 import type { ArtworkEntry } from '@/lib/arts';
@@ -33,7 +43,10 @@ const tiltFor = (index: number) => TILTS[index % TILTS.length];
 const hasNavigation = arts.length > 1;
 ---
 
-<div class='paper-grid mt-8 rounded-3xl border border-border p-4 sm:p-6'>
+<div
+	class='paper-grid mt-8 rounded-3xl border border-border p-4 sm:p-6'
+	data-arts-panel
+>
 	<!--
 		The wall of stickers is presentation, not text, and dragging across a
 		card is how a scroll or a swipe starts: nothing here may be selected, or
@@ -231,10 +244,13 @@ const hasNavigation = arts.length > 1;
 </dialog>
 
 <script>
+	import { THEME_ATTRIBUTE } from '@/lib/theme';
+
 	// The grid and the dialog are page content, so a client-side navigation
 	// replaces them: bind the (new) elements each page load instead of holding a
 	// reference. Binding is idempotent, so re-running the script is harmless.
 	const GALLERY = '[data-arts-gallery]';
+	const PANEL = '[data-arts-panel]';
 	const OPENER = '[data-art-open]';
 	const TITLE = '[data-art-title]';
 	const DIALOG = '[data-arts-lightbox]';
@@ -252,7 +268,7 @@ const hasNavigation = arts.length > 1;
 	const SWIPE_THRESHOLD = 40;
 	/** A click that moved further than this was a drag, so it is not a click. */
 	const DRAG_SLOP = 8;
-	/** Slack past the animation's own end before the fallback timer fires. */
+	/** Slack past an animation's or transition's end before a fallback fires. */
 	const SETTLE_GRACE = 50;
 
 	/** The thumbnail that opened the lightbox, to focus when it closes. */
@@ -705,9 +721,101 @@ const hasNavigation = arts.length > 1;
 		});
 	};
 
+	/**
+	 * The panel's in-flight marker for a Theme switch. While it is set, the
+	 * cards are promoted to their own compositor layers (see `global.css`), so
+	 * the animating page background does not drag the gallery into every
+	 * frame's re-raster. It is the only state this script adds.
+	 */
+	const THEME_SWITCH = 'data-theme-switching';
+
+	const panelEl = () => document.querySelector<HTMLElement>(PANEL);
+
+	/** The Theme curve's duration in milliseconds; 0 when motion is reduced. */
+	const themeDuration = () => {
+		if (prefersReducedMotion()) return 0;
+
+		return timeInMs(getComputedStyle(document.body).transitionDuration);
+	};
+
+	let switchTimer: ReturnType<typeof setTimeout> | null = null;
+
+	/** Drops the in-flight state; safe to call when it was never applied. */
+	const clearThemeSwitch = () => {
+		if (switchTimer !== null) clearTimeout(switchTimer);
+		switchTimer = null;
+		panelEl()?.removeAttribute(THEME_SWITCH);
+	};
+
+	/** Holds the gallery's layers for the duration of a Theme switch. */
+	const beginThemeSwitch = () => {
+		const panel = panelEl();
+		if (!panel) return;
+
+		const duration = themeDuration();
+		// With reduced motion — or before transitions are enabled — the Theme
+		// changes on the spot: there is no curve to keep the gallery out of, so
+		// never promote (and never leave a layer behind).
+		if (duration === 0) return;
+
+		panel.setAttribute(THEME_SWITCH, 'true');
+		if (switchTimer !== null) clearTimeout(switchTimer);
+		// A backgrounded tab throttles `transitionend`; the timer bounds the
+		// state so the cards can never stay promoted.
+		switchTimer = setTimeout(clearThemeSwitch, duration + SETTLE_GRACE);
+	};
+
+	/**
+	 * Bound once per document, not once per gallery element: the listeners are
+	 * document-level, and the module itself runs once per full load — Astro
+	 * re-executes a script only when its `src` is new. A guard on `<html>` would
+	 * not survive: the ClientRouter strips every non-Astro attribute from
+	 * `<html>` on each navigation, so `sync()` would rebind (and leak an
+	 * observer) on every page load.
+	 */
+	let themeSwitchBound = false;
+
+	const bindThemeSwitch = () => {
+		if (themeSwitchBound) return;
+
+		themeSwitchBound = true;
+
+		const root = document.documentElement;
+
+		// The toggle only flips `data-theme`; observe it rather than reach into
+		// the toggle, so the Anti-FOUC script and the toggle stay untouched.
+		let lastTheme = root.getAttribute(THEME_ATTRIBUTE);
+
+		new MutationObserver(() => {
+			const theme = root.getAttribute(THEME_ATTRIBUTE);
+			// A client-side navigation re-applies the *same* Theme to `<html>`;
+			// only an actual change is a switch.
+			if (theme === lastTheme) return;
+
+			lastTheme = theme;
+			beginThemeSwitch();
+		}).observe(root, {
+			attributes: true,
+			attributeFilter: [THEME_ATTRIBUTE]
+		});
+
+		// The body's background is what animates for the whole curve, so its
+		// `transitionend` is the end of the switch.
+		document.body.addEventListener('transitionend', event => {
+			if (event.target !== document.body) return;
+			if (event.propertyName !== 'background-color') return;
+
+			clearThemeSwitch();
+		});
+
+		// The state must never outlive a client-side navigation.
+		document.addEventListener('astro:before-swap', clearThemeSwitch);
+	};
+
 	const sync = () => {
 		bindDialog();
 		bindGallery();
+		bindThemeSwitch();
 	};
 
 	document.addEventListener('astro:page-load', sync);
