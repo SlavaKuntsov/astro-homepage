@@ -5,37 +5,90 @@ import projectOrder from '@/content/projects/order.json';
 import {
 	coverImage,
 	galleryImages,
+	mergeProject,
 	orderedProjects,
 	projectSchema,
+	sharedProjectSchema,
+	sharedProjects,
+	type MergedProjectEntry,
 	type ProjectEntry,
-	type ProjectFrontmatter,
+	type ProjectData,
+	type ProjectLocalizedFrontmatter,
+	type ProjectSharedFrontmatter,
 } from '@/lib/projects';
 
-// The `projects` collection's frontmatter is enforced at build (ADR-0004): a
-// mistyped field, or a missing required one, must fail. `summary` and `stack`
-// are deliberately optional — Enrichment supplies them. These tests pin the
-// rules the markdown files rely on, plus the two behaviours the pages depend on
-// — featured-first ordering (ADR-0009) and image selection.
-const validProject: ProjectFrontmatter = {
+// A Project's frontmatter is enforced at build (ADR-0004): the per-Locale
+// markdown holds only `title` and `summary`, while the Locale-independent
+// fields live once per slug in `shared.json`. A mistyped field, a missing
+// required one, or a shared field left in markdown must fail. `summary` and
+// `stack` are deliberately optional — Enrichment supplies them. These tests pin
+// those rules, the merge the pages render through, and the two behaviours the
+// pages depend on — featured-first ordering (ADR-0009) and image selection.
+const localizedProject: ProjectLocalizedFrontmatter = {
 	title: 'Portfolio Site',
 	summary: 'A fast, no-flash portfolio built with Astro.',
+};
+
+const sharedProject: ProjectSharedFrontmatter = {
 	stack: ['Astro', 'TypeScript'],
 	visibility: 'public',
 };
 
 const withProject = (
 	id: string,
-	overrides: Partial<ProjectFrontmatter> = {}
-): ProjectEntry => ({ id, data: { ...validProject, ...overrides } });
+	overrides: Partial<ProjectData> = {}
+): ProjectEntry => ({
+	id,
+	data: { ...localizedProject, ...sharedProject, ...overrides },
+});
 
-describe('projects schema', () => {
-	it('accepts a minimal project', () => {
-		expect(projectSchema.safeParse(validProject).success).toBe(true);
+describe('projects localized schema', () => {
+	it('accepts a title with an optional summary', () => {
+		expect(projectSchema.safeParse(localizedProject).success).toBe(true);
+		expect(projectSchema.safeParse({ title: 'Flowix' }).success).toBe(true);
+	});
+
+	// Enrichment fills these in, so authoring neither is valid: the summary
+	// becomes the repo's description and the stack falls back to its topics.
+	it('accepts an omitted or null summary', () => {
+		expect(
+			projectSchema.safeParse({ title: 'Flowix', summary: null }).success
+		).toBe(true);
+	});
+
+	it('rejects a project missing a title', () => {
+		expect(projectSchema.safeParse({ summary: 'A summary' }).success).toBe(
+			false
+		);
+	});
+
+	// Locale-independent fields belong in `shared.json`; leaving one in markdown
+	// would let the two Locales drift, so the strict schema rejects it.
+	it('rejects shared fields in the localized markdown', () => {
+		for (const shared of [
+			{ cover: '/images/cover.png' },
+			{ images: ['/images/one.png'] },
+			{ stack: ['Astro'] },
+			{ links: { github: 'https://github.com/owner/repo' } },
+			{ visibility: 'public' },
+			{ featured: true },
+			{ githubRepo: 'owner/repo' },
+		]) {
+			expect(
+				projectSchema.safeParse({ ...localizedProject, ...shared }).success
+			).toBe(false);
+		}
+	});
+});
+
+describe('projects shared schema', () => {
+	it('accepts a minimal shared record', () => {
+		expect(sharedProjectSchema.safeParse(sharedProject).success).toBe(true);
 	});
 
 	it('accepts images, links, featured, and a public GitHub repo', () => {
 		const complete = {
-			...validProject,
+			...sharedProject,
 			cover: '/images/cover.png',
 			images: ['/images/one.png', '/images/two.png'],
 			links: {
@@ -47,63 +100,110 @@ describe('projects schema', () => {
 			githubRepo: 'owner/repo',
 		};
 
-		expect(projectSchema.safeParse(complete).success).toBe(true);
+		expect(sharedProjectSchema.safeParse(complete).success).toBe(true);
 	});
 
 	it('accepts a private project without a repo or links', () => {
 		expect(
-			projectSchema.safeParse({ ...validProject, visibility: 'private' })
+			sharedProjectSchema.safeParse({ ...sharedProject, visibility: 'private' })
 				.success
 		).toBe(true);
 	});
 
-	it('rejects a project missing a required field', () => {
-		const { visibility, ...rest } = validProject;
+	it('rejects a shared record missing visibility', () => {
+		const { visibility, ...rest } = sharedProject;
 
-		expect(projectSchema.safeParse(rest).success).toBe(false);
+		expect(sharedProjectSchema.safeParse(rest).success).toBe(false);
 	});
 
 	it('rejects an unknown visibility', () => {
 		expect(
-			projectSchema.safeParse({ ...validProject, visibility: 'draft' }).success
+			sharedProjectSchema.safeParse({ ...sharedProject, visibility: 'draft' })
+				.success
 		).toBe(false);
 	});
 
-	// Enrichment fills these in, so authoring neither is valid: the summary
-	// becomes the repo's description and the stack falls back to its topics.
-	it('accepts an omitted or null summary', () => {
-		const { summary, ...rest } = validProject;
-
-		expect(projectSchema.safeParse(rest).success).toBe(true);
-		expect(
-			projectSchema.safeParse({ ...validProject, summary: null }).success
-		).toBe(true);
-	});
-
 	it('accepts an omitted stack', () => {
-		const { stack, ...rest } = validProject;
+		const { stack, ...rest } = sharedProject;
 
-		expect(projectSchema.safeParse(rest).success).toBe(true);
+		expect(sharedProjectSchema.safeParse(rest).success).toBe(true);
 	});
 
 	it('rejects a malformed githubRepo', () => {
 		for (const githubRepo of ['owner', 'owner/repo/extra', '/repo', '']) {
 			expect(
-				projectSchema.safeParse({ ...validProject, githubRepo }).success
+				sharedProjectSchema.safeParse({ ...sharedProject, githubRepo }).success
 			).toBe(false);
 		}
+	});
+
+	it('rejects an unknown key', () => {
+		expect(
+			sharedProjectSchema.safeParse({ ...sharedProject, stak: ['Astro'] })
+				.success
+		).toBe(false);
 	});
 
 	// Enrichment only reads public repos, so a private project cannot name one:
 	// accepting it would hide a contradiction until a page tried to fetch it.
 	it('rejects a githubRepo on a private project', () => {
 		expect(
-			projectSchema.safeParse({
-				...validProject,
+			sharedProjectSchema.safeParse({
+				...sharedProject,
 				visibility: 'private',
 				githubRepo: 'owner/repo',
 			}).success
 		).toBe(false);
+	});
+});
+
+// `mergeProject` is how every page sees a Project: the localized entry supplies
+// `title`/`summary`, the shared record everything else.
+describe('mergeProject', () => {
+	it('combines the localized entry with its shared record', () => {
+		const merged = mergeProject(
+			{ id: 'ru/flowix', data: { title: 'Flowix', summary: null } },
+			{
+				flowix: {
+					cover: '/images/cover.png',
+					stack: ['Astro'],
+					visibility: 'public',
+					featured: true,
+				},
+			}
+		);
+
+		expect(merged).toEqual({
+			id: 'ru/flowix',
+			data: {
+				title: 'Flowix',
+				summary: null,
+				cover: '/images/cover.png',
+				stack: ['Astro'],
+				visibility: 'public',
+				featured: true,
+			},
+		});
+	});
+
+	it('keeps the localized title and summary', () => {
+		const merged: MergedProjectEntry = mergeProject(
+			{ id: 'en/flowix', data: localizedProject },
+			{ flowix: sharedProject }
+		);
+
+		expect(merged.data.title).toBe('Portfolio Site');
+		expect(merged.data.summary).toBe(
+			'A fast, no-flash portfolio built with Astro.'
+		);
+	});
+
+	// A missing record means a half-authored Project: fail the build instead of
+	// rendering `undefined` fields.
+	it('throws when the slug has no shared record', () => {
+		expect(() =>
+			mergeProject({ id: 'ru/missing', data: { title: 'Missing' } }, {})
+		).toThrow(/shared\.json/);
 	});
 });
 
@@ -191,8 +291,9 @@ describe('project images', () => {
 
 // Every Project must be listed: a slug with no manifest entry would silently
 // drop to the end of the index, so the manifest and the content files stay in
-// step (ADR-0009). Both Locales are checked, and they must pair by slug.
-describe('order manifest', () => {
+// step (ADR-0009). Both Locales are checked, and they must pair by slug. The
+// shared file must cover exactly the authored slugs — no gaps, no strays.
+describe('order manifest and shared records', () => {
 	const slugsIn = (locale: 'ru' | 'en') => {
 		const dir = fileURLToPath(
 			new URL(`../content/projects/${locale}`, import.meta.url)
@@ -209,5 +310,11 @@ describe('order manifest', () => {
 
 	it('pairs every project across Locales', () => {
 		expect(new Set(slugsIn('en'))).toEqual(new Set(slugsIn('ru')));
+	});
+
+	it('has a shared record for every project slug and no strays', () => {
+		expect(new Set(Object.keys(sharedProjects))).toEqual(
+			new Set(slugsIn('en'))
+		);
 	});
 });

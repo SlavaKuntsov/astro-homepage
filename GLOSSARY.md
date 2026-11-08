@@ -41,7 +41,14 @@ faculty, field, location), dated by year. _Avoid_: school, university, study.
 
 **Project** — a showcased piece of work: manual fields (title, description,
 images, links, stack) plus optional build-time enrichment from a public GitHub
-repo. _Avoid_: repo, work.
+repo. A **Project**'s locale-independent fields live once in its **Shared
+Project record**. _Avoid_: repo, work.
+
+**Shared Project record** — the slug-keyed entry in
+`content/projects/shared.json` holding a **Project**'s locale-independent fields
+(cover, gallery, stack, links, visibility, featured, GitHub repo), so the fields
+cannot drift between **Locales**; `mergeProject` folds it with a localized entry
+for rendering. _Avoid_: manifest, config.
 
 **Artwork** — a gallery image item in the `arts` collection, opened in a
 lightbox. _Avoid_: art, picture.

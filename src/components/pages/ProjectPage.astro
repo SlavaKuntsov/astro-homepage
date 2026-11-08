@@ -13,11 +13,11 @@ import { slugOfEntryId } from '@/lib/collection';
 import { enrichProject } from '@/lib/enrichment';
 import { localizePath } from '@/lib/i18n';
 import type { Locale } from '@/lib/i18n';
-import { galleryImages } from '@/lib/projects';
+import { galleryImages, type MergedProjectEntry } from '@/lib/projects';
 import StackChips from '@/components/StackChips.astro';
 
 interface Props {
-	entry: CollectionEntry<'projects'>;
+	entry: MergedProjectEntry<CollectionEntry<'projects'>>;
 	/** The Locale this page renders in. */
 	lang: Locale;
 }

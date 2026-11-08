@@ -8,7 +8,7 @@ import {
 	parseRepoMetadata,
 	type FetchLike,
 } from '@/lib/enrichment';
-import type { ProjectEntry, ProjectFrontmatter } from '@/lib/projects';
+import type { ProjectEntry, ProjectData } from '@/lib/projects';
 
 // Enrichment (GLOSSARY: *Enrichment*) is optional build-time metadata from a
 // public GitHub repo. It is a system boundary — the GitHub API — so the fetch is
@@ -65,9 +65,7 @@ const fakeFetch =
 		};
 	};
 
-const project = (
-	overrides: Partial<ProjectFrontmatter> = {}
-): ProjectEntry => ({
+const project = (overrides: Partial<ProjectData> = {}): ProjectEntry => ({
 	id: 'ru/astro-homepage',
 	data: {
 		title: 'Portfolio Site',
@@ -344,10 +342,7 @@ describe('enrichProjects', () => {
 			cache: new Map(),
 		});
 
-		expect(enriched.map(item => item.entry.data.title)).toEqual([
-			'One',
-			'Two',
-		]);
+		expect(enriched.map(item => item.entry.data.title)).toEqual(['One', 'Two']);
 		expect(enriched[0].meta.stars).toBe(42);
 		expect(enriched[1].meta.stars).toBeNull();
 	});
