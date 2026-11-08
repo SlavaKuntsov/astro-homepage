@@ -1,5 +1,6 @@
 import type { Page } from '@playwright/test';
 import { expect, test } from './fixtures';
+import { coverOf, coverSlugs } from './project-data';
 
 /**
  * Per-page, per-Locale metadata (ticket #13, spec user story 23, ADR-0011).
@@ -100,27 +101,9 @@ const PAGES: ExpectedPage[] = [
 		title: 'Арты — Кунцов Святослав',
 		description: 'Галерея художественных работ Кунцова Святослава.',
 	},
-	// A Project detail page (deterministic description: authored `summary`).
-	{
-		path: '/projects/private-crm',
-		locale: 'en',
-		ruPath: '/ru/projects/private-crm',
-		enPath: '/projects/private-crm',
-		title: 'Logistics CRM — Sviataslau Kuntsou',
-		description:
-			'An internal system for dispatchers covering orders, routes, and billing.',
-		ogType: 'article',
-	},
-	{
-		path: '/ru/projects/private-crm',
-		locale: 'ru',
-		ruPath: '/ru/projects/private-crm',
-		enPath: '/projects/private-crm',
-		title: 'CRM для логистики — Кунцов Святослав',
-		description:
-			'Внутренняя система для диспетчеров: заявки, маршруты и расчёты.',
-		ogType: 'article',
-	},
+	// A Project detail page is derived from the index; see the dedicated
+	// scenario below. Keeping it out of this static list means adding, removing,
+	// renaming, or reordering Projects never edits this file.
 ];
 
 const meta = (page: Page, selector: string) =>
@@ -206,6 +189,83 @@ test.describe('per-page metadata', () => {
 		});
 	}
 
+	// A Project detail page is derived from whichever Project the index leads
+	// with, so adding, removing, renaming, or reordering Projects never edits
+	// this file. Its description can come from live Enrichment, so only presence
+	// and consistency across the description tags is asserted.
+	for (const { base, locale } of [
+		{ base: '/projects', locale: 'en' as const },
+		{ base: '/ru/projects', locale: 'ru' as const },
+	]) {
+		test(`${base}/<slug> emits a Project detail page's metadata`, async ({
+			page,
+		}) => {
+			await page.goto(base);
+
+			const card = page.locator('[data-project]').first();
+			test.skip((await card.count()) === 0, 'the index lists no Projects');
+
+			const slug = (await card.getAttribute('data-slug')) ?? '';
+			const title = (
+				await card.getByRole('heading', { level: 2 }).innerText()
+			).trim();
+			const path = `${base}/${slug}`;
+			const expectedTitle = `${title} — ${SITE_NAME[locale]}`;
+
+			const response = await page.goto(path);
+			expect(response?.status()).toBe(200);
+
+			await expect(page).toHaveTitle(expectedTitle);
+
+			const description = await meta(page, 'meta[name="description"]');
+			expect(description).toBeTruthy();
+			expect(await meta(page, 'meta[property="og:description"]')).toBe(
+				description
+			);
+			expect(await meta(page, 'meta[name="twitter:description"]')).toBe(
+				description
+			);
+
+			const canonical = await page
+				.locator('link[rel="canonical"]')
+				.getAttribute('href');
+			expect(pathOf(canonical)).toBe(path);
+
+			const alternate = (hreflang: string) =>
+				page
+					.locator(`link[rel="alternate"][hreflang="${hreflang}"]`)
+					.getAttribute('href');
+			expect(pathOf(await alternate('ru'))).toBe(`/ru/projects/${slug}`);
+			expect(pathOf(await alternate('en'))).toBe(`/projects/${slug}`);
+			expect(pathOf(await alternate('x-default'))).toBe(`/projects/${slug}`);
+
+			expect(await meta(page, 'meta[property="og:type"]')).toBe('article');
+			expect(await meta(page, 'meta[property="og:site_name"]')).toBe(
+				SITE_NAME[locale]
+			);
+			expect(await meta(page, 'meta[property="og:title"]')).toBe(expectedTitle);
+			expect(pathOf(await meta(page, 'meta[property="og:url"]'))).toBe(path);
+			expect(await meta(page, 'meta[property="og:locale"]')).toBe(
+				locale === 'ru' ? 'ru_RU' : 'en_US'
+			);
+			expect(await meta(page, 'meta[property="og:locale:alternate"]')).toBe(
+				locale === 'ru' ? 'en_US' : 'ru_RU'
+			);
+			expect(await meta(page, 'meta[name="twitter:card"]')).toBe('summary');
+			expect(await meta(page, 'meta[name="twitter:title"]')).toBe(
+				expectedTitle
+			);
+
+			// A Project with a cover shares that cover; otherwise the Site image.
+			const cover = coverOf(slug);
+			if (cover !== undefined) {
+				const expected = cover.startsWith('http') ? cover : `${ORIGIN}${cover}`;
+				expect(await meta(page, 'meta[property="og:image"]')).toBe(expected);
+				expect(await meta(page, 'meta[name="twitter:image"]')).toBe(expected);
+			}
+		});
+	}
+
 	test('every page carries exactly one canonical link', async ({ page }) => {
 		await page.goto('/projects');
 		await expect(page.locator('link[rel="canonical"]')).toHaveCount(1);
@@ -229,16 +289,22 @@ test.describe('per-page metadata', () => {
 
 	// A Project detail page shares the Project's cover, not the Site image.
 	test('a Project detail page shares the Project cover', async ({ page }) => {
-		await page.goto('/projects/astro-homepage');
+		const slug = coverSlugs[0];
+		test.skip(slug === undefined, 'no published Project authors a cover');
+		if (slug === undefined) return;
 
-		const cover = `${ORIGIN}/images/projects/astro-homepage/cover.png`;
+		const cover = coverOf(slug);
+		if (cover === undefined) return;
+		const expected = cover.startsWith('http') ? cover : `${ORIGIN}${cover}`;
+
+		await page.goto(`/projects/${slug}`);
 		await expect(page.locator('meta[property="og:image"]')).toHaveAttribute(
 			'content',
-			cover
+			expected
 		);
 		await expect(page.locator('meta[name="twitter:image"]')).toHaveAttribute(
 			'content',
-			cover
+			expected
 		);
 	});
 });

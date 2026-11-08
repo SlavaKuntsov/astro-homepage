@@ -46,9 +46,14 @@ Project record**. _Avoid_: repo, work.
 
 **Shared Project record** — the slug-keyed entry in
 `content/projects/shared.json` holding a **Project**'s locale-independent fields
-(cover, gallery, stack, links, visibility, featured, GitHub repo), so the fields
-cannot drift between **Locales**; `mergeProject` folds it with a localized entry
-for rendering. _Avoid_: manifest, config.
+(cover, gallery, stack, links, visibility, featured, published, GitHub repo), so
+the fields cannot drift between **Locales**; `mergeProject` folds it with a
+localized entry for rendering. _Avoid_: manifest, config.
+
+**Published Project** — a **Project** the Site shows. Its **Shared Project
+record** sets `published` (default `true`); `published: false` keeps the content
+in the repo but removes the Project from `/projects` and from the detail routes
+in both **Locales**. _Avoid_: visible, active, hidden.
 
 **Artwork** — a gallery image item in the `arts` collection, opened in a
 lightbox. _Avoid_: art, picture.

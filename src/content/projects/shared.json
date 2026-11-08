@@ -26,6 +26,7 @@
 	},
 	"private-crm": {
 		"stack": [".NET", "PostgreSQL", "Docker"],
-		"visibility": "private"
+		"visibility": "private",
+		"published": false
 	}
 }

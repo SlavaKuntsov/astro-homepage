@@ -8,6 +8,7 @@ import {
 	mergeProject,
 	orderedProjects,
 	projectSchema,
+	publishedProjects,
 	sharedProjectSchema,
 	sharedProjects,
 	type MergedProjectEntry,
@@ -72,6 +73,7 @@ describe('projects localized schema', () => {
 			{ links: { github: 'https://github.com/owner/repo' } },
 			{ visibility: 'public' },
 			{ featured: true },
+			{ published: false },
 			{ githubRepo: 'owner/repo' },
 		]) {
 			expect(
@@ -127,6 +129,26 @@ describe('projects shared schema', () => {
 		const { stack, ...rest } = sharedProject;
 
 		expect(sharedProjectSchema.safeParse(rest).success).toBe(true);
+	});
+
+	// `published` is a display toggle: every existing Project omits it and must
+	// keep showing, so the schema supplies the `true` default.
+	it('defaults published to true when omitted', () => {
+		expect(sharedProjectSchema.parse(sharedProject).published).toBe(true);
+	});
+
+	it('accepts an explicit published toggle', () => {
+		expect(
+			sharedProjectSchema.safeParse({ ...sharedProject, published: false })
+				.success
+		).toBe(true);
+	});
+
+	it('rejects a non-boolean published', () => {
+		expect(
+			sharedProjectSchema.safeParse({ ...sharedProject, published: 'no' })
+				.success
+		).toBe(false);
 	});
 
 	it('rejects a malformed githubRepo', () => {
@@ -204,6 +226,38 @@ describe('mergeProject', () => {
 		expect(() =>
 			mergeProject({ id: 'ru/missing', data: { title: 'Missing' } }, {})
 		).toThrow(/shared\.json/);
+	});
+});
+
+// A Project can be kept in the repo but taken off the Site: `published: false`
+// drops it from the index and its detail routes in both Locales. Omitted stays
+// published, so the toggle is opt-out and existing Projects need no change.
+describe('published projects', () => {
+	const projects = [
+		withProject('ru/default'),
+		withProject('ru/live', { published: true }),
+		withProject('ru/hidden', { published: false }),
+	];
+
+	it('keeps a project whose published flag is omitted', () => {
+		expect(publishedProjects(projects).map(p => p.id)).toContain('ru/default');
+	});
+
+	it('drops only the projects explicitly unpublished', () => {
+		expect(publishedProjects(projects).map(p => p.id)).toEqual([
+			'ru/default',
+			'ru/live',
+		]);
+	});
+
+	it('does not mutate the input', () => {
+		publishedProjects(projects);
+
+		expect(projects.map(p => p.id)).toEqual([
+			'ru/default',
+			'ru/live',
+			'ru/hidden',
+		]);
 	});
 });
 
